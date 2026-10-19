@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ReimbursementStatus, PaymentMethod } from '@vyay/contracts';
+import { api } from '../lib/api';
 import {
   CreditCard,
   PlusCircle,
@@ -130,6 +131,69 @@ export const ReimbursementsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<ReimbursementRecord | null>(null);
 
+  // Dynamic API loading for reimbursable reports
+  useEffect(() => {
+    let isMounted = true;
+    const fetchReimbursements = async () => {
+      try {
+        const reports = await api.getReports();
+        if (!isMounted) return;
+        const eligibleReports = reports.filter(
+          (r) =>
+            r.reimbursementStatus === ReimbursementStatus.ELIGIBLE ||
+            r.reimbursementStatus === ReimbursementStatus.PARTIALLY_PAID ||
+            r.reimbursementStatus === ReimbursementStatus.PAID
+        );
+
+        if (eligibleReports.length > 0) {
+          const dynamicRecords: ReimbursementRecord[] = eligibleReports.map((r, idx) => ({
+            id: `reimb-dyn-${r.id}`,
+            reportId: r.id,
+            reportNumber: `REP-2026-${String(890 + idx).padStart(4, '0')}`,
+            reportTitle: r.title,
+            employeeName: r.employeeName || 'Dr. Rahul Sharma',
+            employeeNumber: `EMP-${100 + idx}`,
+            bankName: 'HDFC Bank Ltd',
+            bankAccountMasked: '•••• •••• 9841',
+            ifscCode: 'HDFC0001234',
+            currency: r.currency || 'INR',
+            eligibleAmount: r.totalAmount,
+            paidAmount: r.reimbursementStatus === ReimbursementStatus.PAID ? r.totalAmount : '0.00',
+            remainingAmount: r.reimbursementStatus === ReimbursementStatus.PAID ? '0.00' : r.totalAmount,
+            status: r.reimbursementStatus,
+            payments:
+              r.reimbursementStatus === ReimbursementStatus.PAID
+                ? [
+                    {
+                      id: `pay-${r.id}`,
+                      amount: r.totalAmount,
+                      paidAt: r.paidAt || new Date().toISOString(),
+                      method: PaymentMethod.BANK_TRANSFER,
+                      transactionRef: r.transactionRef || 'UTR-2026-IMPS-AUTO',
+                      payerBankAccount: 'HDFC Corporate Operating A/C ****4091',
+                      recordedBy: 'Sarah Jenkins (Finance)',
+                      notes: 'Disbursement settlement.',
+                    },
+                  ]
+                : [],
+          }));
+
+          setRecords((prev) => {
+            const existingIds = new Set(prev.map((p) => p.reportId));
+            const toAdd = dynamicRecords.filter((d) => !existingIds.has(d.reportId));
+            return [...toAdd, ...prev];
+          });
+        }
+      } catch (err) {
+        console.warn('Could not load live reimbursements', err);
+      }
+    };
+    fetchReimbursements();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Record Payment Modal State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [payingRecord, setPayingRecord] = useState<ReimbursementRecord | null>(null);
@@ -178,6 +242,11 @@ export const ReimbursementsPage: React.FC = () => {
       alert('Duplicate transaction reference. This UTR was already recorded.');
       return;
     }
+
+    // Record via live API client
+    api
+      .recordReimbursement(payingRecord.reportId, transactionRef.trim(), paymentMethod)
+      .catch((e) => console.warn('Could not record reimbursement to API:', e));
 
     const newPaid = (parseFloat(payingRecord.paidAmount) + amountNum).toFixed(2);
     const newRemaining = (remainingNum - amountNum).toFixed(2);

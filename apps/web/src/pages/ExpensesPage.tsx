@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ExpenseStatus, Role } from '@vyay/contracts';
+import { api } from '../lib/api';
 import {
   Upload,
   Camera,
@@ -238,6 +239,7 @@ export const ExpensesPage: React.FC = () => {
         : [{ id: '1', description: newPurpose || 'General expense', amount: newAmount }],
     };
 
+    api.createExpense(newExp).catch(() => {});
     setExpenses((prev) => [newExp, ...prev]);
     setShowCreateModal(false);
     // Reset Form
@@ -248,6 +250,22 @@ export const ExpensesPage: React.FC = () => {
     setOcrVerified(false);
     setEnableSplit(false);
   };
+
+  const handleDeleteExpense = (id: string) => {
+    api.deleteExpense(id).catch(() => {});
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    if (selectedExpense?.id === id) {
+      setSelectedExpense(null);
+    }
+  };
+
+  useEffect(() => {
+    api.getExpenses().then((data) => {
+      if (data && data.length > 0) {
+        setExpenses(data);
+      }
+    }).catch(() => {});
+  }, []);
 
   // Filter & Search Logic
   const filteredExpenses = expenses.filter((exp) => {
@@ -377,13 +395,24 @@ export const ExpensesPage: React.FC = () => {
                     <StatusBadge status={exp.status} />
                   </td>
                   <td className="p-3.5 text-center">
-                    <button
-                      onClick={() => setSelectedExpense(exp)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      title="Inspect Expense Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => setSelectedExpense(exp)}
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Inspect Expense Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      {exp.status === ExpenseStatus.DRAFT && (
+                        <button
+                          onClick={() => handleDeleteExpense(exp.id)}
+                          className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          title="Delete Draft Expense"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

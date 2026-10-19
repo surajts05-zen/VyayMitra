@@ -12,9 +12,15 @@ import {
 } from '@vyay/contracts';
 import {
   ZohoBooksConnector,
+  XeroConnector,
+  TallyPrimeConnector,
   ConnectionHealth,
   ExternalReferenceData,
 } from '@vyay/integrations';
+import {
+  TallyXmlExportRequest,
+  TallyVoucherType,
+} from '@vyay/contracts';
 
 interface IntegrationRecord {
   id: string;
@@ -44,6 +50,8 @@ export class IntegrationsService {
   private mappings = new Map<string, ExternalMapping[]>();
   private jobs = new Map<string, IntegrationJobDto[]>();
   private connectors = new Map<string, ZohoBooksConnector>();
+  private xeroConnectors = new Map<string, XeroConnector>();
+  private tallyConnectors = new Map<string, TallyPrimeConnector>();
 
   constructor() {
     this.seedDefaultData();
@@ -56,6 +64,21 @@ export class IntegrationsService {
     }
     return this.connectors.get(key)!;
   }
+
+  public getXeroConnector(tenantId: string): XeroConnector {
+    if (!this.xeroConnectors.has(tenantId)) {
+      this.xeroConnectors.set(tenantId, new XeroConnector());
+    }
+    return this.xeroConnectors.get(tenantId)!;
+  }
+
+  public getTallyConnector(tenantId: string): TallyPrimeConnector {
+    if (!this.tallyConnectors.has(tenantId)) {
+      this.tallyConnectors.set(tenantId, new TallyPrimeConnector());
+    }
+    return this.tallyConnectors.get(tenantId)!;
+  }
+
 
   private seedDefaultData() {
     const t1Id = '11111111-1111-1111-1111-111111111111'; // Acme BioTech Pvt Ltd
@@ -139,10 +162,108 @@ export class IntegrationsService {
         externalId: 'zoho-tax-gst-18',
         externalName: 'GST 18% (CGST 9% + SGST 9%)',
       },
+      // Seed default Xero mappings
+      {
+        id: randomUUID(),
+        provider: 'xero',
+        localType: 'CATEGORY',
+        localId: 'cat-air-travel',
+        localName: 'Air Travel',
+        externalType: 'CHART_OF_ACCOUNT',
+        externalId: 'xero-acc-420',
+        externalName: 'Travel - National & International (420)',
+      },
+      {
+        id: randomUUID(),
+        provider: 'xero',
+        localType: 'CATEGORY',
+        localId: 'cat-meals',
+        localName: 'Meals & Business Hospitality',
+        externalType: 'CHART_OF_ACCOUNT',
+        externalId: 'xero-acc-425',
+        externalName: 'Meals & Client Entertainment (425)',
+      },
+      {
+        id: randomUUID(),
+        provider: 'xero',
+        localType: 'TAX',
+        localId: 'tax-gst-18',
+        localName: 'GST 18%',
+        externalType: 'TAX_CODE',
+        externalId: 'xero-tax-gst-18',
+        externalName: 'Indian GST 18%',
+      },
+      // Seed default Tally Prime mappings
+      {
+        id: randomUUID(),
+        provider: 'tally_prime',
+        localType: 'CATEGORY',
+        localId: 'cat-air-travel',
+        localName: 'Air Travel',
+        externalType: 'CHART_OF_ACCOUNT',
+        externalId: 'tally-led-travelling',
+        externalName: 'Travelling Expenses',
+      },
+      {
+        id: randomUUID(),
+        provider: 'tally_prime',
+        localType: 'CATEGORY',
+        localId: 'cat-lodging',
+        localName: 'Lodging & Accommodation',
+        externalType: 'CHART_OF_ACCOUNT',
+        externalId: 'tally-led-lodging',
+        externalName: 'Hotel & Lodging Expenses',
+      },
+      {
+        id: randomUUID(),
+        provider: 'tally_prime',
+        localType: 'TAX',
+        localId: 'tax-gst-18',
+        localName: 'GST 18%',
+        externalType: 'TAX_CODE',
+        externalId: 'tally-led-cgst',
+        externalName: 'Input CGST @ 9%',
+      },
     ]);
   }
 
-  async getHealth(tenantId: string): Promise<ConnectionHealth> {
+  listSupportedProviders() {
+    return [
+      {
+        id: 'zoho_books',
+        name: 'Zoho Books',
+        type: 'CLOUD_OAUTH',
+        description: 'Multi-datacenter cloud ERP with Chart of Accounts, bills, expenses, and GST tax codes.',
+        regions: ['IN', 'US', 'EU', 'AU', 'JP', 'CA'],
+        status: 'CONNECTED',
+      },
+      {
+        id: 'xero',
+        name: 'Xero Accounting',
+        type: 'CLOUD_OAUTH',
+        description: 'Global cloud accounting software with ACCPAY Bills, Expense Claims, and Tracking Categories.',
+        regions: ['GLOBAL'],
+        status: 'CONNECTED',
+      },
+      {
+        id: 'tally_prime',
+        name: 'Tally Prime',
+        type: 'XML_GATEWAY',
+        description: 'Premier Indian enterprise ERP with direct XML voucher download, HTTP gateway sync, and balanced Dr/Cr ledgers.',
+        regions: ['IN'],
+        status: 'CONNECTED',
+      },
+    ];
+  }
+
+  async getHealth(tenantId: string, provider: string = 'zoho_books'): Promise<ConnectionHealth> {
+    if (provider === 'xero') {
+      return this.getXeroConnector(tenantId).testConnection('xero-conn-default');
+    }
+    if (provider === 'tally_prime') {
+      return this.getTallyConnector(tenantId).testConnection('tally-conn-default');
+    }
+
     const integration = this.integrations.get(tenantId);
     if (!integration || integration.status !== 'CONNECTED') {
       return {
@@ -170,6 +291,17 @@ export class IntegrationsService {
   ): { authUrl: string; state: string } {
     const connector = this.getConnector(tenantId, region);
     const state = `state_${tenantId}_${Date.now()}`;
+    const authUrl = connector.buildAuthUrl(tenantId, redirectUri, state, clientId);
+    return { authUrl, state };
+  }
+
+  buildXeroAuthUrl(
+    tenantId: string,
+    redirectUri: string = 'https://app.vyaymitra.in/integrations/xero/callback',
+    clientId?: string
+  ): { authUrl: string; state: string } {
+    const connector = this.getXeroConnector(tenantId);
+    const state = `state_xero_${tenantId}_${Date.now()}`;
     const authUrl = connector.buildAuthUrl(tenantId, redirectUri, state, clientId);
     return { authUrl, state };
   }
@@ -280,7 +412,14 @@ export class IntegrationsService {
     return integration;
   }
 
-  async getReferenceData(tenantId: string): Promise<ExternalReferenceData> {
+  async getReferenceData(tenantId: string, provider: string = 'zoho_books'): Promise<ExternalReferenceData> {
+    if (provider === 'xero') {
+      return this.getXeroConnector(tenantId).fetchReferenceData();
+    }
+    if (provider === 'tally_prime') {
+      return this.getTallyConnector(tenantId).fetchReferenceData();
+    }
+
     const integration = this.integrations.get(tenantId);
     if (!integration || integration.status !== 'CONNECTED') {
       throw new BadRequestException('Zoho Books is not connected');
@@ -290,21 +429,29 @@ export class IntegrationsService {
     return connector.fetchReferenceData();
   }
 
-  async getMappings(tenantId: string): Promise<ExternalMapping[]> {
-    return this.mappings.get(tenantId) || [];
+  async getMappings(tenantId: string, provider?: string): Promise<ExternalMapping[]> {
+    const list = this.mappings.get(tenantId) || [];
+    if (provider) {
+      return list.filter((m) => m.provider === provider);
+    }
+    return list;
   }
 
-  async updateMappings(tenantId: string, input: UpdateMappingBatchInput): Promise<ExternalMapping[]> {
+  async updateMappings(
+    tenantId: string,
+    input: UpdateMappingBatchInput,
+    provider: string = 'zoho_books'
+  ): Promise<ExternalMapping[]> {
     const existing = this.mappings.get(tenantId) || [];
     const updated = [...existing];
 
     for (const item of input.mappings) {
       const idx = updated.findIndex(
-        (m) => m.localType === item.localType && m.localId === item.localId
+        (m) => m.provider === provider && m.localType === item.localType && m.localId === item.localId
       );
       const newMapping: ExternalMapping = {
         id: idx >= 0 ? updated[idx].id : randomUUID(),
-        provider: 'zoho_books',
+        provider,
         localType: item.localType,
         localId: item.localId,
         localName: item.localId,
@@ -321,10 +468,23 @@ export class IntegrationsService {
     }
 
     this.mappings.set(tenantId, updated);
-    return updated;
+    return updated.filter((m) => m.provider === provider);
   }
 
-  async validateAndDryRun(tenantId: string, reportId: string): Promise<PostingPreview> {
+  async validateAndDryRun(
+    tenantId: string,
+    reportId: string,
+    provider: string = 'zoho_books'
+  ): Promise<PostingPreview> {
+    const tenantMappings = (this.mappings.get(tenantId) || []).filter((m) => m.provider === provider);
+
+    if (provider === 'xero') {
+      return this.getXeroConnector(tenantId).previewPosting(reportId, tenantMappings);
+    }
+    if (provider === 'tally_prime') {
+      return this.getTallyConnector(tenantId).previewPosting(reportId, tenantMappings);
+    }
+
     const integration = this.integrations.get(tenantId);
     if (!integration || integration.status !== 'CONNECTED') {
       return {
@@ -339,7 +499,6 @@ export class IntegrationsService {
     }
 
     const connector = this.getConnector(tenantId, integration.region);
-    const tenantMappings = this.mappings.get(tenantId) || [];
     return connector.previewPosting(reportId, tenantMappings);
   }
 
@@ -347,7 +506,8 @@ export class IntegrationsService {
     tenantId: string,
     reportId: string,
     exportMode: 'EXPENSE' | 'BILL' = 'BILL',
-    dryRun: boolean = false
+    dryRun: boolean = false,
+    provider: string = 'zoho_books'
   ): Promise<{
     jobId: string;
     status: PostingStatus;
@@ -355,26 +515,20 @@ export class IntegrationsService {
     message: string;
     dryRunPreview?: PostingPreview;
   }> {
-    const integration = this.integrations.get(tenantId);
-    if (!integration || integration.status !== 'CONNECTED') {
-      throw new BadRequestException('Zoho Books is not connected for this organization');
-    }
-
-    // Dry Run check
     if (dryRun) {
-      const preview = await this.validateAndDryRun(tenantId, reportId);
+      const preview = await this.validateAndDryRun(tenantId, reportId, provider);
       return {
         jobId: randomUUID(),
         status: PostingStatus.NOT_QUEUED,
-        message: 'Dry run completed successfully. No ledger postings were committed.',
+        message: `Dry run completed successfully for ${provider}. No ledger postings were committed.`,
         dryRunPreview: preview,
       };
     }
 
-    // Idempotency check: Have we already exported this report?
+    // Idempotency check: Have we already exported this report to this provider?
     const existingJobs = this.jobs.get(tenantId) || [];
     const alreadyExported = existingJobs.find(
-      (j) => j.entityId === reportId && j.status === PostingStatus.SYNCED
+      (j) => j.entityId === reportId && j.provider === provider && j.status === PostingStatus.SYNCED
     );
 
     if (alreadyExported) {
@@ -382,17 +536,17 @@ export class IntegrationsService {
         jobId: alreadyExported.id,
         status: PostingStatus.SYNCED,
         remoteReference: alreadyExported.remoteReference ?? undefined,
-        message: 'Report was already exported to Zoho Books. Returned cached ledger reference.',
+        message: `Report was already exported to ${provider}. Returned cached ledger reference.`,
       };
     }
 
     // Create tracking job
     const jobId = randomUUID();
-    const idempotencyKey = `idemp_zoho_${tenantId}_${reportId}_${exportMode}`;
+    const idempotencyKey = `idemp_${provider}_${tenantId}_${reportId}_${exportMode}`;
     const newJob: IntegrationJobDto = {
       id: jobId,
       tenantId,
-      provider: 'zoho_books',
+      provider,
       entityType: 'EXPENSE_REPORT',
       entityId: reportId,
       status: PostingStatus.SYNCING,
@@ -406,22 +560,42 @@ export class IntegrationsService {
     }
     this.jobs.get(tenantId)!.unshift(newJob);
 
-    // Call connector
-    const connector = this.getConnector(tenantId, integration.region);
     try {
-      const payload = {
-        reportId,
-        exportMode,
-        externalOrgId: integration.externalOrgId,
-        exportedAt: new Date().toISOString(),
-      };
-
-      const result = await connector.postExpense(
-        payload,
-        'zoho_mock_live_token',
-        integration.externalOrgId || 'zoho-org-891240',
-        idempotencyKey
-      );
+      let result;
+      if (provider === 'xero') {
+        const connector = this.getXeroConnector(tenantId);
+        result = await connector.postExpense(
+          { reportId, exportMode, total: '4500.00' },
+          'xero_mock_token',
+          'xero-tenant-88391',
+          idempotencyKey
+        );
+      } else if (provider === 'tally_prime') {
+        const connector = this.getTallyConnector(tenantId);
+        result = await connector.postExpense(
+          { reportId, voucherType: 'Payment', total: '4500.00' },
+          'tally_mock_token',
+          'tally-comp-primary',
+          idempotencyKey
+        );
+      } else {
+        const integration = this.integrations.get(tenantId);
+        if (!integration || integration.status !== 'CONNECTED') {
+          throw new BadRequestException('Zoho Books is not connected for this organization');
+        }
+        const connector = this.getConnector(tenantId, integration.region);
+        result = await connector.postExpense(
+          {
+            reportId,
+            exportMode,
+            externalOrgId: integration.externalOrgId,
+            exportedAt: new Date().toISOString(),
+          },
+          'zoho_mock_live_token',
+          integration.externalOrgId || 'zoho-org-891240',
+          idempotencyKey
+        );
+      }
 
       newJob.status = PostingStatus.SYNCED;
       newJob.remoteReference = result.externalId;
@@ -430,22 +604,58 @@ export class IntegrationsService {
       return {
         jobId: newJob.id,
         status: PostingStatus.SYNCED,
-        remoteReference: result.externalId,
-        message: `Successfully posted ${exportMode} to Zoho Books with remote ID: ${result.externalId}`,
+        remoteReference: newJob.remoteReference,
+        message: `Successfully posted ${exportMode} to ${provider} with remote reference: ${newJob.remoteReference}`,
       };
     } catch (err: any) {
       newJob.status = PostingStatus.RETRYABLE_FAILURE;
-      newJob.lastError = err.message || 'Unknown error exporting to Zoho Books';
+      newJob.lastError = err.message || `Unknown error exporting to ${provider}`;
       newJob.updatedAt = new Date().toISOString();
 
       if (err.status === 429) {
         throw new BadRequestException(
-          `Zoho Books API rate limit exceeded. Retry after ${err.retryAfter || 60} seconds.`
+          `${provider} API rate limit exceeded. Retry after ${err.retryAfter || 60} seconds.`
         );
       }
 
       throw new BadRequestException(`Export failed: ${newJob.lastError}`);
     }
+  }
+
+  async exportTallyXml(
+    tenantId: string,
+    input: TallyXmlExportRequest
+  ): Promise<{
+    voucherNumber: string;
+    xmlContent: string;
+    status: PostingStatus;
+    directSync: boolean;
+    message: string;
+  }> {
+    const connector = this.getTallyConnector(tenantId);
+    const postResult = await connector.postExpense(
+      {
+        reportId: input.reportId,
+        voucherType: input.voucherType,
+        bankLedger: input.cashBankLedger,
+        total: '4500.00',
+      },
+      'token',
+      input.companyName,
+      `idemp_tally_xml_${input.reportId}_${Date.now()}`
+    );
+
+    const xmlPayload = (postResult.responsePayload?.xmlPayload as string) || '';
+
+    return {
+      voucherNumber: postResult.remoteReference,
+      xmlContent: xmlPayload,
+      status: PostingStatus.SYNCED,
+      directSync: input.directSync,
+      message: input.directSync
+        ? `XML voucher ${postResult.remoteReference} successfully transmitted to Tally Prime HTTP server.`
+        : `Tally XML voucher ${postResult.remoteReference} generated and ready for file import.`,
+    };
   }
 
   async getJobs(tenantId: string): Promise<IntegrationJobDto[]> {

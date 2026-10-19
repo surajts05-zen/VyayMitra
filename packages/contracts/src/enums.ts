@@ -75,3 +75,10 @@ export enum PolicyAction {
   BLOCK = 'BLOCK',
   ESCALATE = 'ESCALATE',
 }
+
+export enum AccountingProvider {
+  ZOHO_BOOKS = 'zoho_books',
+  XERO = 'xero',
+  TALLY_PRIME = 'tally_prime',
+}
+

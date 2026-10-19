@@ -28,13 +28,16 @@ import {
 import { AuthGuard } from '../../common/guards/auth.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { TenantId } from '../../common/decorators/tenant.decorator.js';
 import { FinanceService } from './finance.service.js';
+import { Role } from '@vyay/contracts';
 
 @ApiTags('Finance Review, GL Mapping & Budgets (M4)')
 @Controller('api/v1/finance')
 @UseGuards(AuthGuard, TenantGuard, RolesGuard)
+@Roles(Role.FINANCE_OPERATOR, Role.FINANCE_ADMIN, Role.COMPANY_OWNER)
 @ApiBearerAuth('JWT-auth')
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}

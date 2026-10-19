@@ -14,6 +14,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 import { DeveloperModule } from './modules/developer/developer.module.js';
 import { ObservabilityModule } from './modules/observability/observability.module.js';
 import { RetentionModule } from './modules/retention/retention.module.js';
+import { PlatformModule } from './modules/platform/platform.module.js';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RetentionModule } from './modules/retention/retention.module.js';
     DeveloperModule,
     ObservabilityModule,
     RetentionModule,
+    PlatformModule,
   ],
 })
 export class AppModule {}

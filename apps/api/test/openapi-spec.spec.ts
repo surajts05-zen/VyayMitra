@@ -75,5 +75,9 @@ describe('OpenAPI Specification Generator and Verifier', () => {
     expect(paths).toContain('/api/v1/developer/api-credentials');
     expect(paths).toContain('/api/v1/developer/webhooks');
     expect(paths).toContain('/api/v1/settings/retention');
+    expect(paths).toContain('/api/v1/platform/stats');
+    expect(paths).toContain('/api/v1/platform/tenants');
+    expect(paths).toContain('/api/v1/platform/tenants/{tenantId}/users/{userId}/reset-password');
+    expect(paths).toContain('/api/v1/platform/audit-logs');
   });
 });

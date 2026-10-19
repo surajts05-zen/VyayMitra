@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ReportStatus, ReimbursementStatus, Role } from '@vyay/contracts';
+import { api } from '../lib/api';
 import {
   Plus,
   Search,
@@ -348,6 +349,7 @@ const INITIAL_REPORTS: ReportItem[] = [
 
 export const ReportsPage: React.FC = () => {
   const [reports, setReports] = useState<ReportItem[]>(INITIAL_REPORTS);
+  const [availableExpenses, setAvailableExpenses] = useState<ExpenseRef[]>(AVAILABLE_UNCLAIMED_EXPENSES);
   const [filterTab, setFilterTab] = useState<'ALL' | 'PENDING' | 'CHANGES' | 'APPROVED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
@@ -362,8 +364,103 @@ export const ReportsPage: React.FC = () => {
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>([]);
   const [bannerFeedback, setBannerFeedback] = useState<string | null>(null);
 
+  // Load dynamic reports and expenses from API
+  useEffect(() => {
+    let isMounted = true;
+    const loadDynamicData = async () => {
+      try {
+        const [liveReports, liveExpenses] = await Promise.all([
+          api.getReports(),
+          api.getExpenses(),
+        ]);
+        if (!isMounted) return;
+
+        if (liveExpenses && liveExpenses.length > 0) {
+          const transformedExpenses: ExpenseRef[] = liveExpenses.map((e) => ({
+            id: e.id,
+            merchant: e.merchant,
+            category: e.category || 'General',
+            amount: e.amount,
+            spentAt: e.spentAt || new Date().toISOString().split('T')[0],
+            hasReceipt: !!e.receiptUrl || !!e.receiptName,
+            duplicateWarning: e.duplicateWarning,
+          }));
+          setAvailableExpenses((prev) => {
+            const seen = new Set(prev.map((p) => p.id));
+            const newOnes = transformedExpenses.filter((e) => !seen.has(e.id));
+            return [...newOnes, ...prev];
+          });
+        }
+
+        if (liveReports && liveReports.length > 0) {
+          const transformedReports: ReportItem[] = liveReports.map((r, idx) => ({
+            id: r.id,
+            reportNumber: `REP-2026-${String(890 + idx).padStart(4, '0')}`,
+            title: r.title,
+            businessPurpose: r.purpose || 'Business claim',
+            department: r.department || 'R&D Department',
+            costCenter: 'CC-BIO-04',
+            submittedBy: r.employeeName || 'Dr. Rahul Sharma',
+            submittedAt: r.submittedAt || new Date().toISOString(),
+            currency: r.currency || 'INR',
+            totalAmount: r.totalAmount || '0.00',
+            reimbursableAmount: r.totalAmount || '0.00',
+            status: r.status,
+            reimbursementStatus: r.reimbursementStatus,
+            expenses: r.expenses?.map((e) => ({
+              id: e.id,
+              merchant: e.merchant,
+              category: e.category,
+              amount: e.amount,
+              spentAt: e.spentAt,
+              hasReceipt: !!e.receiptUrl,
+            })) || [],
+            approvalFlow: [
+              {
+                sequence: 1,
+                stepName: 'Manager Approval',
+                approverName: 'Anita Deshmukh',
+                approverRole: 'Direct Manager',
+                status: r.status === ReportStatus.DRAFT ? 'PENDING' : 'APPROVED',
+                decidedAt: r.status !== ReportStatus.DRAFT ? new Date().toISOString() : undefined,
+              },
+              {
+                sequence: 2,
+                stepName: 'Finance Audit & Review',
+                approverName: 'Sarah Jenkins',
+                approverRole: 'Finance Operator',
+                status: r.status === ReportStatus.APPROVED ? 'APPROVED' : 'PENDING',
+              },
+            ],
+            policyViolations: [],
+            auditHistory: [
+              {
+                timestamp: r.submittedAt || new Date().toISOString(),
+                actor: r.employeeName || 'Dr. Rahul Sharma',
+                action: 'REPORT_SUBMITTED',
+                note: `Claim created with ${r.expenseCount || 1} expense items`,
+              },
+            ],
+          }));
+
+          setReports((prev) => {
+            const existingIds = new Set(transformedReports.map((x) => x.id));
+            const unmerged = prev.filter((p) => !existingIds.has(p.id));
+            return [...transformedReports, ...unmerged];
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to load dynamic reports data', err);
+      }
+    };
+    loadDynamicData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Calculate live wizard figures
-  const selectedExpenses = AVAILABLE_UNCLAIMED_EXPENSES.filter((e) =>
+  const selectedExpenses = availableExpenses.filter((e) =>
     selectedExpenseIds.includes(e.id)
   );
   const totalWizardAmount = selectedExpenses.reduce(
@@ -382,14 +479,14 @@ export const ReportsPage: React.FC = () => {
   };
 
   const handleSelectAllExpenses = () => {
-    if (selectedExpenseIds.length === AVAILABLE_UNCLAIMED_EXPENSES.length) {
+    if (selectedExpenseIds.length === availableExpenses.length) {
       setSelectedExpenseIds([]);
     } else {
-      setSelectedExpenseIds(AVAILABLE_UNCLAIMED_EXPENSES.map((e) => e.id));
+      setSelectedExpenseIds(availableExpenses.map((e) => e.id));
     }
   };
 
-  const handleSubmitNewReport = (submitNow: boolean) => {
+  const handleSubmitNewReport = async (submitNow: boolean) => {
     if (!reportTitle.trim()) {
       alert('Please provide a descriptive report title.');
       return;
@@ -397,6 +494,15 @@ export const ReportsPage: React.FC = () => {
     if (selectedExpenseIds.length === 0) {
       alert('Please select at least one expense to assemble into this report.');
       return;
+    }
+
+    try {
+      const created = await api.createReport(reportTitle, businessPurpose, selectedExpenseIds);
+      if (submitNow && created.id) {
+        await api.submitReport(created.id);
+      }
+    } catch (e) {
+      console.warn('Error saving report to API:', e);
     }
 
     const newReport: ReportItem = {
@@ -464,6 +570,8 @@ export const ReportsPage: React.FC = () => {
     };
 
     setReports((prev) => [newReport, ...prev]);
+    // Remove claimed expenses from available list
+    setAvailableExpenses((prev) => prev.filter((e) => !selectedExpenseIds.includes(e.id)));
     setShowWizard(false);
     setWizardStep(1);
     setReportTitle('');

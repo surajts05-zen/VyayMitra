@@ -103,3 +103,51 @@ export const ExportReportRequestSchema = z.object({
   dryRun: z.boolean().default(false),
 });
 export type ExportReportRequest = z.infer<typeof ExportReportRequestSchema>;
+
+// --- Xero Configuration Schemas ---
+
+export const XeroConnectionConfigSchema = z.object({
+  tenantId: z.string().optional(),
+  tenantName: z.string().optional(),
+  clientId: z.string().optional(),
+  clientSecret: z.string().optional(),
+  exportMode: z.enum(['BILL', 'SPEND_MONEY', 'MANUAL_JOURNAL']).default('BILL'),
+  active: z.boolean().default(true),
+});
+export type XeroConnectionConfig = z.infer<typeof XeroConnectionConfigSchema>;
+
+export const XeroTenantDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  tenantType: z.string().default('ORGANISATION'),
+  currencyCode: z.string().default('INR'),
+  isCurrent: z.boolean().default(false),
+});
+export type XeroTenantDto = z.infer<typeof XeroTenantDtoSchema>;
+
+// --- Tally Prime Configuration & XML Schemas ---
+
+export enum TallyVoucherType {
+  PAYMENT = 'Payment',
+  JOURNAL = 'Journal',
+  PURCHASE = 'Purchase',
+}
+
+export const TallyConnectionConfigSchema = z.object({
+  companyName: z.string().default('VyayMitra Enterprise'),
+  serverUrl: z.string().default('http://localhost:9000'),
+  voucherType: z.nativeEnum(TallyVoucherType).default(TallyVoucherType.PAYMENT),
+  cashBankLedger: z.string().default('Bank Account'),
+  active: z.boolean().default(true),
+});
+export type TallyConnectionConfig = z.infer<typeof TallyConnectionConfigSchema>;
+
+export const TallyXmlExportRequestSchema = z.object({
+  reportId: z.string(),
+  companyName: z.string().default('VyayMitra Enterprise'),
+  voucherType: z.nativeEnum(TallyVoucherType).default(TallyVoucherType.PAYMENT),
+  cashBankLedger: z.string().default('HDFC Bank Current A/c'),
+  directSync: z.boolean().default(false),
+});
+export type TallyXmlExportRequest = z.infer<typeof TallyXmlExportRequestSchema>;
+

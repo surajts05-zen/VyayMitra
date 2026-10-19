@@ -10,3 +10,4 @@ export * from './approval.js';
 export * from './reimbursement.js';
 export * from './integration.js';
 export * from './analytics.js';
+export * from './platform.js';

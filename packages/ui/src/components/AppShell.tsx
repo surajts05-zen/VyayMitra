@@ -15,6 +15,9 @@ import {
   Building2,
   BarChart3,
   Code2,
+  ShieldAlert,
+  BookOpen,
+  HelpCircle,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -74,6 +77,10 @@ export const AppShell: React.FC<AppShellProps> = ({
     return () => document.removeEventListener('keydown', closeOnEscape);
   }, [mobileMenuOpen]);
 
+  const isPlatformAdmin = userRole === 'PLATFORM_SUPER_ADMIN';
+  const isTenantAdmin = ['COMPANY_OWNER', 'COMPANY_ADMIN', 'FINANCE_ADMIN'].includes(userRole);
+  const canViewAdminGuide = isPlatformAdmin || isTenantAdmin;
+
   const navItems: NavItem[] = [
     { id: 'expenses', label: 'My Expenses', icon: <Receipt className="w-5 h-5" />, href: '/expenses' },
     { id: 'reports', label: 'My Reports', icon: <FileText className="w-5 h-5" />, href: '/reports' },
@@ -83,7 +90,14 @@ export const AppShell: React.FC<AppShellProps> = ({
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" />, href: '/analytics' },
     { id: 'integrations', label: 'Integrations', icon: <Layers className="w-5 h-5" />, href: '/integrations' },
     { id: 'developer', label: 'Developer API', icon: <Code2 className="w-5 h-5" />, href: '/developer' },
+    ...(isPlatformAdmin
+      ? [{ id: 'platform', label: 'Platform Admin', icon: <ShieldAlert className="w-5 h-5 text-indigo-500" />, badge: 'Ops', href: '/platform-admin' }]
+      : []),
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" />, href: '/settings' },
+    { id: 'user-guide', label: 'User Guide', icon: <HelpCircle className="w-5 h-5 text-teal-600 dark:text-teal-400" />, badge: 'Help', href: '/user-guide' },
+    ...(canViewAdminGuide
+      ? [{ id: 'guide', label: 'Admin Guide', icon: <BookOpen className="w-5 h-5 text-[#008C69] dark:text-[#34D399]" />, badge: 'Admin', href: '/admin-guide' }]
+      : []),
   ];
 
   return (
@@ -99,17 +113,16 @@ export const AppShell: React.FC<AppShellProps> = ({
         {/* Brand Header */}
         <div className="h-16 px-5 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#008C69] text-white flex items-center justify-center font-bold text-lg shadow-sm">
-              V
-            </div>
-            <div className="leading-tight">
-              <span className="font-semibold text-sm tracking-tight text-[#142333] dark:text-[#EDF4F7]">
-                VyayMitra
-              </span>
-              <span className="block text-[10px] uppercase font-bold tracking-wider text-[#008C69] dark:text-[#B7F500]">
-                Expense SaaS
-              </span>
-            </div>
+            <img
+              src="/VyayMitra%20Logo%20full.png"
+              alt="VyayMitra"
+              className="h-8 max-w-[170px] object-contain block dark:hidden"
+            />
+            <img
+              src="/VyayMitra%20Logo%20full%20white.png"
+              alt="VyayMitra"
+              className="h-8 max-w-[170px] object-contain hidden dark:block"
+            />
           </div>
         </div>
 
@@ -192,11 +205,13 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Mobile Header */}
       <header className="md:hidden flex items-center justify-between min-h-14 px-4 bg-white dark:bg-[#151F27] border-b border-[#E5EAF0] dark:border-[#2D3942]">
-        <div className="flex items-center space-x-2">
-          <div className="w-7 h-7 rounded bg-[#008C69] text-white flex items-center justify-center font-bold text-sm">
-            V
-          </div>
-          <span className="font-semibold text-xs tracking-tight">VyayMitra</span>
+        <div className="flex items-center space-x-2.5">
+          <img
+            src="/Blue%20Teal%20Gradient%20Wing%20Logo.png"
+            alt="VyayMitra"
+            className="w-7 h-7 object-contain"
+          />
+          <span className="font-bold text-sm tracking-tight text-[#142333] dark:text-[#EDF4F7]">VyayMitra</span>
         </div>
         <button
           type="button"

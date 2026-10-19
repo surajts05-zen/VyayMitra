@@ -321,6 +321,36 @@ export const SettingsPage: React.FC = () => {
               </span>
             </div>
 
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <img
+                  src="/Blue%20Teal%20Gradient%20Wing%20Logo.png"
+                  alt="Wing emblem"
+                  className="w-8 h-8 object-contain"
+                />
+                <div>
+                  <span className="block text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                    VyayMitra Companion Brand Mark
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    Dual-identity enabled for enterprise tenancy
+                  </span>
+                </div>
+              </div>
+              <div>
+                <img
+                  src="/VyayMitra%20Logo%20full.png"
+                  alt="VyayMitra Logo"
+                  className="h-6 w-auto object-contain block dark:hidden"
+                />
+                <img
+                  src="/VyayMitra%20Logo%20full%20white.png"
+                  alt="VyayMitra Logo White"
+                  className="h-6 w-auto object-contain hidden dark:block"
+                />
+              </div>
+            </div>
+
             <div className="space-y-3">
               <div>
                 <label className="block text-slate-500 font-medium mb-1">Company Legal Name</label>

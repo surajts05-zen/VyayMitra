@@ -35,6 +35,10 @@ interface InMemoryTenant {
   country: string;
   timezone: string;
   fiscalYearStartMonth: number;
+  plan?: 'STARTER' | 'GROWTH' | 'ENTERPRISE';
+  status?: 'ACTIVE' | 'SUSPENDED';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface InMemoryMembership {
@@ -77,6 +81,22 @@ export class AuthService {
     const t1Id = '11111111-1111-1111-1111-111111111111';
     const t2Id = '22222222-2222-2222-2222-222222222222';
 
+    const tPlatformId = '00000000-0000-0000-0000-000000000000';
+
+    this.tenants.set(tPlatformId, {
+      id: tPlatformId,
+      name: 'VyayMitra Platform Operations',
+      slug: 'vyaymitra-platform',
+      baseCurrency: 'INR',
+      country: 'IN',
+      timezone: 'Asia/Kolkata',
+      fiscalYearStartMonth: 4,
+      plan: 'ENTERPRISE',
+      status: 'ACTIVE',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-10-19T00:00:00.000Z',
+    });
+
     this.tenants.set(t1Id, {
       id: t1Id,
       name: 'Horizon Scientific India Ltd',
@@ -85,6 +105,10 @@ export class AuthService {
       country: 'IN',
       timezone: 'Asia/Kolkata',
       fiscalYearStartMonth: 4,
+      plan: 'ENTERPRISE',
+      status: 'ACTIVE',
+      createdAt: '2026-04-01T00:00:00.000Z',
+      updatedAt: '2026-10-18T12:00:00.000Z',
     });
 
     this.tenants.set(t2Id, {
@@ -95,11 +119,33 @@ export class AuthService {
       country: 'IN',
       timezone: 'Asia/Kolkata',
       fiscalYearStartMonth: 4,
+      plan: 'GROWTH',
+      status: 'ACTIVE',
+      createdAt: '2026-05-01T00:00:00.000Z',
+      updatedAt: '2026-10-18T12:00:00.000Z',
     });
 
     // Seed Demo Users with hashed password 'Password123!'
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync('Password123!', salt);
+
+    // 0. Platform Super Admin (System Operator)
+    const superAdminUser: InMemoryUser = {
+      id: 'ffff0000-0000-0000-0000-000000000000',
+      email: 'superadmin@vyaymitra.internal',
+      passwordHash: hash,
+      firstName: 'Platform',
+      lastName: 'Super Admin',
+    };
+    this.users.set(superAdminUser.id, superAdminUser);
+    const mSuperAdmin: InMemoryMembership = {
+      id: 'mem-superadmin-0',
+      tenantId: tPlatformId,
+      userId: superAdminUser.id,
+      role: Role.PLATFORM_SUPER_ADMIN,
+      active: true,
+    };
+    this.memberships.set(mSuperAdmin.id, mSuperAdmin);
 
     // 1. Company Admin / Owner
     const adminUser: InMemoryUser = {
@@ -538,5 +584,107 @@ export class AuthService {
 
   getUser(userId: string): InMemoryUser | undefined {
     return this.users.get(userId);
+  }
+
+  // ─── Platform Administration Helpers ──────────────────────────────────────────
+
+  listAllTenants(): InMemoryTenant[] {
+    return Array.from(this.tenants.values());
+  }
+
+  listAllUsers(): InMemoryUser[] {
+    return Array.from(this.users.values());
+  }
+
+  listAllMemberships(): InMemoryMembership[] {
+    return Array.from(this.memberships.values());
+  }
+
+  listTenantMemberships(tenantId: string): InMemoryMembership[] {
+    return Array.from(this.memberships.values()).filter(
+      (m) => m.tenantId === tenantId && m.active
+    );
+  }
+
+  updateUserPassword(userId: string, newPasswordHash: string): boolean {
+    const user = this.users.get(userId);
+    if (!user) return false;
+    user.passwordHash = newPasswordHash;
+    this.users.set(userId, user);
+    return true;
+  }
+
+  updateTenant(tenantId: string, data: Partial<InMemoryTenant>): InMemoryTenant | undefined {
+    const tenant = this.tenants.get(tenantId);
+    if (!tenant) return undefined;
+    const updated: InMemoryTenant = {
+      ...tenant,
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    this.tenants.set(tenantId, updated);
+    return updated;
+  }
+
+  createTenantWithAdmin(input: {
+    id: string;
+    name: string;
+    slug: string;
+    baseCurrency: string;
+    country: string;
+    timezone: string;
+    fiscalYearStartMonth: number;
+    plan: 'STARTER' | 'GROWTH' | 'ENTERPRISE';
+    status: 'ACTIVE' | 'SUSPENDED';
+    adminUserId: string;
+    adminEmail: string;
+    adminPasswordHash: string;
+    adminFirstName: string;
+    adminLastName: string;
+  }): { tenant: InMemoryTenant; user: InMemoryUser; membership: InMemoryMembership } {
+    if (this.tenants.has(input.id)) {
+      throw new ConflictException('Tenant ID already exists');
+    }
+    const slugExists = Array.from(this.tenants.values()).some((t) => t.slug === input.slug);
+    if (slugExists) {
+      throw new ConflictException(`Tenant with slug "${input.slug}" already exists`);
+    }
+
+    const now = new Date().toISOString();
+    const newTenant: InMemoryTenant = {
+      id: input.id,
+      name: input.name,
+      slug: input.slug,
+      baseCurrency: input.baseCurrency,
+      country: input.country,
+      timezone: input.timezone,
+      fiscalYearStartMonth: input.fiscalYearStartMonth,
+      plan: input.plan,
+      status: input.status,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.tenants.set(newTenant.id, newTenant);
+
+    const newUser: InMemoryUser = {
+      id: input.adminUserId,
+      email: input.adminEmail,
+      passwordHash: input.adminPasswordHash,
+      firstName: input.adminFirstName,
+      lastName: input.adminLastName,
+    };
+    this.users.set(newUser.id, newUser);
+
+    const membershipId = randomUUID();
+    const newMembership: InMemoryMembership = {
+      id: membershipId,
+      tenantId: newTenant.id,
+      userId: newUser.id,
+      role: Role.COMPANY_OWNER,
+      active: true,
+    };
+    this.memberships.set(membershipId, newMembership);
+
+    return { tenant: newTenant, user: newUser, membership: newMembership };
   }
 }

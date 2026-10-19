@@ -13,8 +13,9 @@ export class TokenService {
   private readonly jwtRefreshSecret: string =
     process.env.JWT_REFRESH_SECRET || 'vyaymitra-super-secret-refresh-key-minimum-32-chars';
 
-  // Revocation map: revoked session/membership IDs
+  // Revocation map: revoked session/membership IDs and user password reset times
   private revokedSessionIds = new Set<string>();
+  private userPasswordResetTimes = new Map<string, number>();
 
   generateTokens(payload: AuthTokenPayload): {
     accessToken: string;
@@ -53,9 +54,13 @@ export class TokenService {
         algorithms: ['HS256'],
         issuer: TOKEN_ISSUER,
         audience: TOKEN_AUDIENCE,
-      }) as AuthTokenPayload;
+      }) as AuthTokenPayload & { iat?: number };
       if (this.revokedSessionIds.has(decoded.membershipId)) {
         throw new UnauthorizedException('Membership or session has been revoked');
+      }
+      const resetTime = this.userPasswordResetTimes.get(decoded.userId);
+      if (resetTime && decoded.iat && decoded.iat * 1000 <= resetTime) {
+        throw new UnauthorizedException('Session invalidated due to password reset. Please log in again.');
       }
       return decoded;
     } catch (err: any) {
@@ -88,6 +93,10 @@ export class TokenService {
 
   revokeMembership(membershipId: string): void {
     this.revokedSessionIds.add(membershipId);
+  }
+
+  revokeUserSessions(userId: string): void {
+    this.userPasswordResetTimes.set(userId, Date.now());
   }
 
   isMembershipRevoked(membershipId: string): boolean {

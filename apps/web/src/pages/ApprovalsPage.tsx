@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ReportStatus, ApprovalDecision, Role } from '@vyay/contracts';
+import { api } from '../lib/api';
 import {
   Check,
   X,
@@ -191,6 +192,77 @@ export const ApprovalsPage: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [feedbackBanner, setFeedbackBanner] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // Dynamic API loading for submitted reports
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPendingApprovals = async () => {
+      try {
+        const reports = await api.getReports();
+        if (!isMounted) return;
+        const reviewReports = reports.filter(
+          (r) =>
+            r.status === ReportStatus.SUBMITTED ||
+            r.status === ReportStatus.IN_REVIEW ||
+            r.status === ReportStatus.FINANCE_REVIEW
+        );
+        if (reviewReports.length > 0) {
+          const dynamicItems: ApprovalQueueItem[] = reviewReports.map((r, idx) => ({
+            id: `step-dyn-${r.id}`,
+            reportId: r.id,
+            reportNumber: `REP-2026-${String(890 + idx).padStart(4, '0')}`,
+            reportTitle: r.title,
+            submitterName: r.employeeName || 'Dr. Rahul Sharma',
+            submitterEmail: 'rahul.sharma@drantigravity.in',
+            submitterUserId: 'dddd4444-4444-4444-4444-444444444444',
+            department: r.department || 'R&D Department',
+            totalAmount: r.totalAmount,
+            currency: r.currency || 'INR',
+            submittedAt: r.submittedAt || new Date().toISOString(),
+            stepSequence: 1,
+            totalSteps: 2,
+            stepName: 'Manager Approval',
+            assignedToName: 'Anita Deshmukh',
+            assignedToUserId: 'cccc3333-3333-3333-3333-333333333333',
+            policyWarnings: [],
+            expenses: r.expenses?.map((e, eIdx) => ({
+              id: e.id || `e-${eIdx}`,
+              merchant: e.merchant,
+              category: e.category,
+              amount: e.amount,
+              spentAt: e.spentAt,
+              receiptAttached: !!e.receiptUrl,
+            })) || [
+              {
+                id: 'e-1',
+                merchant: 'Business Claim Line Item',
+                category: 'General',
+                amount: r.totalAmount,
+                spentAt: new Date().toISOString().split('T')[0],
+                receiptAttached: true,
+              },
+            ],
+          }));
+
+          setQueue((prev) => {
+            const existingIds = new Set(prev.map((p) => p.reportId));
+            const toAdd = dynamicItems.filter((d) => !existingIds.has(d.reportId));
+            const updated = [...toAdd, ...prev];
+            if (toAdd.length > 0 && (!selectedItemId || !prev.find((p) => p.id === selectedItemId))) {
+              setSelectedItemId(updated[0].id);
+            }
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.warn('Could not load live approvals queue', err);
+      }
+    };
+    fetchPendingApprovals();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedItemId]);
+
   // Delegation Modal State
   const [delegations, setDelegations] = useState<DelegationRule[]>(INITIAL_DELEGATIONS);
   const [showDelegationModal, setShowDelegationModal] = useState(false);
@@ -232,7 +304,13 @@ export const ApprovalsPage: React.FC = () => {
       return;
     }
 
-    // Process decision
+    // Process decision with live API sync
+    if (decision === ApprovalDecision.APPROVED) {
+      api.approveReport(selectedItem.reportId, commentText).catch((e) => console.warn(e));
+    } else if (decision === ApprovalDecision.REJECTED) {
+      api.rejectReport(selectedItem.reportId, commentText).catch((e) => console.warn(e));
+    }
+
     setQueue((prev) => prev.filter((item) => item.id !== selectedItem.id));
     setCommentText('');
 

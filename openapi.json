@@ -3,7 +3,7 @@
   "paths": {
     "/api/health": {
       "get": {
-        "operationId": "HealthController2_getHealth",
+        "operationId": "HealthController_getHealth",
         "parameters": [],
         "responses": {
           "200": {
@@ -18,7 +18,7 @@
     },
     "/api/v1/health": {
       "get": {
-        "operationId": "HealthController2_getV1Health",
+        "operationId": "HealthController_getV1Health",
         "parameters": [],
         "responses": {
           "200": {
@@ -33,7 +33,7 @@
     },
     "/api/health/live": {
       "get": {
-        "operationId": "HealthController2_getLiveness",
+        "operationId": "HealthController_getLiveness",
         "parameters": [],
         "responses": {
           "200": {
@@ -48,7 +48,7 @@
     },
     "/api/health/ready": {
       "get": {
-        "operationId": "HealthController2_getReadiness",
+        "operationId": "HealthController_getReadiness",
         "parameters": [],
         "responses": {
           "200": {
@@ -66,7 +66,7 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "operationId": "AuthController2_register",
+        "operationId": "AuthController_register",
         "parameters": [],
         "responses": {
           "201": {
@@ -81,7 +81,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "operationId": "AuthController2_login",
+        "operationId": "AuthController_login",
         "parameters": [],
         "responses": {
           "200": {
@@ -96,7 +96,7 @@
     },
     "/api/v1/auth/refresh": {
       "post": {
-        "operationId": "AuthController2_refreshToken",
+        "operationId": "AuthController_refreshToken",
         "parameters": [],
         "responses": {
           "200": {
@@ -111,7 +111,7 @@
     },
     "/api/v1/auth/invitations": {
       "post": {
-        "operationId": "AuthController2_invite",
+        "operationId": "AuthController_invite",
         "parameters": [],
         "responses": {
           "201": {
@@ -131,7 +131,7 @@
     },
     "/api/v1/auth/accept-invite": {
       "post": {
-        "operationId": "AuthController2_acceptInvite",
+        "operationId": "AuthController_acceptInvite",
         "parameters": [],
         "responses": {
           "200": {
@@ -146,7 +146,7 @@
     },
     "/api/v1/auth/memberships/{id}": {
       "delete": {
-        "operationId": "AuthController2_removeMembership",
+        "operationId": "AuthController_removeMembership",
         "parameters": [
           {
             "name": "id",
@@ -175,7 +175,7 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "operationId": "AuthController2_getMe",
+        "operationId": "AuthController_getMe",
         "parameters": [],
         "responses": {
           "200": {
@@ -195,7 +195,7 @@
     },
     "/api/v1/tenants/current": {
       "get": {
-        "operationId": "TenantsController2_getCurrentTenant",
+        "operationId": "TenantsController_getCurrentTenant",
         "parameters": [],
         "responses": {
           "200": {
@@ -213,7 +213,7 @@
         ]
       },
       "patch": {
-        "operationId": "TenantsController2_updateCurrentTenant",
+        "operationId": "TenantsController_updateCurrentTenant",
         "parameters": [],
         "responses": {
           "200": {
@@ -233,7 +233,7 @@
     },
     "/api/v1/tenants/current/members": {
       "get": {
-        "operationId": "TenantsController2_getMembers",
+        "operationId": "TenantsController_getMembers",
         "parameters": [],
         "responses": {
           "200": {
@@ -253,7 +253,7 @@
     },
     "/api/v1/employees": {
       "get": {
-        "operationId": "EmployeesController2_listEmployees",
+        "operationId": "EmployeesController_listEmployees",
         "parameters": [
           {
             "name": "activeOnly",
@@ -280,7 +280,7 @@
         ]
       },
       "post": {
-        "operationId": "EmployeesController2_createEmployee",
+        "operationId": "EmployeesController_createEmployee",
         "parameters": [],
         "responses": {
           "201": {
@@ -300,7 +300,7 @@
     },
     "/api/v1/employees/hierarchy": {
       "get": {
-        "operationId": "EmployeesController2_getHierarchyTree",
+        "operationId": "EmployeesController_getHierarchyTree",
         "parameters": [],
         "responses": {
           "200": {
@@ -320,7 +320,7 @@
     },
     "/api/v1/employees/{id}": {
       "get": {
-        "operationId": "EmployeesController2_getEmployee",
+        "operationId": "EmployeesController_getEmployee",
         "parameters": [
           {
             "name": "id",
@@ -347,7 +347,7 @@
         ]
       },
       "patch": {
-        "operationId": "EmployeesController2_updateEmployee",
+        "operationId": "EmployeesController_updateEmployee",
         "parameters": [
           {
             "name": "id",
@@ -374,7 +374,7 @@
         ]
       },
       "delete": {
-        "operationId": "EmployeesController2_deactivateEmployee",
+        "operationId": "EmployeesController_deactivateEmployee",
         "parameters": [
           {
             "name": "id",
@@ -403,7 +403,7 @@
     },
     "/api/v1/org/departments": {
       "get": {
-        "operationId": "OrgController2_getDepartments",
+        "operationId": "OrgController_getDepartments",
         "parameters": [],
         "responses": {
           "200": {
@@ -421,7 +421,7 @@
         ]
       },
       "post": {
-        "operationId": "OrgController2_createDepartment",
+        "operationId": "OrgController_createDepartment",
         "parameters": [],
         "responses": {
           "201": {
@@ -441,7 +441,7 @@
     },
     "/api/v1/org/cost-centers": {
       "get": {
-        "operationId": "OrgController2_getCostCenters",
+        "operationId": "OrgController_getCostCenters",
         "parameters": [],
         "responses": {
           "200": {
@@ -459,7 +459,7 @@
         ]
       },
       "post": {
-        "operationId": "OrgController2_createCostCenter",
+        "operationId": "OrgController_createCostCenter",
         "parameters": [],
         "responses": {
           "201": {
@@ -479,7 +479,7 @@
     },
     "/api/v1/org/projects": {
       "get": {
-        "operationId": "OrgController2_getProjects",
+        "operationId": "OrgController_getProjects",
         "parameters": [],
         "responses": {
           "200": {
@@ -497,7 +497,7 @@
         ]
       },
       "post": {
-        "operationId": "OrgController2_createProject",
+        "operationId": "OrgController_createProject",
         "parameters": [],
         "responses": {
           "201": {
@@ -517,7 +517,7 @@
     },
     "/api/v1/org/categories": {
       "get": {
-        "operationId": "OrgController2_getCategories",
+        "operationId": "OrgController_getCategories",
         "parameters": [],
         "responses": {
           "200": {
@@ -535,7 +535,7 @@
         ]
       },
       "post": {
-        "operationId": "OrgController2_createCategory",
+        "operationId": "OrgController_createCategory",
         "parameters": [],
         "responses": {
           "201": {
@@ -555,7 +555,7 @@
     },
     "/api/v1/expenses/receipts/presign": {
       "post": {
-        "operationId": "ExpensesController2_presignReceipt",
+        "operationId": "ExpensesController_presignReceipt",
         "parameters": [],
         "responses": {
           "201": {
@@ -575,7 +575,7 @@
     },
     "/api/v1/expenses/{id}/receipts/presign": {
       "post": {
-        "operationId": "ExpensesController2_presignReceiptForExpense",
+        "operationId": "ExpensesController_presignReceiptForExpense",
         "parameters": [
           {
             "name": "id",
@@ -605,7 +605,7 @@
     },
     "/api/v1/expenses/receipts/confirm": {
       "post": {
-        "operationId": "ExpensesController2_confirmReceipt",
+        "operationId": "ExpensesController_confirmReceipt",
         "parameters": [],
         "responses": {
           "201": {
@@ -625,7 +625,7 @@
     },
     "/api/v1/expenses/{id}/receipts/confirm": {
       "post": {
-        "operationId": "ExpensesController2_confirmReceiptForExpense",
+        "operationId": "ExpensesController_confirmReceiptForExpense",
         "parameters": [
           {
             "name": "id",
@@ -655,7 +655,7 @@
     },
     "/api/v1/receipts/{id}/url": {
       "get": {
-        "operationId": "ExpensesController2_getReceiptSignedUrl",
+        "operationId": "ExpensesController_getReceiptSignedUrl",
         "parameters": [
           {
             "name": "id",
@@ -685,7 +685,7 @@
     },
     "/api/v1/expenses/ocr/confirm-review": {
       "post": {
-        "operationId": "ExpensesController2_confirmOcrReview",
+        "operationId": "ExpensesController_confirmOcrReview",
         "parameters": [],
         "responses": {
           "200": {
@@ -705,7 +705,7 @@
     },
     "/api/v1/expenses": {
       "post": {
-        "operationId": "ExpensesController2_create",
+        "operationId": "ExpensesController_create",
         "parameters": [],
         "responses": {
           "201": {
@@ -723,7 +723,7 @@
         ]
       },
       "get": {
-        "operationId": "ExpensesController2_findAll",
+        "operationId": "ExpensesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -743,7 +743,7 @@
     },
     "/api/v1/expenses/{id}": {
       "get": {
-        "operationId": "ExpensesController2_findOne",
+        "operationId": "ExpensesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -771,7 +771,7 @@
         ]
       },
       "patch": {
-        "operationId": "ExpensesController2_update",
+        "operationId": "ExpensesController_update",
         "parameters": [
           {
             "name": "id",
@@ -799,7 +799,7 @@
         ]
       },
       "delete": {
-        "operationId": "ExpensesController2_remove",
+        "operationId": "ExpensesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -829,7 +829,7 @@
     },
     "/api/v1/approvals/inbox": {
       "get": {
-        "operationId": "ApprovalsController2_getInbox",
+        "operationId": "ApprovalsController_getInbox",
         "parameters": [],
         "responses": {
           "200": {
@@ -849,7 +849,7 @@
     },
     "/api/v1/approvals/{stepId}/decide": {
       "post": {
-        "operationId": "ApprovalsController2_decide",
+        "operationId": "ApprovalsController_decide",
         "parameters": [
           {
             "name": "stepId",
@@ -879,7 +879,7 @@
     },
     "/api/v1/approvals/delegations": {
       "post": {
-        "operationId": "ApprovalsController2_createDelegation",
+        "operationId": "ApprovalsController_createDelegation",
         "parameters": [],
         "responses": {
           "201": {
@@ -897,7 +897,7 @@
         ]
       },
       "get": {
-        "operationId": "ApprovalsController2_listDelegations",
+        "operationId": "ApprovalsController_listDelegations",
         "parameters": [],
         "responses": {
           "200": {
@@ -917,7 +917,7 @@
     },
     "/api/v1/reports": {
       "post": {
-        "operationId": "ReportsController2_create",
+        "operationId": "ReportsController_create",
         "parameters": [],
         "responses": {
           "201": {
@@ -935,7 +935,7 @@
         ]
       },
       "get": {
-        "operationId": "ReportsController2_findAll",
+        "operationId": "ReportsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -955,7 +955,7 @@
     },
     "/api/v1/reports/{id}/submit": {
       "post": {
-        "operationId": "ReportsController2_submit",
+        "operationId": "ReportsController_submit",
         "parameters": [
           {
             "name": "id",
@@ -985,7 +985,7 @@
     },
     "/api/v1/reports/steps/{stepId}/decide": {
       "post": {
-        "operationId": "ReportsController2_decideStep",
+        "operationId": "ReportsController_decideStep",
         "parameters": [
           {
             "name": "stepId",
@@ -1015,7 +1015,7 @@
     },
     "/api/v1/reports/{id}": {
       "get": {
-        "operationId": "ReportsController2_findOne",
+        "operationId": "ReportsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1045,7 +1045,7 @@
     },
     "/api/v1/finance/review-queue": {
       "get": {
-        "operationId": "FinanceController2_getReviewQueue",
+        "operationId": "FinanceController_getReviewQueue",
         "parameters": [],
         "responses": {
           "200": {
@@ -1065,7 +1065,7 @@
     },
     "/api/v1/finance/reports/{id}/validate": {
       "post": {
-        "operationId": "FinanceController2_validateReport",
+        "operationId": "FinanceController_validateReport",
         "parameters": [
           {
             "name": "id",
@@ -1095,7 +1095,7 @@
     },
     "/api/v1/finance/gl-mappings": {
       "get": {
-        "operationId": "FinanceController2_getGLMappings",
+        "operationId": "FinanceController_getGLMappings",
         "parameters": [],
         "responses": {
           "200": {
@@ -1115,7 +1115,7 @@
     },
     "/api/v1/finance/gl-mappings/{categoryId}": {
       "put": {
-        "operationId": "FinanceController2_updateGLMapping",
+        "operationId": "FinanceController_updateGLMapping",
         "parameters": [
           {
             "name": "categoryId",
@@ -1145,7 +1145,7 @@
     },
     "/api/v1/finance/ledger-preview/{reportId}": {
       "get": {
-        "operationId": "FinanceController2_previewLedger",
+        "operationId": "FinanceController_previewLedger",
         "parameters": [
           {
             "name": "reportId",
@@ -1175,7 +1175,7 @@
     },
     "/api/v1/finance/budgets": {
       "get": {
-        "operationId": "FinanceController2_getBudgets",
+        "operationId": "FinanceController_getBudgets",
         "parameters": [],
         "responses": {
           "200": {
@@ -1193,7 +1193,7 @@
         ]
       },
       "post": {
-        "operationId": "FinanceController2_createBudget",
+        "operationId": "FinanceController_createBudget",
         "parameters": [],
         "responses": {
           "201": {
@@ -1213,7 +1213,7 @@
     },
     "/api/v1/reimbursements": {
       "get": {
-        "operationId": "ReimbursementsController2_findAll",
+        "operationId": "ReimbursementsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1233,7 +1233,7 @@
     },
     "/api/v1/reimbursements/{id}": {
       "get": {
-        "operationId": "ReimbursementsController2_findOne",
+        "operationId": "ReimbursementsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1263,7 +1263,7 @@
     },
     "/api/v1/reimbursements/{id}/payments": {
       "post": {
-        "operationId": "ReimbursementsController2_recordPayment",
+        "operationId": "ReimbursementsController_recordPayment",
         "parameters": [
           {
             "name": "id",
@@ -1293,7 +1293,7 @@
     },
     "/api/v1/integrations/zoho/health": {
       "get": {
-        "operationId": "IntegrationsController2_getHealth",
+        "operationId": "IntegrationsController_getHealth",
         "parameters": [],
         "responses": {
           "200": {
@@ -1313,16 +1313,8 @@
     },
     "/api/v1/integrations/zoho/auth-url": {
       "get": {
-        "operationId": "IntegrationsController2_getAuthUrl",
+        "operationId": "IntegrationsController_getAuthUrl",
         "parameters": [
-          {
-            "name": "redirectUri",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "region",
             "required": false,
@@ -1336,6 +1328,14 @@
                 "JP",
                 "CA"
               ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirectUri",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           }
@@ -1358,7 +1358,7 @@
     },
     "/api/v1/integrations/zoho/callback": {
       "post": {
-        "operationId": "IntegrationsController2_handleCallback",
+        "operationId": "IntegrationsController_handleCallback",
         "parameters": [],
         "responses": {
           "200": {
@@ -1378,7 +1378,7 @@
     },
     "/api/v1/integrations/zoho/disconnect": {
       "post": {
-        "operationId": "IntegrationsController2_disconnect",
+        "operationId": "IntegrationsController_disconnect",
         "parameters": [],
         "responses": {
           "200": {
@@ -1398,7 +1398,7 @@
     },
     "/api/v1/integrations/zoho/organizations": {
       "get": {
-        "operationId": "IntegrationsController2_listOrganizations",
+        "operationId": "IntegrationsController_listOrganizations",
         "parameters": [],
         "responses": {
           "200": {
@@ -1418,7 +1418,7 @@
     },
     "/api/v1/integrations/zoho/select-org": {
       "post": {
-        "operationId": "IntegrationsController2_selectOrganization",
+        "operationId": "IntegrationsController_selectOrganization",
         "parameters": [],
         "responses": {
           "200": {
@@ -1438,7 +1438,7 @@
     },
     "/api/v1/integrations/zoho/reference-data": {
       "get": {
-        "operationId": "IntegrationsController2_getReferenceData",
+        "operationId": "IntegrationsController_getReferenceData",
         "parameters": [],
         "responses": {
           "200": {
@@ -1458,7 +1458,7 @@
     },
     "/api/v1/integrations/zoho/mappings": {
       "get": {
-        "operationId": "IntegrationsController2_getMappings",
+        "operationId": "IntegrationsController_getMappings",
         "parameters": [],
         "responses": {
           "200": {
@@ -1476,7 +1476,7 @@
         ]
       },
       "put": {
-        "operationId": "IntegrationsController2_updateMappings",
+        "operationId": "IntegrationsController_updateMappings",
         "parameters": [],
         "responses": {
           "200": {
@@ -1496,7 +1496,7 @@
     },
     "/api/v1/integrations/zoho/dry-run": {
       "post": {
-        "operationId": "IntegrationsController2_dryRun",
+        "operationId": "IntegrationsController_dryRun",
         "parameters": [],
         "responses": {
           "200": {
@@ -1516,7 +1516,7 @@
     },
     "/api/v1/integrations/zoho/export": {
       "post": {
-        "operationId": "IntegrationsController2_exportReport",
+        "operationId": "IntegrationsController_exportReport",
         "parameters": [],
         "responses": {
           "200": {
@@ -1536,7 +1536,7 @@
     },
     "/api/v1/integrations/zoho/jobs": {
       "get": {
-        "operationId": "IntegrationsController2_getJobs",
+        "operationId": "IntegrationsController_getJobs",
         "parameters": [],
         "responses": {
           "200": {
@@ -1556,7 +1556,7 @@
     },
     "/api/v1/integrations/zoho/jobs/{id}/retry": {
       "post": {
-        "operationId": "IntegrationsController2_retryJob",
+        "operationId": "IntegrationsController_retryJob",
         "parameters": [
           {
             "name": "id",
@@ -1583,9 +1583,280 @@
         ]
       }
     },
+    "/api/v1/integrations/providers": {
+      "get": {
+        "operationId": "AccountingIntegrationsController_getSupportedProviders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of supported accounting ERP connectors"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all supported accounting integrations (Zoho Books, Xero, Tally Prime)",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/{provider}/health": {
+      "get": {
+        "operationId": "AccountingIntegrationsController_getHealth",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "zoho_books",
+                "xero",
+                "tally_prime"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connection status and health info"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Check connection health for a specific accounting provider",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/{provider}/reference-data": {
+      "get": {
+        "operationId": "AccountingIntegrationsController_getReferenceData",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "zoho_books",
+                "xero",
+                "tally_prime"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Fetch Chart of Accounts, tax codes, vendors, and cost centers for provider",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/{provider}/mappings": {
+      "get": {
+        "operationId": "AccountingIntegrationsController_getMappings",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "zoho_books",
+                "xero",
+                "tally_prime"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get category-to-GL account and tax mappings for specific provider",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      },
+      "put": {
+        "operationId": "AccountingIntegrationsController_updateMappings",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "zoho_books",
+                "xero",
+                "tally_prime"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update category and tax mappings for a specific provider",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/{provider}/dry-run": {
+      "post": {
+        "operationId": "AccountingIntegrationsController_dryRun",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "zoho_books",
+                "xero",
+                "tally_prime"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Dry-run posting preview for an approved report against provider ledgers",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/{provider}/export": {
+      "post": {
+        "operationId": "AccountingIntegrationsController_exportReport",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "zoho_books",
+                "xero",
+                "tally_prime"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Export approved report to Zoho Books, Xero, or Tally Prime",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/tally/xml-voucher": {
+      "post": {
+        "operationId": "AccountingIntegrationsController_exportTallyXml",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate and optionally direct-sync a Tally Prime XML Voucher",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
+    "/api/v1/integrations/xero/auth-url": {
+      "get": {
+        "operationId": "AccountingIntegrationsController_getXeroAuthUrl",
+        "parameters": [
+          {
+            "name": "redirectUri",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate Xero OAuth 2.0 authorization URL",
+        "tags": [
+          "Accounting Integrations (Zoho Books, Xero, Tally Prime)"
+        ]
+      }
+    },
     "/api/v1/analytics/summary": {
       "get": {
-        "operationId": "AnalyticsController2_getSummary",
+        "operationId": "AnalyticsController_getSummary",
         "parameters": [
           {
             "name": "fromDate",
@@ -1638,7 +1909,7 @@
     },
     "/api/v1/analytics/spend/category": {
       "get": {
-        "operationId": "AnalyticsController2_getSpendByCategory",
+        "operationId": "AnalyticsController_getSpendByCategory",
         "parameters": [
           {
             "name": "fromDate",
@@ -1683,7 +1954,7 @@
     },
     "/api/v1/analytics/spend/department": {
       "get": {
-        "operationId": "AnalyticsController2_getSpendByDepartment",
+        "operationId": "AnalyticsController_getSpendByDepartment",
         "parameters": [
           {
             "name": "fromDate",
@@ -1728,7 +1999,7 @@
     },
     "/api/v1/analytics/spend/trend": {
       "get": {
-        "operationId": "AnalyticsController2_getSpendTrend",
+        "operationId": "AnalyticsController_getSpendTrend",
         "parameters": [
           {
             "name": "fromDate",
@@ -1773,7 +2044,7 @@
     },
     "/api/v1/analytics/export/csv": {
       "get": {
-        "operationId": "AnalyticsController2_exportMonthlyCsv",
+        "operationId": "AnalyticsController_exportMonthlyCsv",
         "parameters": [
           {
             "name": "fromDate",
@@ -1813,7 +2084,7 @@
     },
     "/api/v1/analytics/export/categories.csv": {
       "get": {
-        "operationId": "AnalyticsController2_exportCategoriesCsv",
+        "operationId": "AnalyticsController_exportCategoriesCsv",
         "parameters": [
           {
             "name": "fromDate",
@@ -1854,7 +2125,7 @@
     "/api/v1/developer/api-credentials": {
       "post": {
         "description": "client_secret is shown only once at creation. Store it securely.",
-        "operationId": "DeveloperController2_createApiCredential",
+        "operationId": "DeveloperController_createApiCredential",
         "parameters": [],
         "responses": {
           "201": {
@@ -1872,7 +2143,7 @@
         ]
       },
       "get": {
-        "operationId": "DeveloperController2_listApiCredentials",
+        "operationId": "DeveloperController_listApiCredentials",
         "parameters": [],
         "responses": {
           "200": {
@@ -1892,7 +2163,7 @@
     },
     "/api/v1/developer/api-credentials/{id}": {
       "delete": {
-        "operationId": "DeveloperController2_revokeApiCredential",
+        "operationId": "DeveloperController_revokeApiCredential",
         "parameters": [
           {
             "name": "id",
@@ -1923,7 +2194,7 @@
     "/api/v1/developer/webhooks": {
       "post": {
         "description": "Payloads are signed with HMAC-SHA256. Verify X-VyayMitra-Signature header.",
-        "operationId": "DeveloperController2_createWebhook",
+        "operationId": "DeveloperController_createWebhook",
         "parameters": [],
         "responses": {
           "201": {
@@ -1941,7 +2212,7 @@
         ]
       },
       "get": {
-        "operationId": "DeveloperController2_listWebhooks",
+        "operationId": "DeveloperController_listWebhooks",
         "parameters": [],
         "responses": {
           "200": {
@@ -1961,7 +2232,7 @@
     },
     "/api/v1/developer/webhooks/{id}": {
       "get": {
-        "operationId": "DeveloperController2_getWebhook",
+        "operationId": "DeveloperController_getWebhook",
         "parameters": [
           {
             "name": "id",
@@ -1989,7 +2260,7 @@
         ]
       },
       "put": {
-        "operationId": "DeveloperController2_updateWebhook",
+        "operationId": "DeveloperController_updateWebhook",
         "parameters": [
           {
             "name": "id",
@@ -2017,7 +2288,7 @@
         ]
       },
       "delete": {
-        "operationId": "DeveloperController2_deleteWebhook",
+        "operationId": "DeveloperController_deleteWebhook",
         "parameters": [
           {
             "name": "id",
@@ -2047,7 +2318,7 @@
     },
     "/api/v1/developer/webhooks/{id}/rotate-key": {
       "post": {
-        "operationId": "DeveloperController2_rotateWebhookKey",
+        "operationId": "DeveloperController_rotateWebhookKey",
         "parameters": [
           {
             "name": "id",
@@ -2077,7 +2348,7 @@
     },
     "/api/v1/developer/webhooks/{id}/deliveries": {
       "get": {
-        "operationId": "DeveloperController2_getDeliveryLogs",
+        "operationId": "DeveloperController_getDeliveryLogs",
         "parameters": [
           {
             "name": "id",
@@ -2107,7 +2378,7 @@
     },
     "/api/v1/developer/webhooks/deliveries/all": {
       "get": {
-        "operationId": "DeveloperController2_getAllDeliveryLogs",
+        "operationId": "DeveloperController_getAllDeliveryLogs",
         "parameters": [],
         "responses": {
           "200": {
@@ -2127,7 +2398,7 @@
     },
     "/api/v1/developer/webhooks/test-dispatch": {
       "post": {
-        "operationId": "DeveloperController2_testDispatch",
+        "operationId": "DeveloperController_testDispatch",
         "parameters": [],
         "responses": {
           "200": {
@@ -2147,7 +2418,7 @@
     },
     "/api/v1/settings/retention": {
       "get": {
-        "operationId": "RetentionController2_getPolicy",
+        "operationId": "RetentionController_getPolicy",
         "parameters": [],
         "responses": {
           "200": {
@@ -2167,7 +2438,7 @@
     },
     "/api/v1/settings/retention/preview": {
       "post": {
-        "operationId": "RetentionController2_preview",
+        "operationId": "RetentionController_preview",
         "parameters": [],
         "responses": {
           "201": {
@@ -2187,7 +2458,7 @@
     },
     "/api/v1/settings/retention/execute": {
       "post": {
-        "operationId": "RetentionController2_execute",
+        "operationId": "RetentionController_execute",
         "parameters": [],
         "responses": {
           "201": {
@@ -2202,6 +2473,211 @@
         "summary": "Redact eligible reviewed OCR provider payloads after an explicit preview",
         "tags": [
           "Settings - Data Retention (M7)"
+        ]
+      }
+    },
+    "/api/v1/platform/stats": {
+      "get": {
+        "operationId": "PlatformController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Platform stats"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get system-wide platform statistics and health",
+        "tags": [
+          "Platform Administration"
+        ]
+      }
+    },
+    "/api/v1/platform/tenants": {
+      "get": {
+        "operationId": "PlatformController_listTenants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of tenant summaries"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all corporate tenants in the platform",
+        "tags": [
+          "Platform Administration"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformController_createTenant",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Tenant provisioned successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Provision a new corporate tenant with initial owner credentials",
+        "tags": [
+          "Platform Administration"
+        ]
+      }
+    },
+    "/api/v1/platform/tenants/{id}": {
+      "get": {
+        "operationId": "PlatformController_getTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tenant UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant profile"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get detailed configuration for a specific tenant",
+        "tags": [
+          "Platform Administration"
+        ]
+      },
+      "patch": {
+        "operationId": "PlatformController_updateTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tenant UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant status updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update tenant status (ACTIVE/SUSPENDED) or subscription plan",
+        "tags": [
+          "Platform Administration"
+        ]
+      }
+    },
+    "/api/v1/platform/tenants/{id}/users": {
+      "get": {
+        "operationId": "PlatformController_listTenantUsers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tenant UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tenant users"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all employees/users registered in a specific tenant",
+        "tags": [
+          "Platform Administration"
+        ]
+      }
+    },
+    "/api/v1/platform/tenants/{tenantId}/users/{userId}/reset-password": {
+      "post": {
+        "operationId": "PlatformController_resetUserPassword",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "description": "Tenant UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password reset and sessions invalidated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Administratively reset a tenant user password with audited reason and session revocation",
+        "tags": [
+          "Platform Administration"
+        ]
+      }
+    },
+    "/api/v1/platform/audit-logs": {
+      "get": {
+        "operationId": "PlatformController_listAuditLogs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of audit records"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get audit logs of all platform administrative actions",
+        "tags": [
+          "Platform Administration"
         ]
       }
     }

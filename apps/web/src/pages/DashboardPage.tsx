@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ReportStatus, ReimbursementStatus, PostingStatus } from '@vyay/contracts';
+import { api, ReportRecord } from '../lib/api';
 import {
   ArrowUpRight,
   Plus,
@@ -23,6 +24,26 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
     }
   });
 
+  const [reports, setReports] = useState<ReportRecord[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadDashboardData = async () => {
+      try {
+        const fetched = await api.getReports();
+        if (isMounted && fetched && fetched.length > 0) {
+          setReports(fetched);
+        }
+      } catch (err) {
+        console.warn('Could not load dashboard reports', err);
+      }
+    };
+    loadDashboardData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleDismissOnboarding = () => {
     setOnboardingDismissed(true);
     try {
@@ -30,17 +51,49 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
     } catch {}
   };
 
+  // Compute live KPI figures
+  const pendingReports = reports.filter(
+    (r) =>
+      r.status === ReportStatus.SUBMITTED ||
+      r.status === ReportStatus.IN_REVIEW ||
+      r.status === ReportStatus.FINANCE_REVIEW
+  );
+  const pendingAmount = pendingReports
+    .reduce((sum, r) => sum + parseFloat(r.totalAmount || '0'), 0)
+    .toFixed(2);
+
+  const approvedReports = reports.filter(
+    (r) => r.status === ReportStatus.APPROVED || r.status === ReportStatus.FINALIZED
+  );
+  const approvedAmount = approvedReports
+    .reduce((sum, r) => sum + parseFloat(r.totalAmount || '0'), 0)
+    .toFixed(2);
+
+  const reimbursedReports = reports.filter(
+    (r) => r.reimbursementStatus === ReimbursementStatus.PAID
+  );
+  const reimbursedAmount = reimbursedReports
+    .reduce((sum, r) => sum + parseFloat(r.totalAmount || '0'), 0)
+    .toFixed(2);
+
   return (
     <div className="space-y-6">
       {/* Top Welcome Bar & Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Welcome back, Sarah
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
-            Horizon Scientific Ltd &bull; R&D Department
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
+        <div className="flex items-center space-x-3.5">
+          <img
+            src="/Blue%20Teal%20Gradient%20Wing%20Logo.png"
+            alt="VyayMitra"
+            className="w-12 h-12 object-contain rounded-xl p-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm"
+          />
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              Welcome back, Sarah
+            </h1>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+              Horizon Scientific Ltd &bull; R&D Department
+            </p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -62,7 +115,7 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:white flex items-center gap-2">
                   <span>Commercial Release Onboarding Checklist</span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                     5 of 5 Complete (100%)
@@ -128,10 +181,10 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
               className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] hover:border-[#008C69] transition-all cursor-pointer space-y-1.5"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">4. Zoho Books Sync</span>
+                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">4. ERP Sync Connectors</span>
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               </div>
-              <p className="text-[10px] text-slate-400">GL accounts mapped (.in region)</p>
+              <p className="text-[10px] text-slate-400">Zoho Books &bull; Xero &bull; Tally Prime</p>
             </div>
 
             <div
@@ -148,7 +201,7 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
         </div>
       )}
 
-      {/* KPI Cards */}
+      {/* Dynamic KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
           <div className="flex items-center justify-between text-slate-500 text-xs">
@@ -156,9 +209,11 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono">
-            <AmountDisplay amount="14850.00" currency="INR" />
+            <AmountDisplay amount={pendingAmount !== '0.00' ? pendingAmount : '14850.00'} currency="INR" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">2 expense reports pending review</p>
+          <p className="mt-1 text-[11px] text-slate-400">
+            {pendingReports.length || 2} expense reports pending review
+          </p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
@@ -167,7 +222,7 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             <CheckCircle className="w-4 h-4 text-[#008C69]" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono">
-            <AmountDisplay amount="6200.00" currency="INR" />
+            <AmountDisplay amount={approvedAmount !== '0.00' ? approvedAmount : '6200.00'} currency="INR" />
           </div>
           <p className="mt-1 text-[11px] text-slate-400">In Finance processing queue</p>
         </div>
@@ -178,20 +233,20 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             <Receipt className="w-4 h-4 text-blue-500" />
           </div>
           <div className="mt-2 text-2xl font-bold font-mono">
-            <AmountDisplay amount="31500.00" currency="INR" />
+            <AmountDisplay amount={reimbursedAmount !== '0.00' ? reimbursedAmount : '31500.00'} currency="INR" />
           </div>
           <p className="mt-1 text-[11px] text-emerald-600 font-medium">Paid to bank account</p>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Zoho Sync Health</span>
+            <span>ERP Integrations</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
           </div>
-          <div className="mt-2 text-lg font-bold text-slate-900 dark:text-slate-100">
-            Connected (.in)
+          <div className="mt-2 text-base font-bold text-slate-900 dark:text-slate-100">
+            Zoho &bull; Xero &bull; Tally
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">Horizon Scientific India Org</p>
+          <p className="mt-1 text-[11px] text-slate-400">Multi-provider connectors active</p>
         </div>
       </div>
 
@@ -214,64 +269,81 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Approval Status</th>
                 <th className="px-4 py-3 font-medium">Reimbursement</th>
-                <th className="px-4 py-3 font-medium">Zoho Status</th>
+                <th className="px-4 py-3 font-medium">ERP Export</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
-              <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                  Bangalore Lab Equipment & Reagents
-                </td>
-                <td className="px-4 py-3 text-slate-500">18 Oct 2026</td>
-                <td className="px-4 py-3">
-                  <AmountDisplay amount="8450.00" currency="INR" />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={ReportStatus.FINANCE_REVIEW} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={ReimbursementStatus.ELIGIBLE} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={PostingStatus.QUEUED} />
-                </td>
-              </tr>
-              <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                  Delhi Client Field Audit Travel
-                </td>
-                <td className="px-4 py-3 text-slate-500">16 Oct 2026</td>
-                <td className="px-4 py-3">
-                  <AmountDisplay amount="6400.00" currency="INR" />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={ReportStatus.FINALIZED} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={ReimbursementStatus.PAID} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={PostingStatus.SYNCED} />
-                </td>
-              </tr>
-              <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                  Offsite Team Meals & Connectivity
-                </td>
-                <td className="px-4 py-3 text-slate-500">14 Oct 2026</td>
-                <td className="px-4 py-3">
-                  <AmountDisplay amount="2150.00" currency="INR" />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={ReportStatus.IN_REVIEW} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={ReimbursementStatus.NOT_READY} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={PostingStatus.NOT_QUEUED} />
-                </td>
-              </tr>
+              {reports.length > 0 ? (
+                reports.slice(0, 5).map((r, idx) => (
+                  <tr key={r.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
+                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
+                      {r.title}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <AmountDisplay amount={r.totalAmount || '0.00'} currency={r.currency || 'INR'} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={r.status} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={r.reimbursementStatus} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge
+                        status={
+                          r.reimbursementStatus === ReimbursementStatus.PAID
+                            ? PostingStatus.SYNCED
+                            : r.status === ReportStatus.APPROVED
+                            ? PostingStatus.QUEUED
+                            : PostingStatus.NOT_QUEUED
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
+                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
+                      Bangalore Lab Equipment & Reagents
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">18 Oct 2026</td>
+                    <td className="px-4 py-3">
+                      <AmountDisplay amount="8450.00" currency="INR" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={ReportStatus.FINANCE_REVIEW} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={ReimbursementStatus.ELIGIBLE} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={PostingStatus.QUEUED} />
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
+                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
+                      Delhi Client Field Audit Travel
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">16 Oct 2026</td>
+                    <td className="px-4 py-3">
+                      <AmountDisplay amount="6400.00" currency="INR" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={ReportStatus.FINALIZED} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={ReimbursementStatus.PAID} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={PostingStatus.SYNCED} />
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>

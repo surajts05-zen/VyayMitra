@@ -190,6 +190,13 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
         </div>
         <div className="flex items-center space-x-2.5">
           <button
+            onClick={() => onNavigate('/integrations')}
+            className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-all"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>ERP Sync (Zoho &bull; Xero &bull; Tally)</span>
+          </button>
+          <button
             onClick={() => setActiveTab('LEDGER')}
             className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-[#1C2833] text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-all"
           >
@@ -217,13 +224,13 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
       {/* Accounting Compliance Overview Badges */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         <div className="p-4 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-1 shadow-sm">
-          <span className="text-slate-400 font-medium">Zoho Books Organization</span>
+          <span className="text-slate-400 font-medium">Accounting ERP Engine</span>
           <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">
-            Acme BioTech Pvt Ltd (Org #891240)
+            Zoho Books &bull; Xero &bull; Tally Prime
           </div>
           <span className="text-[11px] text-emerald-600 font-medium flex items-center space-x-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-            <span>Data Center: zohoapis.in &bull; Ready</span>
+            <span>Multi-Provider Sync Active &bull; Ready</span>
           </span>
         </div>
 
