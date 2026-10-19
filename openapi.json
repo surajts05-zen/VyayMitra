@@ -1,0 +1,2236 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController2_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Application is healthy and accessible"
+          }
+        },
+        "summary": "API Root Health Check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController2_getV1Health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "v1 API router is operational"
+          }
+        },
+        "summary": "API v1 Versioned Health Check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/health/live": {
+      "get": {
+        "operationId": "HealthController2_getLiveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Process is serving HTTP requests"
+          }
+        },
+        "summary": "Process liveness probe (no dependency checks)",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/health/ready": {
+      "get": {
+        "operationId": "HealthController2_getReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Required dependencies are ready"
+          },
+          "503": {
+            "description": "A required dependency is unavailable"
+          }
+        },
+        "summary": "Dependency-aware readiness probe",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController2_register",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "User and tenant registered successfully"
+          }
+        },
+        "summary": "Register new user and company tenant",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController2_login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Authentication successful with tokens"
+          }
+        },
+        "summary": "Authenticate user with email and password",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController2_refreshToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Access token refreshed successfully"
+          }
+        },
+        "summary": "Refresh expired access token with valid refresh token",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/auth/invitations": {
+      "post": {
+        "operationId": "AuthController2_invite",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Invitation created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Invite a new team member to the organization",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/auth/accept-invite": {
+      "post": {
+        "operationId": "AuthController2_acceptInvite",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Invitation accepted and account provisioned"
+          }
+        },
+        "summary": "Accept invitation token to join organization",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/auth/memberships/{id}": {
+      "delete": {
+        "operationId": "AuthController2_removeMembership",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Membership and session revoked"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke organization membership and revoke user session",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController2_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authenticated identity"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get current user profile and session identity",
+        "tags": [
+          "Auth & Identity"
+        ]
+      }
+    },
+    "/api/v1/tenants/current": {
+      "get": {
+        "operationId": "TenantsController2_getCurrentTenant",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current tenant details"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get current tenant organization profile",
+        "tags": [
+          "Tenants & Organization"
+        ]
+      },
+      "patch": {
+        "operationId": "TenantsController2_updateCurrentTenant",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Tenant settings updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update tenant organization branding and fiscal calendar",
+        "tags": [
+          "Tenants & Organization"
+        ]
+      }
+    },
+    "/api/v1/tenants/current/members": {
+      "get": {
+        "operationId": "TenantsController2_getMembers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Members of tenant"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List team members and roles in current organization",
+        "tags": [
+          "Tenants & Organization"
+        ]
+      }
+    },
+    "/api/v1/employees": {
+      "get": {
+        "operationId": "EmployeesController2_listEmployees",
+        "parameters": [
+          {
+            "name": "activeOnly",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of employees"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List employees in the organization",
+        "tags": [
+          "Employees & Directory"
+        ]
+      },
+      "post": {
+        "operationId": "EmployeesController2_createEmployee",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Employee created successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new employee record",
+        "tags": [
+          "Employees & Directory"
+        ]
+      }
+    },
+    "/api/v1/employees/hierarchy": {
+      "get": {
+        "operationId": "EmployeesController2_getHierarchyTree",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Reporting hierarchy tree"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get manager-subordinate reporting tree",
+        "tags": [
+          "Employees & Directory"
+        ]
+      }
+    },
+    "/api/v1/employees/{id}": {
+      "get": {
+        "operationId": "EmployeesController2_getEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee record"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get employee details by ID",
+        "tags": [
+          "Employees & Directory"
+        ]
+      },
+      "patch": {
+        "operationId": "EmployeesController2_updateEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee updated successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update an existing employee record",
+        "tags": [
+          "Employees & Directory"
+        ]
+      },
+      "delete": {
+        "operationId": "EmployeesController2_deactivateEmployee",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Employee deactivated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft deactivate an employee (preserves finance history)",
+        "tags": [
+          "Employees & Directory"
+        ]
+      }
+    },
+    "/api/v1/org/departments": {
+      "get": {
+        "operationId": "OrgController2_getDepartments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Departments list"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List departments for tenant",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      },
+      "post": {
+        "operationId": "OrgController2_createDepartment",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Department created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create department",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      }
+    },
+    "/api/v1/org/cost-centers": {
+      "get": {
+        "operationId": "OrgController2_getCostCenters",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cost centers list"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List cost centers for tenant",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      },
+      "post": {
+        "operationId": "OrgController2_createCostCenter",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Cost center created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create cost center",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      }
+    },
+    "/api/v1/org/projects": {
+      "get": {
+        "operationId": "OrgController2_getProjects",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Projects list"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List projects for tenant",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      },
+      "post": {
+        "operationId": "OrgController2_createProject",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Project created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create project",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      }
+    },
+    "/api/v1/org/categories": {
+      "get": {
+        "operationId": "OrgController2_getCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Categories list"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List expense categories for tenant",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      },
+      "post": {
+        "operationId": "OrgController2_createCategory",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Category created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create expense category with default GL mapping",
+        "tags": [
+          "Organization & Master Data"
+        ]
+      }
+    },
+    "/api/v1/expenses/receipts/presign": {
+      "post": {
+        "operationId": "ExpensesController2_presignReceipt",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Presigned upload URL generated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate a presigned upload URL for a receipt attachment",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/expenses/{id}/receipts/presign": {
+      "post": {
+        "operationId": "ExpensesController2_presignReceiptForExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Presigned upload URL generated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate a presigned upload URL for an existing expense receipt",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/expenses/receipts/confirm": {
+      "post": {
+        "operationId": "ExpensesController2_confirmReceipt",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Receipt confirmed and OCR extraction initiated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Confirm receipt upload, trigger OCR, and verify exact hash duplicates",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/expenses/{id}/receipts/confirm": {
+      "post": {
+        "operationId": "ExpensesController2_confirmReceiptForExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Receipt confirmed and linked"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Confirm receipt upload for existing expense, trigger OCR, and check duplicate",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/receipts/{id}/url": {
+      "get": {
+        "operationId": "ExpensesController2_getReceiptSignedUrl",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Receipt ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed URL generated with 15min expiry"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate time-limited signed URL to view/download receipt",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/expenses/ocr/confirm-review": {
+      "post": {
+        "operationId": "ExpensesController2_confirmOcrReview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OCR suggestions human-confirmed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Confirm human review of OCR suggested fields before submission",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/expenses": {
+      "post": {
+        "operationId": "ExpensesController2_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Expense draft created successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new expense item with decimal arithmetic and duplicate check",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      },
+      "get": {
+        "operationId": "ExpensesController2_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of expenses with pagination metadata"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List expenses for the tenant with privacy and status filters",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/expenses/{id}": {
+      "get": {
+        "operationId": "ExpensesController2_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full expense details"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get full details of an expense including line items and signed receipt links",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      },
+      "patch": {
+        "operationId": "ExpensesController2_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expense updated successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update an existing draft or rejected expense",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      },
+      "delete": {
+        "operationId": "ExpensesController2_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Expense ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expense deleted successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft delete an expense draft",
+        "tags": [
+          "Expenses & Receipts (M2)"
+        ]
+      }
+    },
+    "/api/v1/approvals/inbox": {
+      "get": {
+        "operationId": "ApprovalsController2_getInbox",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of pending approval steps"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get list of pending approval steps assigned to current user or delegated",
+        "tags": [
+          "Approvals & Delegations (M3)"
+        ]
+      }
+    },
+    "/api/v1/approvals/{stepId}/decide": {
+      "post": {
+        "operationId": "ApprovalsController2_decide",
+        "parameters": [
+          {
+            "name": "stepId",
+            "required": true,
+            "in": "path",
+            "description": "Approval Step ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval decision recorded in immutable audit log"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Submit approval decision (APPROVED, REJECTED, CHANGES_REQUESTED, DELEGATED)",
+        "tags": [
+          "Approvals & Delegations (M3)"
+        ]
+      }
+    },
+    "/api/v1/approvals/delegations": {
+      "post": {
+        "operationId": "ApprovalsController2_createDelegation",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Delegation created with timeframe bounds"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create an out-of-office approval delegation",
+        "tags": [
+          "Approvals & Delegations (M3)"
+        ]
+      },
+      "get": {
+        "operationId": "ApprovalsController2_listDelegations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of active delegations"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List active delegations for current user or tenant",
+        "tags": [
+          "Approvals & Delegations (M3)"
+        ]
+      }
+    },
+    "/api/v1/reports": {
+      "post": {
+        "operationId": "ReportsController2_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Expense report created in DRAFT status"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Assemble draft expenses into a new expense report",
+        "tags": [
+          "Expense Reports & Approvals (M3)"
+        ]
+      },
+      "get": {
+        "operationId": "ReportsController2_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of expense reports"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List expense reports with role-based scoping",
+        "tags": [
+          "Expense Reports & Approvals (M3)"
+        ]
+      }
+    },
+    "/api/v1/reports/{id}/submit": {
+      "post": {
+        "operationId": "ReportsController2_submit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Report ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report submitted and approval flow instantiated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Submit expense report for multi-stage approval routing and policy checks",
+        "tags": [
+          "Expense Reports & Approvals (M3)"
+        ]
+      }
+    },
+    "/api/v1/reports/steps/{stepId}/decide": {
+      "post": {
+        "operationId": "ReportsController2_decideStep",
+        "parameters": [
+          {
+            "name": "stepId",
+            "required": true,
+            "in": "path",
+            "description": "Approval Step ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Decision recorded in immutable audit log"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Decide on an approval step with self-approval prevention",
+        "tags": [
+          "Expense Reports & Approvals (M3)"
+        ]
+      }
+    },
+    "/api/v1/reports/{id}": {
+      "get": {
+        "operationId": "ReportsController2_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Report ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full report details"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get full details of a report including expenses, approval steps, and audit log",
+        "tags": [
+          "Expense Reports & Approvals (M3)"
+        ]
+      }
+    },
+    "/api/v1/finance/review-queue": {
+      "get": {
+        "operationId": "FinanceController2_getReviewQueue",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of reports in finance review queue"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get list of approved reports waiting for finance verification and payout",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      }
+    },
+    "/api/v1/finance/reports/{id}/validate": {
+      "post": {
+        "operationId": "FinanceController2_validateReport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Report ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Finance validation recorded"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Verify documentation, tax treatment, and GL account coding for an approved report",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      }
+    },
+    "/api/v1/finance/gl-mappings": {
+      "get": {
+        "operationId": "FinanceController2_getGLMappings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Category to GL account mappings"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get GL account code and tax treatment mappings for all expense categories",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      }
+    },
+    "/api/v1/finance/gl-mappings/{categoryId}": {
+      "put": {
+        "operationId": "FinanceController2_updateGLMapping",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "description": "Category ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GL mapping updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update GL account code and tax treatment for an expense category",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      }
+    },
+    "/api/v1/finance/ledger-preview/{reportId}": {
+      "get": {
+        "operationId": "FinanceController2_previewLedger",
+        "parameters": [
+          {
+            "name": "reportId",
+            "required": true,
+            "in": "path",
+            "description": "Report ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balanced debit and credit ledger impact preview"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Preview double-entry accounting ledger effects for an approved expense claim",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      }
+    },
+    "/api/v1/finance/budgets": {
+      "get": {
+        "operationId": "FinanceController2_getBudgets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active budgets and utilization metrics"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List spending budgets and computed utilization percentages",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      },
+      "post": {
+        "operationId": "FinanceController2_createBudget",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Budget ceiling created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new department, project, or category budget ceiling",
+        "tags": [
+          "Finance Review, GL Mapping & Budgets (M4)"
+        ]
+      }
+    },
+    "/api/v1/reimbursements": {
+      "get": {
+        "operationId": "ReimbursementsController2_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of reimbursements"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List reimbursements with status, employee scoping, and pagination",
+        "tags": [
+          "Reimbursements & Partial Payments (M4)"
+        ]
+      }
+    },
+    "/api/v1/reimbursements/{id}": {
+      "get": {
+        "operationId": "ReimbursementsController2_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Reimbursement ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reimbursement record details"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get reimbursement record by ID with payment history and remaining balance",
+        "tags": [
+          "Reimbursements & Partial Payments (M4)"
+        ]
+      }
+    },
+    "/api/v1/reimbursements/{id}/payments": {
+      "post": {
+        "operationId": "ReimbursementsController2_recordPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Reimbursement ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment recorded and balance updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Disburse a full or partial reimbursement payment installment",
+        "tags": [
+          "Reimbursements & Partial Payments (M4)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/health": {
+      "get": {
+        "operationId": "IntegrationsController2_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Connection status and health info"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Check Zoho Books connection health for current tenant",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/auth-url": {
+      "get": {
+        "operationId": "IntegrationsController2_getAuthUrl",
+        "parameters": [
+          {
+            "name": "redirectUri",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "IN",
+                "US",
+                "EU",
+                "AU",
+                "JP",
+                "CA"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate regional Zoho Books OAuth authorization URL",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/callback": {
+      "post": {
+        "operationId": "IntegrationsController2_handleCallback",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Exchange Zoho OAuth authorization code for tokens",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/disconnect": {
+      "post": {
+        "operationId": "IntegrationsController2_disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Disconnect and revoke Zoho Books OAuth tokens",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/organizations": {
+      "get": {
+        "operationId": "IntegrationsController2_listOrganizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List Zoho Books organizations available to the connected account",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/select-org": {
+      "post": {
+        "operationId": "IntegrationsController2_selectOrganization",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Select active Zoho Books organization",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/reference-data": {
+      "get": {
+        "operationId": "IntegrationsController2_getReferenceData",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get Chart of Accounts, GST tax codes, vendors, and projects from Zoho Books",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/mappings": {
+      "get": {
+        "operationId": "IntegrationsController2_getMappings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get external category and account mappings",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      },
+      "put": {
+        "operationId": "IntegrationsController2_updateMappings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update category-to-GL account and tax mappings",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/dry-run": {
+      "post": {
+        "operationId": "IntegrationsController2_dryRun",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Perform dry-run ledger posting preview for an approved report",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/export": {
+      "post": {
+        "operationId": "IntegrationsController2_exportReport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Export approved expense report to Zoho Books as a bill/expense",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/jobs": {
+      "get": {
+        "operationId": "IntegrationsController2_getJobs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get history of integration sync jobs for the current tenant",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/integrations/zoho/jobs/{id}/retry": {
+      "post": {
+        "operationId": "IntegrationsController2_retryJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Retry a failed integration export job",
+        "tags": [
+          "Integrations & Zoho Books (M5)"
+        ]
+      }
+    },
+    "/api/v1/analytics/summary": {
+      "get": {
+        "operationId": "AnalyticsController2_getSummary",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "departmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get comprehensive spend analytics summary for current tenant",
+        "tags": [
+          "Analytics & Reporting (M6)"
+        ]
+      }
+    },
+    "/api/v1/analytics/spend/category": {
+      "get": {
+        "operationId": "AnalyticsController2_getSpendByCategory",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get spend breakdown by expense category",
+        "tags": [
+          "Analytics & Reporting (M6)"
+        ]
+      }
+    },
+    "/api/v1/analytics/spend/department": {
+      "get": {
+        "operationId": "AnalyticsController2_getSpendByDepartment",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get spend breakdown by department",
+        "tags": [
+          "Analytics & Reporting (M6)"
+        ]
+      }
+    },
+    "/api/v1/analytics/spend/trend": {
+      "get": {
+        "operationId": "AnalyticsController2_getSpendTrend",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get monthly spend trend series for current fiscal period",
+        "tags": [
+          "Analytics & Reporting (M6)"
+        ]
+      }
+    },
+    "/api/v1/analytics/export/csv": {
+      "get": {
+        "operationId": "AnalyticsController2_exportMonthlyCsv",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file download",
+            "content": {
+              "text/csv": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Export monthly spend trend as CSV (for payroll/finance teams)",
+        "tags": [
+          "Analytics & Reporting (M6)"
+        ]
+      }
+    },
+    "/api/v1/analytics/export/categories.csv": {
+      "get": {
+        "operationId": "AnalyticsController2_exportCategoriesCsv",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file download",
+            "content": {
+              "text/csv": {}
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Export category spend breakdown as CSV",
+        "tags": [
+          "Analytics & Reporting (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/api-credentials": {
+      "post": {
+        "description": "client_secret is shown only once at creation. Store it securely.",
+        "operationId": "DeveloperController2_createApiCredential",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "API credential created with one-time visible secret"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create machine-to-machine API credentials (client_id + client_secret)",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      },
+      "get": {
+        "operationId": "DeveloperController2_listApiCredentials",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List API credentials for current tenant (secrets not returned)",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/api-credentials/{id}": {
+      "delete": {
+        "operationId": "DeveloperController2_revokeApiCredential",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API Credential ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke and delete an API credential immediately",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/webhooks": {
+      "post": {
+        "description": "Payloads are signed with HMAC-SHA256. Verify X-VyayMitra-Signature header.",
+        "operationId": "DeveloperController2_createWebhook",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create webhook endpoint subscription",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      },
+      "get": {
+        "operationId": "DeveloperController2_listWebhooks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all webhook subscriptions for current tenant",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/webhooks/{id}": {
+      "get": {
+        "operationId": "DeveloperController2_getWebhook",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook Subscription ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get webhook subscription details",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      },
+      "put": {
+        "operationId": "DeveloperController2_updateWebhook",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook Subscription ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update webhook subscription events or active status",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      },
+      "delete": {
+        "operationId": "DeveloperController2_deleteWebhook",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook Subscription ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete and unsubscribe a webhook endpoint",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/webhooks/{id}/rotate-key": {
+      "post": {
+        "operationId": "DeveloperController2_rotateWebhookKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook Subscription ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Rotate HMAC signing key for a webhook subscription",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/webhooks/{id}/deliveries": {
+      "get": {
+        "operationId": "DeveloperController2_getDeliveryLogs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook Subscription ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get delivery log history for a webhook subscription",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/webhooks/deliveries/all": {
+      "get": {
+        "operationId": "DeveloperController2_getAllDeliveryLogs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all webhook delivery logs for current tenant",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/developer/webhooks/test-dispatch": {
+      "post": {
+        "operationId": "DeveloperController2_testDispatch",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Dispatch a test event to all matching active webhook subscriptions",
+        "tags": [
+          "Developer Platform — API Keys & Webhooks (M6)"
+        ]
+      }
+    },
+    "/api/v1/settings/retention": {
+      "get": {
+        "operationId": "RetentionController2_getPolicy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get the effective tenant retention policy and immutable exclusions",
+        "tags": [
+          "Settings - Data Retention (M7)"
+        ]
+      }
+    },
+    "/api/v1/settings/retention/preview": {
+      "post": {
+        "operationId": "RetentionController2_preview",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Preview generated with a short-lived execution token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Preview tenant-scoped retention candidates without deleting data",
+        "tags": [
+          "Settings - Data Retention (M7)"
+        ]
+      }
+    },
+    "/api/v1/settings/retention/execute": {
+      "post": {
+        "operationId": "RetentionController2_execute",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Redact eligible reviewed OCR provider payloads after an explicit preview",
+        "tags": [
+          "Settings - Data Retention (M7)"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "VyayMitra API",
+    "description": "VyayMitra Enterprise Multi-Tenant Expense Management SaaS REST API",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter JWT access token with tenant claims",
+        "in": "header"
+      },
+      "Idempotency-Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "description": "Unique client-supplied key for state-mutating financial operations"
+      }
+    },
+    "schemas": {}
+  }
+}

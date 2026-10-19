@@ -1,0 +1,588 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// IDENTITY & TENANCY
+// -------------------------------------------------------------
+
+model Tenant {
+  id                   String   @id @default(uuid()) @db.Uuid
+  slug                 String   @unique @db.VarChar(50)
+  name                 String   @db.VarChar(100)
+  baseCurrency         String   @default("INR") @db.VarChar(3)
+  country              String   @default("IN") @db.VarChar(2)
+  timezone             String   @default("Asia/Kolkata") @db.VarChar(50)
+  fiscalYearStartMonth Int      @default(4)
+  logoUrl              String?  @db.Text
+  status               String   @default("ACTIVE") @db.VarChar(20)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  memberships          Membership[]
+  employees            Employee[]
+  departments          Department[]
+  costCenters          CostCenter[]
+  projects             Project[]
+  categories           Category[]
+  taxTemplates         TaxTemplate[]
+  expenses             Expense[]
+  expenseReports       ExpenseReport[]
+  policyVersions       PolicyVersion[]
+  budgets              Budget[]
+  reimbursements       Reimbursement[]
+  integrations         Integration[]
+  externalMappings     ExternalMapping[]
+  integrationJobs      IntegrationJob[]
+  outboxEvents         OutboxEvent[]
+  auditEvents          AuditEvent[]
+  webhookSubscriptions WebhookSubscription[]
+
+  @@map("tenants")
+}
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique @db.VarChar(255)
+  passwordHash  String?  @map("password_hash") @db.VarChar(255)
+  firstName     String   @map("first_name") @db.VarChar(100)
+  lastName      String   @map("last_name") @db.VarChar(100)
+  emailVerified Boolean  @default(false) @map("email_verified")
+  avatarUrl     String?  @map("avatar_url") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  memberships   Membership[]
+  employees     Employee[]
+
+  @@map("users")
+}
+
+model Membership {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   @default("EMPLOYEE") @db.VarChar(50)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, role])
+  @@map("memberships")
+}
+
+// -------------------------------------------------------------
+// ORG STRUCTURE & MASTER DATA
+// -------------------------------------------------------------
+
+model Employee {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  userId         String?   @map("user_id") @db.Uuid
+  employeeNumber String    @map("employee_number") @db.VarChar(50)
+  displayName    String    @map("display_name") @db.VarChar(100)
+  email          String    @db.VarChar(255)
+  departmentId   String?   @map("department_id") @db.Uuid
+  managerId      String?   @map("manager_id") @db.Uuid
+  grade          String?   @db.VarChar(50)
+  branch         String?   @db.VarChar(100)
+  active         Boolean   @default(true)
+  externalHrmId  String?   @map("external_hrm_id") @db.VarChar(100)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  tenant         Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user           User?       @relation(fields: [userId], references: [id])
+  department     Department? @relation(fields: [departmentId], references: [id])
+  manager        Employee?   @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates   Employee[]  @relation("ManagerSubordinates")
+
+  expenses       Expense[]
+  expenseReports ExpenseReport[]
+  reimbursements Reimbursement[]
+
+  delegatorDelegations Delegation[] @relation("DelegatorRelation")
+  delegateDelegations  Delegation[] @relation("DelegateRelation")
+
+  @@unique([tenantId, employeeNumber])
+  @@index([tenantId, email])
+  @@map("employees")
+}
+
+model Department {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  code      String   @db.VarChar(50)
+  name      String   @db.VarChar(100)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employees Employee[]
+
+  @@unique([tenantId, code])
+  @@map("departments")
+}
+
+model CostCenter {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  code      String   @db.VarChar(50)
+  name      String   @db.VarChar(100)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@map("cost_centers")
+}
+
+model Project {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  code      String   @db.VarChar(50)
+  name      String   @db.VarChar(100)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@map("projects")
+}
+
+model Category {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  code           String   @db.VarChar(50)
+  name           String   @db.VarChar(100)
+  accountMapping String?  @map("account_mapping") @db.VarChar(100)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  expenses       Expense[]
+
+  @@unique([tenantId, code])
+  @@map("categories")
+}
+
+model TaxTemplate {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  name       String   @db.VarChar(100)
+  rate       Decimal  @db.Decimal(5, 2)
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant     Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  components TaxComponent[]
+
+  @@map("tax_templates")
+}
+
+model TaxComponent {
+  id            String      @id @default(uuid()) @db.Uuid
+  taxTemplateId String      @map("tax_template_id") @db.Uuid
+  type          String      @db.VarChar(20) // CGST, SGST, IGST
+  rate          Decimal     @db.Decimal(5, 2)
+
+  taxTemplate   TaxTemplate @relation(fields: [taxTemplateId], references: [id], onDelete: Cascade)
+
+  @@map("tax_components")
+}
+
+// -------------------------------------------------------------
+// EXPENSES & RECEIPTS
+// -------------------------------------------------------------
+
+model Expense {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  employeeId      String   @map("employee_id") @db.Uuid
+  reportId        String?  @map("report_id") @db.Uuid
+  categoryId      String   @map("category_id") @db.Uuid
+  merchant        String   @db.VarChar(255)
+  invoiceNumber   String?  @map("invoice_number") @db.VarChar(100)
+  spentAt         DateTime @map("spent_at")
+  currency        String   @default("INR") @db.VarChar(3)
+  amount          Decimal  @db.Decimal(20, 6)
+  baseAmount      Decimal  @map("base_amount") @db.Decimal(20, 6)
+  subtotal        Decimal? @db.Decimal(20, 6)
+  taxAmount       Decimal? @map("tax_amount") @db.Decimal(20, 6)
+  fxRate          Decimal  @default(1.0) @map("fx_rate") @db.Decimal(12, 6)
+  paidBy          String   @default("EMPLOYEE_PERSONAL") @map("paid_by") @db.VarChar(50)
+  reimbursable    Boolean  @default(true)
+  billable        Boolean  @default(false)
+  businessPurpose String   @map("business_purpose") @db.Text
+  location        String?  @db.VarChar(255)
+  status          String   @default("DRAFT") @db.VarChar(30)
+  version         Int      @default(1)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee        Employee       @relation(fields: [employeeId], references: [id])
+  category        Category       @relation(fields: [categoryId], references: [id])
+  report          ExpenseReport? @relation(fields: [reportId], references: [id])
+
+  lines           ExpenseLine[]
+  receipts        Receipt[]
+
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@map("expenses")
+}
+
+model ExpenseLine {
+  id           String   @id @default(uuid()) @db.Uuid
+  expenseId    String   @map("expense_id") @db.Uuid
+  amount       Decimal  @db.Decimal(20, 6)
+  description  String   @db.VarChar(255)
+  costCenterId String?  @map("cost_center_id") @db.Uuid
+  projectId    String?  @map("project_id") @db.Uuid
+  taxMetadata  Json?    @map("tax_metadata")
+
+  expense      Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@map("expense_lines")
+}
+
+model Receipt {
+  id         String   @id @default(uuid()) @db.Uuid
+  expenseId  String   @map("expense_id") @db.Uuid
+  storageKey String   @map("storage_key") @db.Text
+  fileName   String   @map("file_name") @db.VarChar(255)
+  mimeType   String   @map("mime_type") @db.VarChar(100)
+  fileSize   Int      @map("file_size")
+  fileHash   String   @map("file_hash") @db.VarChar(64) // SHA-256
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  expense    Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  ocrJob     OcrJob?
+
+  @@index([fileHash])
+  @@map("receipts")
+}
+
+model OcrJob {
+  id                String    @id @default(uuid()) @db.Uuid
+  receiptId         String    @unique @map("receipt_id") @db.Uuid
+  status            String    @default("PENDING") @db.VarChar(30)
+  provider          String    @db.VarChar(50)
+  confidence        Decimal?  @db.Decimal(5, 4)
+  structuredResult  Json?     @map("structured_result")
+  reviewedAt        DateTime? @map("reviewed_at")
+  reviewedBy        String?   @map("reviewed_by") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  receipt           Receipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+
+  @@map("ocr_jobs")
+}
+
+// -------------------------------------------------------------
+// EXPENSE REPORTS & APPROVAL ENGINE
+// -------------------------------------------------------------
+
+model ExpenseReport {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  employeeId         String    @map("employee_id") @db.Uuid
+  title              String    @db.VarChar(255)
+  businessPurpose    String    @map("business_purpose") @db.Text
+  status             String    @default("DRAFT") @db.VarChar(30)
+  totalAmount        Decimal   @default(0) @map("total_amount") @db.Decimal(20, 6)
+  reimbursableAmount Decimal   @default(0) @map("reimbursable_amount") @db.Decimal(20, 6)
+  currency           String    @default("INR") @db.VarChar(3)
+  submittedAt        DateTime? @map("submitted_at")
+  finalizedAt        DateTime? @map("finalized_at")
+  version            Int       @default(1)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee           Employee  @relation(fields: [employeeId], references: [id])
+
+  expenses           Expense[]
+  approvalSteps      ApprovalStep[]
+  reimbursement      Reimbursement?
+
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@map("expense_reports")
+}
+
+model PolicyVersion {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  version        Int       @default(1)
+  scope          String    @default("GLOBAL") @db.VarChar(50)
+  effectiveFrom  DateTime  @map("effective_from")
+  effectiveUntil DateTime? @map("effective_until")
+  rules          Json
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("policy_versions")
+}
+
+model ApprovalStep {
+  id           String    @id @default(uuid()) @db.Uuid
+  reportId     String    @map("report_id") @db.Uuid
+  sequence     Int
+  approverType String    @map("approver_type") @db.VarChar(50)
+  approverId   String    @map("approver_id") @db.Uuid
+  status       String?   @db.VarChar(30) // APPROVED, REJECTED, CHANGES_REQUESTED
+  decidedAt    DateTime? @map("decided_at")
+  comment      String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  report       ExpenseReport    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  actions      ApprovalAction[]
+
+  @@map("approval_steps")
+}
+
+model ApprovalAction {
+  id         String   @id @default(uuid()) @db.Uuid
+  stepId     String   @map("step_id") @db.Uuid
+  actorId    String   @map("actor_id") @db.Uuid
+  decision   String   @db.VarChar(30)
+  reason     String?  @db.Text
+  delegateId String?  @map("delegate_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") // Immutable audit record
+
+  step       ApprovalStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@map("approval_actions")
+}
+
+model Delegation {
+  id             String    @id @default(uuid()) @db.Uuid
+  delegatorId    String    @map("delegator_id") @db.Uuid
+  delegateId     String    @map("delegate_id") @db.Uuid
+  scope          String    @default("ALL") @db.VarChar(50)
+  effectiveFrom  DateTime  @map("effective_from")
+  effectiveUntil DateTime? @map("effective_until")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  delegator      Employee  @relation("DelegatorRelation", fields: [delegatorId], references: [id])
+  delegate       Employee  @relation("DelegateRelation", fields: [delegateId], references: [id])
+
+  @@map("delegations")
+}
+
+// -------------------------------------------------------------
+// FINANCE, REIMBURSEMENTS & BUDGETS
+// -------------------------------------------------------------
+
+model Budget {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  name         String   @db.VarChar(100)
+  period       String   @db.VarChar(20) // MONTHLY, QUARTERLY, ANNUAL
+  currency     String   @default("INR") @db.VarChar(3)
+  limitAmount  Decimal  @map("limit_amount") @db.Decimal(20, 6)
+  targetType   String   @map("target_type") @db.VarChar(50) // DEPARTMENT, PROJECT, CATEGORY
+  targetId     String   @map("target_id") @db.Uuid
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("budgets")
+}
+
+model Reimbursement {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  reportId        String   @unique @map("report_id") @db.Uuid
+  employeeId      String   @map("employee_id") @db.Uuid
+  eligibleAmount  Decimal  @map("eligible_amount") @db.Decimal(20, 6)
+  paidAmount      Decimal  @default(0) @map("paid_amount") @db.Decimal(20, 6)
+  remainingAmount Decimal  @map("remaining_amount") @db.Decimal(20, 6)
+  status          String   @default("ELIGIBLE") @db.VarChar(30)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  report          ExpenseReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  employee        Employee      @relation(fields: [employeeId], references: [id])
+
+  payments        ReimbursementPayment[]
+
+  @@index([tenantId, status])
+  @@map("reimbursements")
+}
+
+model ReimbursementPayment {
+  id              String   @id @default(uuid()) @db.Uuid
+  reimbursementId String   @map("reimbursement_id") @db.Uuid
+  amount          Decimal  @db.Decimal(20, 6)
+  paidAt          DateTime @map("paid_at")
+  method          String   @default("BANK_TRANSFER") @db.VarChar(50)
+  transactionRef  String   @map("transaction_ref") @db.VarChar(100)
+  recordedBy      String   @map("recorded_by") @db.Uuid
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  reimbursement   Reimbursement @relation(fields: [reimbursementId], references: [id], onDelete: Cascade)
+
+  @@unique([reimbursementId, transactionRef])
+  @@map("reimbursement_payments")
+}
+
+// -------------------------------------------------------------
+// ACCOUNTING INTEGRATION & ZOHO BOOKS
+// -------------------------------------------------------------
+
+model Integration {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  provider      String   @default("zoho_books") @db.VarChar(50)
+  status        String   @default("DISCONNECTED") @db.VarChar(30)
+  externalOrgId String?  @map("external_org_id") @db.VarChar(100)
+  apiDomain     String?  @map("api_domain") @db.VarChar(100)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  credential    OAuthCredential?
+  mappings      ExternalMapping[]
+  jobs          IntegrationJob[]
+
+  @@unique([tenantId, provider])
+  @@map("integrations")
+}
+
+model OAuthCredential {
+  id                  String   @id @default(uuid()) @db.Uuid
+  integrationId       String   @unique @map("integration_id") @db.Uuid
+  encryptedToken      String   @map("encrypted_token") @db.Text // AES-256-GCM encrypted refresh token
+  keyVersion          Int      @default(1) @map("key_version")
+  scopes              String   @db.Text
+  tokenExpiresAt      DateTime? @map("token_expires_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  integration         Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@map("oauth_credentials")
+}
+
+model ExternalMapping {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  integrationId String   @map("integration_id") @db.Uuid
+  provider      String   @db.VarChar(50)
+  localType     String   @map("local_type") @db.VarChar(50)
+  localId       String   @map("local_id") @db.VarChar(100)
+  externalType  String   @map("external_type") @db.VarChar(50)
+  externalId    String   @map("external_id") @db.VarChar(100)
+  externalName  String   @map("external_name") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, localType, localId])
+  @@map("external_mappings")
+}
+
+model IntegrationJob {
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  integrationId   String    @map("integration_id") @db.Uuid
+  entityType      String    @map("entity_type") @db.VarChar(50)
+  entityId        String    @map("entity_id") @db.VarChar(100)
+  idempotencyKey  String    @unique @map("idempotency_key") @db.VarChar(100)
+  status          String    @default("QUEUED") @db.VarChar(30)
+  attempts        Int       @default(0)
+  lastError       String?   @map("last_error") @db.Text
+  remoteReference String?   @map("remote_reference") @db.VarChar(100)
+  nextRetryAt     DateTime? @map("next_retry_at")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant          Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  integration     Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@map("integration_jobs")
+}
+
+// -------------------------------------------------------------
+// AUDIT, OUTBOX & WEBHOOKS
+// -------------------------------------------------------------
+
+model OutboxEvent {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  aggregate    String    @db.VarChar(50)
+  aggregateId  String    @map("aggregate_id") @db.VarChar(100)
+  eventType    String    @map("event_type") @db.VarChar(100)
+  payload      Json
+  committedAt  DateTime  @default(now()) @map("committed_at")
+  dispatchedAt DateTime? @map("dispatched_at")
+  attempts     Int       @default(0)
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, dispatchedAt])
+  @@map("outbox_events")
+}
+
+model AuditEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  actorId      String?  @map("actor_id") @db.Uuid
+  action       String   @db.VarChar(100)
+  resourceType String   @map("resource_type") @db.VarChar(50)
+  resourceId   String   @map("resource_id") @db.VarChar(100)
+  diff         Json?
+  reason       String?  @db.Text
+  ipAddress    String?  @map("ip_address") @db.VarChar(45)
+  userAgent    String?  @map("user_agent") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, resourceType, resourceId])
+  @@map("audit_events")
+}
+
+model WebhookSubscription {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  targetUrl   String   @map("target_url") @db.Text
+  events      Json     // Array of subscribed event names
+  secret      String   @db.VarChar(255)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("webhook_subscriptions")
+}

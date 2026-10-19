@@ -1,0 +1,97 @@
+/* VyayMitra Design System Tokens — KaaryaMitra/PravesMitra Family */
+:root {
+  /* Surfaces & Backgrounds */
+  --vyay-bg: #F7F9FB;
+  --vyay-surface: #FFFFFF;
+  --vyay-surface-elevated: #FFFFFF;
+  
+  /* Ink / Typography */
+  --vyay-ink: #142333;
+  --vyay-ink-muted: #607184;
+  --vyay-ink-subtle: #8FA0B2;
+  
+  /* Accents */
+  --vyay-primary: #008C69;         /* Emerald — primary actions, approvals */
+  --vyay-primary-hover: #007456;
+  --vyay-primary-soft: #E6F5F0;
+  
+  --vyay-accent: #B7F500;          /* Lively lime — restrained highlights only */
+  --vyay-accent-soft: #F4FDE5;
+  
+  --vyay-link: #2563EB;            /* Blue — links/info */
+  
+  /* Semantic Status Colors (never use color alone without text/icon) */
+  --vyay-status-approved: #008C69;
+  --vyay-status-approved-bg: #E6F5F0;
+  
+  --vyay-status-pending: #D97706;
+  --vyay-status-pending-bg: #FEF3C7;
+  
+  --vyay-status-rejected: #DC2626;
+  --vyay-status-rejected-bg: #FEE2E2;
+  
+  --vyay-status-synced: #2563EB;
+  --vyay-status-synced-bg: #EFF6FF;
+
+  --vyay-status-failed: #7C3AED;
+  --vyay-status-failed-bg: #F3E8FF;
+
+  /* Borders & Dividers */
+  --vyay-border: #E5EAF0;
+  --vyay-border-strong: #CBD5E1;
+
+  /* Radii */
+  --vyay-radius-control: 12px;
+  --vyay-radius-card: 14px;
+  --vyay-radius-pill: 9999px;
+
+  /* Shadows */
+  --vyay-shadow-sm: 0 1px 2px 0 rgba(20, 35, 51, 0.05);
+  --vyay-shadow-md: 0 4px 6px -1px rgba(20, 35, 51, 0.08), 0 2px 4px -2px rgba(20, 35, 51, 0.04);
+  --vyay-shadow-lg: 0 10px 15px -3px rgba(20, 35, 51, 0.1), 0 4px 6px -4px rgba(20, 35, 51, 0.05);
+
+  /* Typography */
+  --vyay-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --vyay-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+[data-theme="dark"], .dark {
+  --vyay-bg: #0D141A;
+  --vyay-surface: #151F27;
+  --vyay-surface-elevated: #1C2833;
+  
+  --vyay-ink: #EDF4F7;
+  --vyay-ink-muted: #94A3B8;
+  --vyay-ink-subtle: #64748B;
+  
+  --vyay-primary: #00A87E;
+  --vyay-primary-hover: #00C292;
+  --vyay-primary-soft: #082921;
+
+  --vyay-accent: #B7F500;
+  --vyay-accent-soft: #1C2605;
+
+  --vyay-link: #60A5FA;
+
+  --vyay-status-approved: #34D399;
+  --vyay-status-approved-bg: #064E3B;
+
+  --vyay-status-pending: #FBBF24;
+  --vyay-status-pending-bg: #78350F;
+
+  --vyay-status-rejected: #F87171;
+  --vyay-status-rejected-bg: #7F1D1D;
+
+  --vyay-status-synced: #60A5FA;
+  --vyay-status-synced-bg: #1E3A8A;
+
+  --vyay-status-failed: #A78BFA;
+  --vyay-status-failed-bg: #4C1D95;
+
+  --vyay-border: #2D3942;
+  --vyay-border-strong: #3E4E5B;
+
+  --vyay-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --vyay-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --vyay-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,34 @@
+{
+  "name": "vyaymitra-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VyayMitra Enterprise Multi-Tenant Expense Management SaaS",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:unit": "turbo run test --filter=./packages/*",
+    "test:integration": "pnpm --filter @vyay/api test",
+    "test:security": "pnpm --filter @vyay/api test:security",
+    "test:m7": "npm --prefix apps/api run test:m7",
+    "verify:release": "node scripts/verify-release.mjs",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "prisma": "^6.1.0",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@12.14.0"
+}
