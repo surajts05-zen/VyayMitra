@@ -285,7 +285,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
               href="/docs/company-admin-guide.md"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all shadow-sm"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all shadow-card"
             >
               <FileText className="w-4 h-4" />
               <span>View Markdown Doc</span>
@@ -295,7 +295,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
       </div>
 
       {/* Core Rules Callout Banner */}
-      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 dark:border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 dark:border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-card">
         <div className="flex items-start sm:items-center space-x-2.5">
           <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5 sm:mt-0" />
           <div>
@@ -311,7 +311,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
       </div>
 
       {/* Search and Category Filter Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942]">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-card border border-border">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input
@@ -319,7 +319,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search setup steps, GL codes, rules..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl text-xs bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
           />
         </div>
 
@@ -330,7 +330,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
               onClick={() => setSelectedSection(cat)}
               className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all ${
                 selectedSection === cat
-                  ? 'bg-[#008C69] text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-card'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
               }`}
             >
@@ -346,7 +346,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
           <div
             key={step.id}
             id={step.id}
-            className="rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] p-5 sm:p-6 shadow-sm space-y-4 transition-all hover:border-slate-300 dark:hover:border-slate-600"
+            className="rounded-2xl bg-card border border-border p-5 sm:p-6 shadow-card space-y-4 transition-all hover:border-slate-300 dark:hover:border-slate-600"
           >
             {/* Step Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -356,14 +356,14 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-foreground/80">
                       {step.stepNumber}
                     </span>
                     <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                       {step.category}
                     </span>
                   </div>
-                  <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 mt-0.5">
+                  <h3 className="font-bold text-sm sm:text-base text-foreground mt-0.5">
                     {step.title}
                   </h3>
                 </div>
@@ -381,7 +381,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
               )}
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+            <p className="text-xs text-foreground/80 leading-relaxed font-medium">
               {step.summary}
             </p>
 
@@ -394,9 +394,9 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
                 {step.details.map((detail, idx) => (
                   <li
                     key={idx}
-                    className="flex items-start space-x-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                    className="flex items-start space-x-2 p-2.5 rounded-xl bg-muted/40 border border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-300"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-[#008C69] flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                     <span>{detail}</span>
                   </li>
                 ))}
@@ -405,7 +405,7 @@ export const CompanyAdminGuidePage: React.FC<{ onNavigate?: (path: string) => vo
 
             {/* Invariants & Golden Rules */}
             <div className="p-3 rounded-xl bg-slate-100/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs space-y-1.5">
-              <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="font-bold text-[11px] text-foreground uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Golden Rules & Statutory Compliance:</span>
               </span>

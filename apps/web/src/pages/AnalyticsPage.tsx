@@ -97,7 +97,7 @@ export const AnalyticsPage: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#008C69] text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 right-6 z-50 bg-primary text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
           <Sparkles className="w-5 h-5 text-emerald-200" />
           <span>{toastMessage}</span>
         </div>
@@ -109,19 +109,19 @@ export const AnalyticsPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-[#142333] dark:text-white flex items-center gap-2">
             Spend Analytics & Financial Intelligence
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Real-time multi-dimensional expenditure metrics, department utilization, and compliance health
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex bg-white dark:bg-[#151F27] rounded-lg p-1 border border-[#E5EAF0] dark:border-[#2D3942] text-xs font-medium">
+          <div className="flex bg-card rounded-lg p-1 border border-border text-xs font-medium">
             <button
               onClick={() => setTimeRange('30d')}
               className={`px-3 py-1.5 rounded-md transition-all ${
                 timeRange === '30d'
-                  ? 'bg-[#008C69] text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                  ? 'bg-primary text-white shadow-card'
+                  : 'text-foreground/80 hover:text-slate-900'
               }`}
             >
               Last 30 Days
@@ -130,8 +130,8 @@ export const AnalyticsPage: React.FC = () => {
               onClick={() => setTimeRange('90d')}
               className={`px-3 py-1.5 rounded-md transition-all ${
                 timeRange === '90d'
-                  ? 'bg-[#008C69] text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                  ? 'bg-primary text-white shadow-card'
+                  : 'text-foreground/80 hover:text-slate-900'
               }`}
             >
               Q4 / Last 90 Days
@@ -140,8 +140,8 @@ export const AnalyticsPage: React.FC = () => {
               onClick={() => setTimeRange('fiscal')}
               className={`px-3 py-1.5 rounded-md transition-all ${
                 timeRange === 'fiscal'
-                  ? 'bg-[#008C69] text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                  ? 'bg-primary text-white shadow-card'
+                  : 'text-foreground/80 hover:text-slate-900'
               }`}
             >
               FY 2026–27
@@ -151,7 +151,7 @@ export const AnalyticsPage: React.FC = () => {
           <button
             onClick={handleDownloadCsv}
             disabled={downloading}
-            className="flex items-center gap-2 px-4 py-2 bg-[#008C69] hover:bg-[#007456] text-white rounded-lg text-sm font-semibold shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-lg text-sm font-semibold shadow-card transition-all"
           >
             {downloading ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -166,13 +166,13 @@ export const AnalyticsPage: React.FC = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Spend */}
-        <div className="bg-white dark:bg-[#151F27] p-5 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-card">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             <span>Total Incurred Spend</span>
-            <TrendingUp className="w-4 h-4 text-[#008C69]" />
+            <TrendingUp className="w-4 h-4 text-primary" />
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+            <span className="text-2xl font-bold text-foreground">
               ₹{totalSpend.toLocaleString('en-IN')}
             </span>
             <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center">
@@ -183,13 +183,13 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Reimbursed vs Pending */}
-        <div className="bg-white dark:bg-[#151F27] p-5 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-card">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             <span>Disbursed Reimbursements</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+            <span className="text-2xl font-bold text-foreground">
               ₹{reimbursedSpend.toLocaleString('en-IN')}
             </span>
             <span className="text-xs text-slate-500">
@@ -202,13 +202,13 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Turnaround Cycle Time */}
-        <div className="bg-white dark:bg-[#151F27] p-5 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-card">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             <span>Average Approval Cycle</span>
             <Clock className="w-4 h-4 text-blue-500" />
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+            <span className="text-2xl font-bold text-foreground">
               {avgApprovalCycleDays} Days
             </span>
             <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
@@ -221,13 +221,13 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Policy Compliance Health */}
-        <div className="bg-white dark:bg-[#151F27] p-5 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-card">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             <span>Policy Flags & Violations</span>
             <ShieldAlert className="w-4 h-4 text-amber-500" />
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+            <span className="text-2xl font-bold text-foreground">
               {policyViolationCount} Flags
             </span>
             <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -241,10 +241,10 @@ export const AnalyticsPage: React.FC = () => {
       {/* Main Breakdown Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Breakdown */}
-        <div className="bg-white dark:bg-[#151F27] p-6 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-4">
+        <div className="bg-card p-6 rounded-2xl border border-border shadow-card space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <PieIcon className="w-4 h-4 text-[#008C69]" />
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <PieIcon className="w-4 h-4 text-primary" />
               Spend by Category
             </h3>
             <span className="text-xs text-slate-500">{categoryBreakdown.length} Active Categories</span>
@@ -259,13 +259,13 @@ export const AnalyticsPage: React.FC = () => {
                       className="w-2.5 h-2.5 rounded-full"
                       style={{ backgroundColor: cat.color }}
                     />
-                    <span className="font-medium text-slate-800 dark:text-slate-200">
+                    <span className="font-medium text-foreground">
                       {cat.category}
                     </span>
                     <span className="text-xs text-slate-400">({cat.count} claims)</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-semibold text-slate-900 dark:text-white">
+                    <span className="font-semibold text-foreground">
                       ₹{cat.amount.toLocaleString('en-IN')}
                     </span>
                     <span className="text-xs font-mono text-slate-500 w-12 text-right">
@@ -289,9 +289,9 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Department Budget & Spend Utilization */}
-        <div className="bg-white dark:bg-[#151F27] p-6 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-4">
+        <div className="bg-card p-6 rounded-2xl border border-border shadow-card space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
               <Layers className="w-4 h-4 text-blue-600" />
               Department Budget Utilization
             </h3>
@@ -302,11 +302,11 @@ export const AnalyticsPage: React.FC = () => {
             {departmentBreakdown.map((dept) => (
               <div key={dept.department} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-slate-800 dark:text-slate-200">
+                  <span className="font-medium text-foreground">
                     {dept.department}
                   </span>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="font-semibold text-slate-900 dark:text-white">
+                    <span className="font-semibold text-foreground">
                       ₹{dept.amount.toLocaleString('en-IN')}
                     </span>
                     <span className="text-slate-400">/ ₹{dept.budget.toLocaleString('en-IN')}</span>
@@ -337,10 +337,10 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Monthly Trajectory Table */}
-      <div className="bg-white dark:bg-[#151F27] p-6 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-4">
+      <div className="bg-card p-6 rounded-2xl border border-border shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
               <Calendar className="w-4 h-4 text-purple-600" />
               Monthly Trajectory & Settlement Velocity
             </h3>
@@ -351,7 +351,7 @@ export const AnalyticsPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <tr className="border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-muted-foreground uppercase">
                 <th className="py-3 px-4">Period</th>
                 <th className="py-3 px-4">Report Volume</th>
                 <th className="py-3 px-4">Incurred Spend</th>
@@ -365,13 +365,13 @@ export const AnalyticsPage: React.FC = () => {
                 const rate = ((row.reimbursed / row.amount) * 100).toFixed(1);
                 return (
                   <tr key={row.period} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                    <td className="py-3 px-4 font-semibold text-foreground">
                       {row.period}
                     </td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                    <td className="py-3 px-4 text-foreground/80">
                       {row.reportCount} reports
                     </td>
-                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                    <td className="py-3 px-4 font-semibold text-foreground">
                       ₹{row.amount.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-medium">
@@ -382,7 +382,7 @@ export const AnalyticsPage: React.FC = () => {
                         <span className="text-xs font-medium">{rate}%</span>
                         <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-[#008C69] rounded-full"
+                            className="h-full bg-primary rounded-full"
                             style={{ width: `${rate}%` }}
                           />
                         </div>

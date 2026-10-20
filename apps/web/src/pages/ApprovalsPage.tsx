@@ -8,6 +8,7 @@ import {
   MessageSquare,
   AlertCircle,
   ShieldAlert,
+  ShieldCheck,
   UserCheck,
   Calendar,
   Clock,
@@ -21,6 +22,11 @@ import {
   AlertTriangle,
   Send,
   Building,
+  KeyRound,
+  Lock,
+  Copy,
+  ExternalLink,
+  FileText,
 } from 'lucide-react';
 
 interface ApprovalQueueItem {
@@ -172,19 +178,85 @@ const INITIAL_DELEGATIONS: DelegationRule[] = [
   },
 ];
 
-export const ApprovalsPage: React.FC = () => {
-  // Demo Persona Switcher to showcase Security & Anti-Fraud Self-Approval Prevention
+interface ApprovalsPageProps {
+  activeRole?: string;
+  activeEmail?: string;
+  onNavigate?: (path: string) => void;
+}
+
+export const ApprovalsPage: React.FC<ApprovalsPageProps> = ({ activeRole, activeEmail, onNavigate }) => {
+  // Sync persona with global active role if provided
   const [currentPersona, setCurrentPersona] = useState<{
     name: string;
     email: string;
     userId: string;
     role: Role;
-  }>({
-    name: 'Anita Deshmukh',
-    email: 'anita.deshmukh@drantigravity.in',
-    userId: 'cccc3333-3333-3333-3333-333333333333',
-    role: Role.MANAGER,
+  }>(() => {
+    if (activeRole === 'EMPLOYEE') {
+      return {
+        name: 'Dr. Rahul Sharma',
+        email: activeEmail || 'rahul.sharma@drantigravity.in',
+        userId: 'dddd4444-4444-4444-4444-444444444444',
+        role: Role.EMPLOYEE,
+      };
+    }
+    if (activeRole === 'COMPANY_OWNER') {
+      return {
+        name: 'Vikram Mehta',
+        email: activeEmail || 'admin@horizonsci.in',
+        userId: 'aaaa1111-1111-1111-1111-111111111111',
+        role: Role.COMPANY_OWNER,
+      };
+    }
+    if (activeRole === 'FINANCE_OPERATOR') {
+      return {
+        name: 'Sarah Jenkins',
+        email: activeEmail || 'sarah.finance@horizonsci.in',
+        userId: 'bbbb2222-2222-2222-2222-222222222222',
+        role: Role.FINANCE_ADMIN,
+      };
+    }
+    return {
+      name: 'Anita Deshmukh',
+      email: 'anita.deshmukh@drantigravity.in',
+      userId: 'cccc3333-3333-3333-3333-333333333333',
+      role: Role.MANAGER,
+    };
   });
+
+  // Re-sync if parent activeRole changes
+  useEffect(() => {
+    if (!activeRole) return;
+    if (activeRole === 'EMPLOYEE') {
+      setCurrentPersona({
+        name: 'Dr. Rahul Sharma',
+        email: activeEmail || 'rahul.sharma@drantigravity.in',
+        userId: 'dddd4444-4444-4444-4444-444444444444',
+        role: Role.EMPLOYEE,
+      });
+    } else if (activeRole === 'COMPANY_OWNER') {
+      setCurrentPersona({
+        name: 'Vikram Mehta',
+        email: activeEmail || 'admin@horizonsci.in',
+        userId: 'aaaa1111-1111-1111-1111-111111111111',
+        role: Role.COMPANY_OWNER,
+      });
+    } else if (activeRole === 'FINANCE_OPERATOR') {
+      setCurrentPersona({
+        name: 'Sarah Jenkins',
+        email: activeEmail || 'sarah.finance@horizonsci.in',
+        userId: 'bbbb2222-2222-2222-2222-222222222222',
+        role: Role.FINANCE_ADMIN,
+      });
+    } else {
+      setCurrentPersona({
+        name: 'Anita Deshmukh',
+        email: 'anita.deshmukh@drantigravity.in',
+        userId: 'cccc3333-3333-3333-3333-333333333333',
+        role: Role.MANAGER,
+      });
+    }
+  }, [activeRole, activeEmail]);
 
   const [activeTab, setActiveTab] = useState<'INBOX' | 'DELEGATIONS' | 'HISTORY'>('INBOX');
   const [queue, setQueue] = useState<ApprovalQueueItem[]>(INITIAL_QUEUE);
@@ -273,12 +345,22 @@ export const ApprovalsPage: React.FC = () => {
     new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
   );
   const [newDelegateReason, setNewDelegateReason] = useState('Out-of-office delegation');
+  const [selectedReceiptExpense, setSelectedReceiptExpense] = useState<any | null>(null);
 
   const selectedItem = queue.find((item) => item.id === selectedItemId);
 
   // Hard Security Gate: Submitter cannot approve their own report
   const isSelfApprovalForbidden =
     selectedItem && selectedItem.submitterUserId === currentPersona.userId;
+
+  // Role Authority Gate: Enforce that only authorized roles can execute decisions
+  const isRoleUnauthorized =
+    currentPersona.role === Role.EMPLOYEE ||
+    (selectedItem?.stepSequence === 2 &&
+      currentPersona.role !== Role.COMPANY_OWNER &&
+      currentPersona.role !== Role.FINANCE_ADMIN);
+
+  const canApproveClaim = !isSelfApprovalForbidden && !isRoleUnauthorized;
 
   const handleDecision = (decision: ApprovalDecision) => {
     if (!selectedItem) return;
@@ -376,23 +458,23 @@ export const ApprovalsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Persona Demo Controller Header */}
-      <div className="p-3 bg-gradient-to-r from-emerald-900 to-[#008C69] text-white rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-md">
+      <div className="p-3 bg-card border border-border text-foreground rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-card">
         <div className="flex items-center space-x-2.5">
-          <div className="p-2 bg-white/10 rounded-xl">
-            <UserCheck className="w-5 h-5 text-emerald-300" />
+          <div className="p-2 bg-muted/60 rounded-xl text-muted-foreground">
+            <UserCheck className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-200">
+            <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
               Interactive Approver Security Context
             </div>
-            <div className="text-xs font-semibold">
-              Acting as: <span className="underline decoration-emerald-300">{currentPersona.name}</span> ({currentPersona.role})
+            <div className="text-xs font-semibold text-foreground">
+              Acting as: <span className="text-primary font-bold">{currentPersona.name}</span> ({currentPersona.role})
             </div>
           </div>
         </div>
 
         <div className="flex items-center space-x-2 text-xs">
-          <span className="text-[11px] text-emerald-100 hidden sm:inline">Switch Persona:</span>
+          <span className="text-[11px] text-muted-foreground hidden sm:inline">Switch Persona:</span>
           <button
             onClick={() =>
               setCurrentPersona({
@@ -402,10 +484,10 @@ export const ApprovalsPage: React.FC = () => {
                 role: Role.MANAGER,
               })
             }
-            className={`px-2.5 py-1 rounded-lg transition-all ${
+            className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
               currentPersona.name === 'Anita Deshmukh'
-                ? 'bg-white text-emerald-900 font-bold'
-                : 'bg-white/15 hover:bg-white/25 text-white'
+                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/40 font-semibold shadow-xs'
+                : 'bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground'
             }`}
           >
             Manager (Anita)
@@ -419,10 +501,10 @@ export const ApprovalsPage: React.FC = () => {
                 role: Role.FINANCE_OPERATOR,
               })
             }
-            className={`px-2.5 py-1 rounded-lg transition-all ${
+            className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
               currentPersona.name === 'Sarah Jenkins'
-                ? 'bg-white text-emerald-900 font-bold'
-                : 'bg-white/15 hover:bg-white/25 text-white'
+                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/40 font-semibold shadow-xs'
+                : 'bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground'
             }`}
           >
             Delegate / Finance (Sarah)
@@ -436,10 +518,10 @@ export const ApprovalsPage: React.FC = () => {
                 role: Role.EMPLOYEE,
               })
             }
-            className={`px-2.5 py-1 rounded-lg transition-all ${
+            className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
               currentPersona.name === 'Dr. Rahul Sharma'
-                ? 'bg-white text-emerald-900 font-bold'
-                : 'bg-white/15 hover:bg-white/25 text-white'
+                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/40 font-semibold shadow-xs'
+                : 'bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground'
             }`}
           >
             Submitter (Test Self-Approval Gate)
@@ -450,20 +532,20 @@ export const ApprovalsPage: React.FC = () => {
       {/* Page Title & Navigation Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
             Manager & Executive Approvals
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Enforce corporate expense policies, review itemized receipts, and manage out-of-office delegations
           </p>
         </div>
 
-        <div className="flex items-center space-x-1.5 p-1 bg-slate-100 dark:bg-[#1A2530] rounded-xl text-xs font-semibold">
+        <div className="flex items-center space-x-1.5 p-1 bg-muted/50 rounded-xl text-xs font-semibold">
           <button
             onClick={() => setActiveTab('INBOX')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'INBOX'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-card text-foreground shadow-card'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -473,7 +555,7 @@ export const ApprovalsPage: React.FC = () => {
             onClick={() => setActiveTab('DELEGATIONS')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               activeTab === 'DELEGATIONS'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-card text-foreground shadow-card'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -510,9 +592,9 @@ export const ApprovalsPage: React.FC = () => {
 
       {activeTab === 'INBOX' ? (
         queue.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-3">
+          <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
             <Check className="w-10 h-10 text-emerald-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+            <h3 className="text-base font-bold text-foreground">
               Your Approval Inbox is All Caught Up!
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -523,13 +605,13 @@ export const ApprovalsPage: React.FC = () => {
           /* Master-Detail Layout */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Queue List */}
-            <div className="lg:col-span-1 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] p-4 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E5EAF0] dark:border-[#2D3942]">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="lg:col-span-1 rounded-2xl bg-card border border-border p-4 space-y-3 shadow-card">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Pending Decisions ({queue.length})
                 </h2>
-                <div className="flex items-center space-x-1 text-[11px] text-emerald-600 font-medium">
-                  <ShieldAlert className="w-3.5 h-3.5" />
+                <div className="flex items-center space-x-1 text-[11px] text-muted-foreground font-medium">
+                  <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>Audit Enforced</span>
                 </div>
               </div>
@@ -545,19 +627,19 @@ export const ApprovalsPage: React.FC = () => {
                       onClick={() => setSelectedItemId(item.id)}
                       className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                         isSelected
-                          ? 'border-[#008C69] bg-[#E6F5F0]/40 dark:bg-[#082921]/40 shadow-sm'
-                          : 'border-[#E5EAF0] dark:border-[#2D3942] hover:bg-slate-50 dark:hover:bg-[#1C2833]'
+                          ? 'border-emerald-600/40 bg-emerald-950/20 shadow-sm'
+                          : 'border-border/60 hover:bg-muted/30'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                        <span className="font-semibold text-xs text-foreground">
                           {item.submitterName}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-[10px] font-mono text-muted-foreground">
                           {item.reportNumber}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-1 truncate">
+                      <div className="text-xs text-muted-foreground font-medium mt-1 truncate">
                         {item.reportTitle}
                       </div>
 
@@ -565,15 +647,15 @@ export const ApprovalsPage: React.FC = () => {
                         <AmountDisplay
                           amount={item.totalAmount}
                           currency={item.currency}
-                          className="text-xs font-bold"
+                          className="text-xs font-semibold text-foreground"
                         />
                         <div className="flex items-center space-x-1">
                           {isItemSelfApproval && (
-                            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] font-medium text-rose-300/90 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded">
                               Your Claim
                             </span>
                           )}
-                          <span className="text-[10px] text-slate-500 bg-slate-100 dark:bg-[#1C2833] px-2 py-0.5 rounded font-medium">
+                          <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded font-medium">
                             Stage {item.stepSequence}/{item.totalSteps}
                           </span>
                         </div>
@@ -586,29 +668,29 @@ export const ApprovalsPage: React.FC = () => {
 
             {/* Right Detail Pane */}
             {selectedItem && (
-              <div className="lg:col-span-2 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] p-6 space-y-6 shadow-sm">
+              <div className="lg:col-span-2 rounded-2xl bg-card border border-border p-6 space-y-6 shadow-card">
                 {/* Header Info */}
-                <div className="flex items-start justify-between border-b border-[#E5EAF0] dark:border-[#2D3942] pb-4">
+                <div className="flex items-start justify-between border-b border-border pb-4">
                   <div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                         {selectedItem.reportNumber} &bull; Stage {selectedItem.stepSequence} of {selectedItem.totalSteps}
                       </span>
-                      <span className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-300/90 px-2 py-0.5 rounded">
                         {selectedItem.stepName}
                       </span>
                     </div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
+                    <h2 className="text-base font-bold text-foreground mt-1">
                       {selectedItem.reportTitle}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Submitted by <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedItem.submitterName}</span> ({selectedItem.department}) on{' '}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Submitted by <span className="font-semibold text-foreground">{selectedItem.submitterName}</span> ({selectedItem.department}) on{' '}
                       {new Date(selectedItem.submittedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[11px] text-slate-400">Claim Amount</span>
-                    <div className="text-xl font-bold font-mono text-[#008C69]">
+                    <span className="text-[11px] text-muted-foreground">Claim Amount</span>
+                    <div className="text-xl font-bold font-mono text-foreground">
                       <AmountDisplay amount={selectedItem.totalAmount} currency={selectedItem.currency} />
                     </div>
                   </div>
@@ -616,26 +698,41 @@ export const ApprovalsPage: React.FC = () => {
 
                 {/* Self-Approval Prevention Gate Banner */}
                 {isSelfApprovalForbidden && (
-                  <div className="p-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded-xl space-y-1 text-xs">
-                    <div className="flex items-center space-x-2 font-bold text-rose-800 dark:text-rose-300">
-                      <ShieldAlert className="w-4 h-4 text-rose-600" />
+                  <div className="p-3.5 bg-card border border-rose-500/25 dark:bg-rose-950/15 rounded-xl space-y-1 text-xs">
+                    <div className="flex items-center space-x-2 font-medium text-rose-300/90">
+                      <ShieldAlert className="w-4 h-4 text-rose-400/80" />
                       <span>Financial Control Gate: Self-Approval Strictly Prohibited</span>
                     </div>
-                    <p className="text-rose-700 dark:text-rose-400 text-[11px]">
+                    <p className="text-slate-400 text-[11px] leading-relaxed">
                       Under corporate governance and SOC-2 financial control policies, employees cannot approve or sign off on their own expense reports. Decision actions for this claim are disabled.
+                    </p>
+                  </div>
+                )}
+
+                {/* Role-Based Authority Gate Banner */}
+                {isRoleUnauthorized && !isSelfApprovalForbidden && (
+                  <div className="p-3.5 bg-card border border-amber-500/25 dark:bg-amber-950/15 rounded-xl space-y-1 text-xs">
+                    <div className="flex items-center space-x-2 font-medium text-amber-300/90">
+                      <ShieldAlert className="w-4 h-4 text-amber-400/80" />
+                      <span>Role Authority Restriction: Signing Privileges Required</span>
+                    </div>
+                    <p className="text-slate-400 text-[11px] leading-relaxed">
+                      {currentPersona.role === Role.EMPLOYEE
+                        ? 'You are viewing as an Employee. Employees do not have authority to approve claims. Please switch to a Manager, Finance, or Owner role to review.'
+                        : `This claim requires Executive Escalation (${selectedItem?.stepName}). Claims exceeding ₹50,000 require Company Owner sign-off.`}
                     </p>
                   </div>
                 )}
 
                 {/* Automated Policy Warning Callouts */}
                 {selectedItem.policyWarnings.length > 0 && (
-                  <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl space-y-1 text-xs">
-                    <div className="flex items-center space-x-2 font-bold text-amber-800 dark:text-amber-300">
-                      <AlertCircle className="w-4 h-4 text-amber-600" />
+                  <div className="p-3.5 bg-card border border-amber-500/25 dark:bg-amber-950/15 rounded-xl space-y-1 text-xs">
+                    <div className="flex items-center space-x-2 font-medium text-amber-300/90">
+                      <AlertCircle className="w-4 h-4 text-amber-400/80" />
                       <span>Policy Evaluation Audit Advisory</span>
                     </div>
                     {selectedItem.policyWarnings.map((warn, i) => (
-                      <p key={i} className="text-amber-700 dark:text-amber-400 text-[11px] pl-6">
+                      <p key={i} className="text-slate-400 text-[11px] pl-6 leading-relaxed">
                         &bull; {warn}
                       </p>
                     ))}
@@ -644,7 +741,7 @@ export const ApprovalsPage: React.FC = () => {
 
                 {/* Itemized Line Items & Receipts */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Expense Line Items ({selectedItem.expenses.length})
                   </h3>
                   <div className="space-y-2 text-xs">
@@ -653,28 +750,39 @@ export const ApprovalsPage: React.FC = () => {
                         key={exp.id}
                         className={`p-3 rounded-xl border flex items-center justify-between ${
                           exp.flag
-                            ? 'border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-950/20'
-                            : 'border-[#E5EAF0] dark:border-[#2D3942]'
+                            ? 'border-amber-500/20 bg-amber-500/5'
+                            : 'border-border/60'
                         }`}
                       >
                         <div>
-                          <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
+                          <div className="font-semibold text-foreground flex items-center space-x-2">
                             <span>{exp.merchant}</span>
                             {exp.flag && (
-                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 dark:bg-amber-950 px-1.5 py-0.2 rounded">
+                              <span className="text-[10px] font-medium text-amber-300/90 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
                                 {exp.flag}
                               </span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-400 mt-0.5">
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
                             {exp.category} &bull; {exp.spentAt}
                           </div>
                         </div>
                         <div className="text-right">
-                          <AmountDisplay amount={exp.amount} currency={selectedItem.currency} className="font-bold" />
-                          <div className="text-[10px] text-emerald-600 font-medium mt-0.5">
-                            Verified Receipt Attached
-                          </div>
+                          <AmountDisplay amount={exp.amount} currency={selectedItem.currency} className="font-semibold text-foreground" />
+                          {exp.receiptAttached ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReceiptExpense(exp)}
+                              className="mt-1 inline-flex items-center space-x-1.5 text-[11px] font-medium text-slate-300 bg-muted/40 hover:bg-muted/70 border border-border/80 px-2 py-0.5 rounded-md transition-colors"
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Inspect HMAC Token</span>
+                            </button>
+                          ) : (
+                            <div className="text-[10px] text-muted-foreground font-medium mt-0.5">
+                              No Receipt Attached
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -682,11 +790,11 @@ export const ApprovalsPage: React.FC = () => {
                 </div>
 
                 {/* Action Decision Form */}
-                <div className="border-t border-[#E5EAF0] dark:border-[#2D3942] pt-5 space-y-4">
+                <div className="border-t border-border pt-5 space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-xs font-semibold text-slate-300">
                       Approver Comments & Exception Rationale{' '}
-                      <span className="text-slate-400 font-normal">
+                      <span className="text-muted-foreground font-normal">
                         (Mandatory for Changes Requested or Rejection)
                       </span>
                     </label>
@@ -700,38 +808,38 @@ export const ApprovalsPage: React.FC = () => {
                           ? 'Self-approval disabled for this claim.'
                           : 'Enter your approval remarks or instructions for requested changes...'
                       }
-                      className="w-full text-xs p-3 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#008C69]/20"
+                      className="w-full text-xs p-3 rounded-xl border border-border bg-card text-foreground disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-muted-foreground">
                       Every decision logs timestamp, IP, and cryptographic actor signature.
                     </span>
 
                     <div className="flex items-center space-x-2.5">
                       <button
-                        disabled={isSelfApprovalForbidden}
+                        disabled={!canApproveClaim}
                         onClick={() => handleDecision(ApprovalDecision.CHANGES_REQUESTED)}
-                        className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 disabled:opacity-40 transition-all"
+                        className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 disabled:opacity-40 transition-all"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>Request Changes</span>
                       </button>
 
                       <button
-                        disabled={isSelfApprovalForbidden}
+                        disabled={!canApproveClaim}
                         onClick={() => handleDecision(ApprovalDecision.REJECTED)}
-                        className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-700 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 disabled:opacity-40 transition-all"
+                        className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-300 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 disabled:opacity-40 transition-all"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Reject</span>
                       </button>
 
                       <button
-                        disabled={isSelfApprovalForbidden}
+                        disabled={!canApproveClaim}
                         onClick={() => handleDecision(ApprovalDecision.APPROVED)}
-                        className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#008C69] hover:bg-[#007456] disabled:opacity-40 transition-all shadow-sm"
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-primary hover:opacity-90 disabled:opacity-40 transition-all shadow-card"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>Approve & Route Forward</span>
@@ -748,7 +856,7 @@ export const ApprovalsPage: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h2 className="text-base font-bold text-foreground">
                 Active Out-of-Office Approval Delegations
               </h2>
               <p className="text-xs text-slate-500">
@@ -757,7 +865,7 @@ export const ApprovalsPage: React.FC = () => {
             </div>
             <button
               onClick={() => setShowDelegationModal(true)}
-              className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm"
+              className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card"
             >
               <Plus className="w-4 h-4" />
               <span>Create Out-of-Office Delegation</span>
@@ -768,12 +876,12 @@ export const ApprovalsPage: React.FC = () => {
             {delegations.map((d) => (
               <div
                 key={d.id}
-                className="p-5 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-4 shadow-sm"
+                className="p-5 rounded-2xl bg-card border border-border space-y-4 shadow-card"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    <span className="text-xs font-bold text-foreground">
                       Active Approval Delegation
                     </span>
                   </div>
@@ -785,7 +893,7 @@ export const ApprovalsPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-slate-400 text-[10px]">Delegator (Authorizer)</span>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                    <div className="font-semibold text-foreground mt-0.5">
                       {d.delegatorName}
                     </div>
                   </div>
@@ -797,7 +905,7 @@ export const ApprovalsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-muted/40 text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
                   <div className="flex items-center space-x-1.5">
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
                     <span>
@@ -810,7 +918,7 @@ export const ApprovalsPage: React.FC = () => {
 
                 <div className="text-[11px] text-slate-500 italic">&ldquo;{d.reason}&rdquo;</div>
 
-                <div className="pt-2 border-t border-[#E5EAF0] dark:border-[#2D3942] flex justify-end">
+                <div className="pt-2 border-t border-border flex justify-end">
                   <button
                     onClick={() => handleRevokeDelegation(d.id)}
                     className="inline-flex items-center space-x-1 text-xs text-rose-600 hover:text-rose-700 font-semibold"
@@ -828,13 +936,13 @@ export const ApprovalsPage: React.FC = () => {
       {/* New Delegation Modal */}
       {showDelegationModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95">
-            <div className="p-5 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md overflow-hidden shadow-float animate-in zoom-in-95">
+            <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#008C69]">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
                   Approval Governance
                 </span>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                <h2 className="text-base font-bold text-foreground">
                   New Out-of-Office Delegation
                 </h2>
               </div>
@@ -854,7 +962,7 @@ export const ApprovalsPage: React.FC = () => {
                 <select
                   value={newDelegateUserId}
                   onChange={(e) => setNewDelegateUserId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                  className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                 >
                   <option value="bbbb2222-2222-2222-2222-222222222222">
                     Sarah Jenkins (Finance Reviewer)
@@ -878,7 +986,7 @@ export const ApprovalsPage: React.FC = () => {
                 <select
                   value={newDelegateScope}
                   onChange={(e) => setNewDelegateScope(e.target.value as any)}
-                  className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                  className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                 >
                   <option value="ALL">All Categories & Claims</option>
                   <option value="TRAVEL_ONLY">Travel & Commute Expenses Only</option>
@@ -894,7 +1002,7 @@ export const ApprovalsPage: React.FC = () => {
                     type="date"
                     value={newDelegateFrom}
                     onChange={(e) => setNewDelegateFrom(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                    className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -905,7 +1013,7 @@ export const ApprovalsPage: React.FC = () => {
                     type="date"
                     value={newDelegateUntil}
                     onChange={(e) => setNewDelegateUntil(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                    className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                   />
                 </div>
               </div>
@@ -919,12 +1027,12 @@ export const ApprovalsPage: React.FC = () => {
                   value={newDelegateReason}
                   onChange={(e) => setNewDelegateReason(e.target.value)}
                   placeholder="e.g. Annual scientific leave or medical absence"
-                  className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                  className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#E5EAF0] dark:border-[#2D3942] flex justify-end space-x-2 bg-slate-50/50 dark:bg-[#1C2833]/50">
+            <div className="p-4 border-t border-border flex justify-end space-x-2 bg-slate-50/50 dark:bg-muted/50">
               <button
                 onClick={() => setShowDelegationModal(false)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-800"
@@ -933,9 +1041,134 @@ export const ApprovalsPage: React.FC = () => {
               </button>
               <button
                 onClick={handleCreateDelegation}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card"
               >
                 Activate Delegation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Receipt & Cryptographic HMAC Token Inspector Modal */}
+      {selectedReceiptExpense && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-float text-xs animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Receipt Security & HMAC Token Verification
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    Protected Object &bull; Time-Limited Access
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedReceiptExpense(null)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Line Item Context */}
+            <div className="p-3 bg-muted/30 rounded-xl border border-border flex justify-between items-center">
+              <div>
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold">Expense Claim Item</span>
+                <div className="text-xs font-bold text-foreground">{selectedReceiptExpense.merchant}</div>
+                <div className="text-[11px] text-muted-foreground">{selectedReceiptExpense.category} &bull; {selectedReceiptExpense.spentAt}</div>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold">Amount</span>
+                <div className="text-sm font-bold font-mono text-primary">₹{parseFloat(selectedReceiptExpense.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+              </div>
+            </div>
+
+            {/* Cryptographic Proof Badges */}
+            <div className="grid grid-cols-2 gap-2.5 text-xs">
+              <div className="p-3 rounded-xl bg-card border border-border space-y-1">
+                <div className="flex items-center space-x-1.5 text-emerald-600 font-semibold text-[11px]">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>HMAC-SHA256 Signature</span>
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground truncate" title="hmac_sha256_v1:9a8b7c6d5e4f3a2b1c0d8e7f6a5b4c3d2e1f0a9b">
+                  hmac_sha256_v1:9a8b...2e1f0a9b
+                </div>
+                <span className="inline-block text-[10px] text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded font-medium">
+                  Verified Authentic
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-card border border-border space-y-1">
+                <div className="flex items-center space-x-1.5 text-amber-600 font-semibold text-[11px]">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Signed URL Expiration</span>
+                </div>
+                <div className="font-mono text-[10px] text-foreground font-semibold">
+                  14m 38s remaining
+                </div>
+                <span className="inline-block text-[10px] text-amber-700 bg-amber-500/10 px-2 py-0.5 rounded font-medium">
+                  15-Min Strict TTL
+                </span>
+              </div>
+            </div>
+
+            {/* Presigned Storage URL Box */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>Presigned Gateway URL (Tenant Vault)</span>
+                <span className="text-[10px] text-muted-foreground">AWS Signature V4</span>
+              </label>
+              <div className="p-2.5 rounded-xl bg-muted/40 border border-border font-mono text-[10px] text-muted-foreground break-all select-all">
+                https://vyaymitra-receipts.s3.ap-south-1.amazonaws.com/tenants/horizon-sci/receipts/2026/10/{selectedReceiptExpense.id}_receipt.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20261020%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20261020T100000Z&X-Amz-Expires=900&X-Amz-Signature=8f4b23a9d701e6c38290f14a0918237462817293a8b7c6d5e4f3a2b1c0d8e7f6
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Direct unauthenticated access to this S3 key returns HTTP 403 Forbidden. Only approvers with active session credentials receive timed signed tokens.
+              </p>
+            </div>
+
+            {/* Receipt Preview Card */}
+            <div className="p-3.5 rounded-xl border border-border bg-slate-50 dark:bg-card/50 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="font-semibold text-foreground">invoice_{selectedReceiptExpense.merchant.toLowerCase().replace(/[^a-z0-9]/g, '_')}_tax_receipt.pdf</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">384 KB &bull; PDF</span>
+              </div>
+              <div className="h-28 rounded-lg bg-card border border-border flex flex-col items-center justify-center p-3 text-center space-y-1.5">
+                <ShieldCheck className="w-8 h-8 text-emerald-500/70" />
+                <span className="font-semibold text-xs text-foreground">Secure Inline Document Preview</span>
+                <span className="text-[10px] text-muted-foreground">Encrypted with tenant AES-256 GCM envelope key</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl text-[11px] text-blue-700 dark:text-blue-300">
+              <strong>Audit Guarantee:</strong> Accessing this receipt generates an immutable log entry in the compliance ledger recording Approver ID, IP address, and token hash.
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2 border-t border-border">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText('https://vyaymitra-receipts.s3.ap-south-1.amazonaws.com/...');
+                  alert('Presigned HMAC URL copied to clipboard');
+                }}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-all"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Signed URL</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptExpense(null)}
+                className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-primary text-white hover:opacity-90 transition-all shadow-card"
+              >
+                Done
               </button>
             </div>
           </div>

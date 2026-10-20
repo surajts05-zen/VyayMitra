@@ -241,7 +241,7 @@ export const DeveloperPage: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#008C69] text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 right-6 z-50 bg-primary text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
           <Sparkles className="w-5 h-5 text-emerald-200" />
           <span>{toastMessage}</span>
         </div>
@@ -250,13 +250,13 @@ export const DeveloperPage: React.FC = () => {
       {/* Secret Reveal Modal */}
       {createdSecretReveal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-card border border-border rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-float animate-in zoom-in-95">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                <h3 className="text-lg font-bold text-foreground">
                   Save Your API Secret Key
                 </h3>
                 <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -288,16 +288,16 @@ export const DeveloperPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl text-xs text-slate-600 dark:text-slate-300 space-y-1">
-              <p className="font-semibold text-slate-900 dark:text-white">Authentication Usage:</p>
-              <p>Pass as header: <code className="text-[#008C69] font-mono">X-API-Key: {createdSecretReveal.clientSecret}</code></p>
-              <p>Or as bearer: <code className="text-[#008C69] font-mono">Authorization: Bearer {createdSecretReveal.clientSecret}</code></p>
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl text-xs text-foreground/80 space-y-1">
+              <p className="font-semibold text-foreground">Authentication Usage:</p>
+              <p>Pass as header: <code className="text-primary font-mono">X-API-Key: {createdSecretReveal.clientSecret}</code></p>
+              <p>Or as bearer: <code className="text-primary font-mono">Authorization: Bearer {createdSecretReveal.clientSecret}</code></p>
             </div>
 
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setCreatedSecretReveal(null)}
-                className="px-5 py-2.5 bg-[#008C69] hover:bg-[#007456] text-white rounded-xl text-sm font-semibold shadow-sm"
+                className="px-5 py-2.5 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold shadow-card"
               >
                 I have securely saved this key
               </button>
@@ -312,7 +312,7 @@ export const DeveloperPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-[#142333] dark:text-white flex items-center gap-2">
             Developer Platform & Machine API
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Machine-to-machine API credentials, HMAC signed webhooks, and REST documentation
           </p>
         </div>
@@ -322,9 +322,9 @@ export const DeveloperPage: React.FC = () => {
             href="/api/v1/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-700 dark:text-slate-200 hover:text-[#008C69] rounded-lg text-sm font-semibold shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-card border border-border text-foreground hover:text-primary rounded-lg text-sm font-semibold shadow-card transition-all"
           >
-            <FileCode2 className="w-4 h-4 text-[#008C69]" />
+            <FileCode2 className="w-4 h-4 text-primary" />
             OpenAPI 3.1 Spec
             <ExternalLink className="w-3.5 h-3.5 opacity-60" />
           </a>
@@ -332,12 +332,12 @@ export const DeveloperPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#E5EAF0] dark:border-[#2D3942] gap-6 text-sm font-medium">
+      <div className="flex border-b border-border gap-6 text-sm font-medium">
         <button
           onClick={() => setActiveTab('credentials')}
           className={`pb-3 flex items-center gap-2 transition-all border-b-2 ${
             activeTab === 'credentials'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -349,7 +349,7 @@ export const DeveloperPage: React.FC = () => {
           onClick={() => setActiveTab('webhooks')}
           className={`pb-3 flex items-center gap-2 transition-all border-b-2 ${
             activeTab === 'webhooks'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -361,7 +361,7 @@ export const DeveloperPage: React.FC = () => {
           onClick={() => setActiveTab('docs')}
           className={`pb-3 flex items-center gap-2 transition-all border-b-2 ${
             activeTab === 'docs'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -375,25 +375,25 @@ export const DeveloperPage: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Active Service Credentials</h2>
+              <h2 className="text-base font-bold text-foreground">Active Service Credentials</h2>
               <p className="text-xs text-slate-500">Machine-to-machine keys for automated scripts and external ERP syncs</p>
             </div>
             <button
               onClick={() => setShowCreateCredModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#008C69] hover:bg-[#007456] text-white rounded-lg text-sm font-semibold shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-lg text-sm font-semibold shadow-card"
             >
               <Plus className="w-4 h-4" />
               Generate API Key
             </button>
           </div>
 
-          <div className="bg-white dark:bg-[#151F27] rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="bg-card rounded-2xl border border-border shadow-card divide-y divide-slate-100 dark:divide-slate-800">
             {credentials.map((cred) => (
               <div key={cred.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-white text-base">{cred.name}</span>
-                    <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                    <span className="font-bold text-foreground text-base">{cred.name}</span>
+                    <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-foreground/80">
                       Client ID: {cred.clientId}
                     </span>
                   </div>
@@ -402,7 +402,7 @@ export const DeveloperPage: React.FC = () => {
                     {cred.scopes.map((scope) => (
                       <span
                         key={scope}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-[#008C69] dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-primary dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800"
                       >
                         {scope}
                       </span>
@@ -418,7 +418,7 @@ export const DeveloperPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleCopy(cred.clientId, cred.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-foreground/80 hover:text-slate-900"
                   >
                     {copiedKey === cred.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                     Copy Client ID
@@ -443,22 +443,22 @@ export const DeveloperPage: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Webhook Endpoints</h2>
+              <h2 className="text-base font-bold text-foreground">Webhook Endpoints</h2>
               <p className="text-xs text-slate-500">Real-time HTTP push events signed with HMAC-SHA256 signatures</p>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleTestDispatch}
                 disabled={dispatchingTest}
-                className="flex items-center gap-2 px-3.5 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-sm font-semibold shadow-sm"
+                className="flex items-center gap-2 px-3.5 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-foreground rounded-lg text-sm font-semibold shadow-card"
               >
-                {dispatchingTest ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 text-[#008C69]" />}
+                {dispatchingTest ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 text-primary" />}
                 Dispatch Test Ping
               </button>
 
               <button
                 onClick={() => setShowCreateWebhookModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#008C69] hover:bg-[#007456] text-white rounded-lg text-sm font-semibold shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-lg text-sm font-semibold shadow-card"
               >
                 <Plus className="w-4 h-4" />
                 Add Webhook
@@ -467,12 +467,12 @@ export const DeveloperPage: React.FC = () => {
           </div>
 
           {/* Webhook Endpoints List */}
-          <div className="bg-white dark:bg-[#151F27] rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="bg-card rounded-2xl border border-border shadow-card divide-y divide-slate-100 dark:divide-slate-800">
             {webhooks.map((wh) => (
               <div key={wh.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-slate-900 dark:text-white text-sm break-all">
+                    <span className="font-mono font-bold text-foreground text-sm break-all">
                       {wh.url}
                     </span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
@@ -492,7 +492,7 @@ export const DeveloperPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-4 text-xs text-slate-400">
-                    <span>Secret Key: <code className="font-mono text-slate-600 dark:text-slate-300">••••••••••••{wh.signingKeyHint}</code></span>
+                    <span>Secret Key: <code className="font-mono text-foreground/80">••••••••••••{wh.signingKeyHint}</code></span>
                     <span>Delivered: {wh.successCount} OK / {wh.failureCount} failed</span>
                     <span>Last triggered: {wh.lastTriggeredAt}</span>
                   </div>
@@ -501,7 +501,7 @@ export const DeveloperPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleRotateWebhookKey(wh.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-foreground/80 hover:text-slate-900"
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                     Rotate Secret
@@ -520,9 +520,9 @@ export const DeveloperPage: React.FC = () => {
           </div>
 
           {/* Delivery Logs Viewer */}
-          <div className="bg-white dark:bg-[#151F27] p-5 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#008C69]" />
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-card space-y-3">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" />
               Recent Webhook Delivery Logs
             </h3>
 
@@ -543,7 +543,7 @@ export const DeveloperPage: React.FC = () => {
                       <td className="py-2.5 px-3 font-mono font-semibold text-purple-600 dark:text-purple-400">
                         {log.event}
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300 truncate max-w-xs">
+                      <td className="py-2.5 px-3 font-mono text-foreground/80 truncate max-w-xs">
                         {log.targetUrl}
                       </td>
                       <td className="py-2.5 px-3">
@@ -570,9 +570,9 @@ export const DeveloperPage: React.FC = () => {
       {activeTab === 'docs' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* M2M Authentication Guide */}
-          <div className="bg-white dark:bg-[#151F27] p-6 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-[#008C69]" />
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-card space-y-4">
+            <h3 className="font-bold text-foreground flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-primary" />
               Machine-to-Machine HTTP Requests
             </h3>
             <p className="text-xs text-slate-500">
@@ -590,13 +590,13 @@ export const DeveloperPage: React.FC = () => {
           </div>
 
           {/* Webhook HMAC Verification */}
-          <div className="bg-white dark:bg-[#151F27] p-6 rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-card space-y-4">
+            <h3 className="font-bold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               Verifying Webhook HMAC-SHA256 Signatures
             </h3>
             <p className="text-xs text-slate-500">
-              Every webhook request includes a <code className="text-[#008C69]">X-VyayMitra-Signature</code> header.
+              Every webhook request includes a <code className="text-primary">X-VyayMitra-Signature</code> header.
             </p>
 
             <div className="space-y-2">
@@ -624,8 +624,8 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
       {/* Modal: Create Credential */}
       {showCreateCredModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Create Machine API Credential</h3>
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-float">
+            <h3 className="text-lg font-bold text-foreground">Create Machine API Credential</h3>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Credential Name / Service</label>
@@ -634,7 +634,7 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
                 placeholder="e.g. ERP Ledger Sync Bot"
                 value={newCredName}
                 onChange={(e) => setNewCredName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008C69]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -656,10 +656,10 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
                           setSelectedScopes(selectedScopes.filter((s) => s !== scope.id));
                         }
                       }}
-                      className="mt-0.5 rounded text-[#008C69] focus:ring-[#008C69]"
+                      className="mt-0.5 rounded text-primary focus:ring-primary"
                     />
                     <div>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">{scope.label}</span>
+                      <span className="font-mono font-bold text-foreground">{scope.label}</span>
                       <p className="text-[10px] text-slate-400">{scope.desc}</p>
                     </div>
                   </label>
@@ -677,7 +677,7 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
               <button
                 onClick={handleCreateCredential}
                 disabled={!newCredName.trim() || selectedScopes.length === 0}
-                className="px-5 py-2 bg-[#008C69] hover:bg-[#007456] disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-sm"
+                className="px-5 py-2 bg-primary hover:opacity-90 disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-card"
               >
                 Generate Key
               </button>
@@ -689,8 +689,8 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
       {/* Modal: Create Webhook */}
       {showCreateWebhookModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Subscribe Webhook Endpoint</h3>
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-float">
+            <h3 className="text-lg font-bold text-foreground">Subscribe Webhook Endpoint</h3>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Destination HTTPS Endpoint URL</label>
@@ -699,7 +699,7 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
                 placeholder="https://your-company.com/api/webhooks/vyaymitra"
                 value={newWebhookUrl}
                 onChange={(e) => setNewWebhookUrl(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008C69]"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -721,7 +721,7 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
                           setSelectedWebhookEvents(selectedWebhookEvents.filter((ev) => ev !== evt.id));
                         }
                       }}
-                      className="mt-0.5 rounded text-[#008C69] focus:ring-[#008C69]"
+                      className="mt-0.5 rounded text-primary focus:ring-primary"
                     />
                     <div>
                       <span className="font-mono font-bold text-purple-700 dark:text-purple-300">{evt.label}</span>
@@ -742,7 +742,7 @@ function verifyWebhook(payloadRawBody, signatureHeader, signingSecret) {
               <button
                 onClick={handleCreateWebhook}
                 disabled={!newWebhookUrl.trim() || selectedWebhookEvents.length === 0}
-                className="px-5 py-2 bg-[#008C69] hover:bg-[#007456] disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-sm"
+                className="px-5 py-2 bg-primary hover:opacity-90 disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-card"
               >
                 Subscribe Webhook
               </button>

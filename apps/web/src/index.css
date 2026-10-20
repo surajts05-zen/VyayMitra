@@ -1,21 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: var(--vyay-font-family);
-  background-color: var(--vyay-bg);
-  color: var(--vyay-ink);
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    overflow-x: hidden;
+  }
+
+  /* KaaryaMitra / PraveshMitra Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/60;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/60;
+  }
+
+  /* ── Native Date Picker Dark/Light Theming ── */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"] {
+    color-scheme: light;
+  }
+
+  .dark input[type="date"],
+  .dark input[type="datetime-local"],
+  .dark input[type="time"] {
+    color-scheme: dark;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.8;
+    filter: brightness(0);
+    transition: opacity 0.2s ease;
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer utilities {
+  /* KaaryaMitra Family Gradients */
+  .gradient-km {
+    background: linear-gradient(135deg, #34D399 0%, #10B981 50%, #1B5E3B 100%);
+  }
+  .gradient-km-subtle {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.12) 0%, rgba(16, 185, 129, 0.06) 100%);
+  }
+  .gradient-forest {
+    background: linear-gradient(180deg, #0d261e 0%, #16382c 100%);
+  }
 
-:focus-visible {
-  outline: 2px solid var(--vyay-link);
-  outline-offset: 2px;
+  /* Glassmorphism */
+  .glass {
+    @apply bg-card/85 backdrop-blur-md border border-border/60;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

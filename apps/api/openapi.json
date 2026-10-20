@@ -1,0 +1,62 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Application is healthy and accessible"
+          }
+        },
+        "summary": "API Root Health Check",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_getV1Health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "v1 API router is operational"
+          }
+        },
+        "summary": "API v1 Versioned Health Check",
+        "tags": [
+          "Health"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "VyayMitra API",
+    "description": "VyayMitra Enterprise Multi-Tenant Expense Management SaaS REST API",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter JWT access token with tenant claims",
+        "in": "header"
+      },
+      "Idempotency-Key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "description": "Unique client-supplied key for state-mutating financial operations"
+      }
+    },
+    "schemas": {}
+  }
+}

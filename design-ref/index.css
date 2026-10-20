@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   KaaryaMitra Design System — CSS Custom Properties
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    color-scheme: light;
+    /* ── KaaryaMitra Brand (Light Mode) ── */
+    --km-lime:   168 230 0;       /* #A8E600 */
+    --km-green:  76 175 80;       /* #4CAF50 */
+    --km-forest: 27 94 59;        /* #1B5E3B */
+    --km-dark:   13 79 60;        /* #0D4F3C */
+
+    /* ── Semantic Tokens (Light) ── */
+    --background:  0 0% 99%;
+    --foreground:  160 20% 10%;
+
+    --card:        0 0% 100%;
+    --card-foreground: 160 20% 10%;
+
+    --popover:     0 0% 100%;
+    --popover-foreground: 160 20% 10%;
+
+    /* Primary = KaaryaMitra green */
+    --primary:     152 73% 30%;    /* forest green */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary:   80 100% 45%;    /* lime */
+    --secondary-foreground: 160 20% 10%;
+
+    --muted:       160 15% 95%;
+    --muted-foreground: 160 10% 45%;
+
+    --accent:      80 100% 90%;    /* light lime tint */
+    --accent-foreground: 160 50% 20%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:      160 15% 88%;
+    --input:       160 15% 88%;
+    --ring:        152 73% 35%;
+
+    /* ── Border Radius ── */
+    --radius: 0.75rem;   /* 12px base radius */
+
+    /* ── Sidebar ── */
+    --sidebar:          160 35% 12%;   /* dark forest */
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-border:   160 30% 20%;
+    --sidebar-accent:   160 30% 20%;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background:  160 20% 6%;
+    --foreground:  160 10% 95%;
+
+    --card:        160 20% 9%;
+    --card-foreground: 160 10% 95%;
+
+    --popover:     160 20% 9%;
+    --popover-foreground: 160 10% 95%;
+
+    --primary:     80 100% 50%;     /* lime in dark mode */
+    --primary-foreground: 160 50% 10%;
+
+    --secondary:   160 30% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted:       160 20% 14%;
+    --muted-foreground: 160 10% 55%;
+
+    --accent:      160 25% 16%;
+    --accent-foreground: 80 100% 60%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:      160 20% 18%;
+    --input:       160 20% 18%;
+    --ring:        80 100% 50%;
+
+    --sidebar:          160 25% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-border:   160 20% 14%;
+    --sidebar-accent:   160 20% 14%;
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+
+  /* ── Native Date Picker Dark/Light Themeing ── */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"] {
+    color-scheme: light;
+  }
+
+  .dark input[type="date"],
+  .dark input[type="datetime-local"],
+  .dark input[type="time"] {
+    color-scheme: dark;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.8;
+    filter: brightness(0);
+    transition: opacity 0.2s ease;
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover,
+  .dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  /* Gradient utilities */
+  .gradient-km {
+    background: linear-gradient(135deg, #A8E600 0%, #4CAF50 50%, #1B5E3B 100%);
+  }
+  .gradient-km-subtle {
+    background: linear-gradient(135deg, rgba(168, 230, 0, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+  }
+
+  /* Glass morphism */
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+}

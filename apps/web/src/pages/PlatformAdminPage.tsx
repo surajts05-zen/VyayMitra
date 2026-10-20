@@ -373,12 +373,12 @@ export const PlatformAdminPage: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto border-b border-[#E5EAF0] dark:border-[#2D3942] gap-2 pb-px text-xs font-medium">
+      <div className="flex overflow-x-auto border-b border-border gap-2 pb-px text-xs font-medium">
         <button
           onClick={() => setActiveTab('tenants')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'tenants'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -389,7 +389,7 @@ export const PlatformAdminPage: React.FC = () => {
           onClick={() => setActiveTab('provision')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'provision'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -400,7 +400,7 @@ export const PlatformAdminPage: React.FC = () => {
           onClick={() => setActiveTab('audit')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'audit'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -413,7 +413,7 @@ export const PlatformAdminPage: React.FC = () => {
       {activeTab === 'tenants' && (
         <div className="space-y-4">
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-card border border-border">
             <div className="relative w-full sm:w-80">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
@@ -421,7 +421,7 @@ export const PlatformAdminPage: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search tenant name or slug..."
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl text-xs bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
               />
             </div>
 
@@ -429,7 +429,7 @@ export const PlatformAdminPage: React.FC = () => {
               <select
                 value={selectedPlanFilter}
                 onChange={(e) => setSelectedPlanFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                className="px-3 py-1.5 rounded-xl text-xs bg-muted/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
               >
                 <option value="ALL">All Plans</option>
                 <option value="STARTER">Starter</option>
@@ -440,7 +440,7 @@ export const PlatformAdminPage: React.FC = () => {
               <select
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                className="px-3 py-1.5 rounded-xl text-xs bg-muted/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">Active</option>
@@ -458,16 +458,16 @@ export const PlatformAdminPage: React.FC = () => {
               return (
                 <div
                   key={tenant.id}
-                  className="rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] overflow-hidden shadow-sm"
+                  className="rounded-2xl bg-card border border-border overflow-hidden shadow-card"
                 >
                   <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-start sm:items-center space-x-3.5">
                       <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300">
-                        <Building2 className="w-5 h-5 text-[#008C69]" />
+                        <Building2 className="w-5 h-5 text-primary" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{tenant.name}</h3>
+                          <h3 className="font-bold text-sm text-foreground">{tenant.name}</h3>
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                               tenant.status === 'ACTIVE'
@@ -501,7 +501,7 @@ export const PlatformAdminPage: React.FC = () => {
 
                       <button
                         onClick={() => setExpandedTenantId(isExpanded ? null : tenant.id)}
-                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all"
+                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground transition-all"
                       >
                         <Users className="w-3.5 h-3.5" />
                         <span>{isExpanded ? 'Hide Users' : 'Manage Users & Passwords'}</span>
@@ -512,9 +512,9 @@ export const PlatformAdminPage: React.FC = () => {
 
                   {/* Expanded User Roster with Password Reset */}
                   {isExpanded && (
-                    <div className="border-t border-[#E5EAF0] dark:border-[#2D3942] bg-slate-50/50 dark:bg-[#121B22] p-4 sm:p-5">
+                    <div className="border-t border-border bg-slate-50/50 dark:bg-[#121B22] p-4 sm:p-5">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                           <Users className="w-3.5 h-3.5 text-slate-500" />
                           <span>Tenant User Directory ({tenantUsers.length})</span>
                         </h4>
@@ -537,7 +537,7 @@ export const PlatformAdminPage: React.FC = () => {
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {tenantUsers.map((u) => (
                               <tr key={u.id} className="hover:bg-white dark:hover:bg-slate-800/40 transition-colors">
-                                <td className="py-2.5 px-3 font-medium text-slate-800 dark:text-slate-200">
+                                <td className="py-2.5 px-3 font-medium text-foreground">
                                   {u.firstName} {u.lastName}
                                 </td>
                                 <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
@@ -557,7 +557,7 @@ export const PlatformAdminPage: React.FC = () => {
                                 <td className="py-2.5 px-3 text-right">
                                   <button
                                     onClick={() => handleOpenResetModal(u)}
-                                    className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 transition-all shadow-sm"
+                                    className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 transition-all shadow-card"
                                   >
                                     <KeyRound className="w-3.5 h-3.5" />
                                     <span>Reset Password</span>
@@ -579,13 +579,13 @@ export const PlatformAdminPage: React.FC = () => {
 
       {/* Tab 2: Provision New Tenant */}
       {activeTab === 'provision' && (
-        <div className="max-w-2xl mx-auto p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
+        <div className="max-w-2xl mx-auto p-6 rounded-2xl bg-card border border-border shadow-card">
           <div className="flex items-center space-x-3 mb-5 border-b border-slate-100 dark:border-slate-800 pb-4">
             <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
               <Plus className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Provision New Corporate Tenant</h2>
+              <h2 className="text-base font-bold text-foreground">Provision New Corporate Tenant</h2>
               <p className="text-xs text-slate-500">
                 Setup legal organization identity and create initial Company Owner administrator credentials.
               </p>
@@ -614,7 +614,7 @@ export const PlatformAdminPage: React.FC = () => {
                     }
                   }}
                   placeholder="e.g. Apex Biotech Solutions Ltd"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                  className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
                 />
               </div>
 
@@ -626,7 +626,7 @@ export const PlatformAdminPage: React.FC = () => {
                   value={newTenantSlug}
                   onChange={(e) => setNewTenantSlug(e.target.value)}
                   placeholder="apex-biotech"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono"
+                  className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground font-mono"
                 />
               </div>
             </div>
@@ -637,7 +637,7 @@ export const PlatformAdminPage: React.FC = () => {
                 <select
                   value={newTenantPlan}
                   onChange={(e: any) => setNewTenantPlan(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                  className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
                 >
                   <option value="STARTER">Starter Tier (10 seats)</option>
                   <option value="GROWTH">Growth Tier (50 seats)</option>
@@ -650,7 +650,7 @@ export const PlatformAdminPage: React.FC = () => {
                 <select
                   value={newTenantCurrency}
                   onChange={(e) => setNewTenantCurrency(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono"
+                  className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground font-mono"
                 >
                   <option value="INR">INR (₹) Indian Rupee</option>
                   <option value="USD">USD ($) US Dollar</option>
@@ -660,7 +660,7 @@ export const PlatformAdminPage: React.FC = () => {
             </div>
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">
                 Initial Owner Account Credentials
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
@@ -672,7 +672,7 @@ export const PlatformAdminPage: React.FC = () => {
                     value={adminFirstName}
                     onChange={(e) => setAdminFirstName(e.target.value)}
                     placeholder="Aditi"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                    className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
                   />
                 </div>
                 <div>
@@ -683,7 +683,7 @@ export const PlatformAdminPage: React.FC = () => {
                     value={adminLastName}
                     onChange={(e) => setAdminLastName(e.target.value)}
                     placeholder="Rao"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                    className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
                   />
                 </div>
               </div>
@@ -697,7 +697,7 @@ export const PlatformAdminPage: React.FC = () => {
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
                     placeholder="aditi.rao@apexbiotech.in"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                    className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground"
                   />
                 </div>
                 <div>
@@ -707,7 +707,7 @@ export const PlatformAdminPage: React.FC = () => {
                     required
                     value={initialPassword}
                     onChange={(e) => setInitialPassword(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono"
+                    className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground font-mono"
                   />
                 </div>
               </div>
@@ -716,7 +716,7 @@ export const PlatformAdminPage: React.FC = () => {
             <div className="pt-4 flex justify-end">
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm flex items-center space-x-2"
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create & Provision Organization</span>
@@ -728,9 +728,9 @@ export const PlatformAdminPage: React.FC = () => {
 
       {/* Tab 3: Administrative Audit Logs */}
       {activeTab === 'audit' && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-4 shadow-sm text-xs">
+        <div className="p-6 rounded-2xl bg-card border border-border space-y-4 shadow-card text-xs">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div className="flex items-center space-x-2 font-bold text-sm text-slate-900 dark:text-slate-100">
+            <div className="flex items-center space-x-2 font-bold text-sm text-foreground">
               <ShieldAlert className="w-4 h-4 text-indigo-500" />
               <span>Immutable Administrative Action Log</span>
             </div>
@@ -755,12 +755,12 @@ export const PlatformAdminPage: React.FC = () => {
                 {auditLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 font-mono text-[11px]">
                     <td className="py-2.5 px-3 text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
-                    <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-3 font-bold text-foreground">
                       <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                         {log.action}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 font-medium text-slate-800 dark:text-slate-200 font-sans">
+                    <td className="py-2.5 px-3 font-medium text-foreground font-sans">
                       {log.targetTenantName}
                     </td>
                     <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
@@ -779,14 +779,14 @@ export const PlatformAdminPage: React.FC = () => {
       {/* Password Reset Modal */}
       {resetModalOpen && targetUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] p-6 shadow-2xl space-y-4 text-xs">
+          <div className="w-full max-w-md rounded-2xl bg-card border border-border p-6 shadow-float space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-700 dark:text-amber-300">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Reset User Password</h3>
+                  <h3 className="font-bold text-sm text-foreground">Reset User Password</h3>
                   <p className="text-[11px] text-slate-500">Audited Platform Administration Action</p>
                 </div>
               </div>
@@ -800,8 +800,8 @@ export const PlatformAdminPage: React.FC = () => {
             </div>
 
             {/* Target User Summary Card */}
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700">
-              <span className="block font-semibold text-slate-800 dark:text-slate-200 text-xs">
+            <div className="p-3 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700">
+              <span className="block font-semibold text-foreground text-xs">
                 {targetUser.firstName} {targetUser.lastName}
               </span>
               <span className="block text-[11px] font-mono text-slate-500">{targetUser.email}</span>
@@ -823,7 +823,7 @@ export const PlatformAdminPage: React.FC = () => {
                 <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                   <span className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">New Password:</span>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100 select-all">
+                    <span className="font-mono text-sm font-bold text-foreground select-all">
                       {newPassword}
                     </span>
                     <button
@@ -833,7 +833,7 @@ export const PlatformAdminPage: React.FC = () => {
                         setCopiedPassword(true);
                         setTimeout(() => setCopiedPassword(false), 2000);
                       }}
-                      className="px-2.5 py-1 rounded bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 font-medium text-xs flex items-center gap-1"
+                      className="px-2.5 py-1 rounded bg-white dark:bg-slate-700 text-foreground border border-slate-300 dark:border-slate-600 font-medium text-xs flex items-center gap-1"
                     >
                       {copiedPassword ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copiedPassword ? 'Copied' : 'Copy'}</span>
@@ -866,7 +866,7 @@ export const PlatformAdminPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={generateStrongPassword}
-                      className="text-[#008C69] hover:underline font-semibold flex items-center gap-1 text-[11px]"
+                      className="text-primary hover:underline font-semibold flex items-center gap-1 text-[11px]"
                     >
                       <Sparkles className="w-3 h-3" />
                       <span>Generate Strong</span>
@@ -878,7 +878,7 @@ export const PlatformAdminPage: React.FC = () => {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono text-xs"
+                    className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground font-mono text-xs"
                   />
                 </div>
 
@@ -892,7 +892,7 @@ export const PlatformAdminPage: React.FC = () => {
                     value={resetReason}
                     onChange={(e) => setResetReason(e.target.value)}
                     placeholder="e.g. Employee locked out of authenticator device. Support ticket #8942"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs"
+                    className="w-full p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 text-foreground text-xs"
                   />
                 </div>
 
@@ -902,7 +902,7 @@ export const PlatformAdminPage: React.FC = () => {
                     id="revoke-sessions"
                     checked={revokeSessions}
                     onChange={(e) => setRevokeSessions(e.target.checked)}
-                    className="rounded border-slate-300 text-[#008C69] focus:ring-[#008C69]"
+                    className="rounded border-slate-300 text-primary focus:ring-primary"
                   />
                   <label htmlFor="revoke-sessions" className="text-[11px] text-slate-700 dark:text-slate-300">
                     Immediately revoke all active JWT sessions and refresh tokens for this user.
@@ -919,7 +919,7 @@ export const PlatformAdminPage: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-sm flex items-center space-x-1.5"
+                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-card flex items-center space-x-1.5"
                   >
                     <KeyRound className="w-3.5 h-3.5" />
                     <span>Confirm & Reset Password</span>

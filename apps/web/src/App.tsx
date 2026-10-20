@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useState } from 'react';
 import { AppShell } from '@vyay/ui';
-import { ShieldAlert, BookOpen } from 'lucide-react';
+import { ShieldAlert, BookOpen, UserCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { OnboardingChecklist } from './components/OnboardingChecklist';
 import { setActivePersona } from './lib/api';
@@ -21,10 +21,10 @@ const UserGuidePage = lazy(() => import('./pages/UserGuidePage').then((module) =
 
 function PageLoading() {
   return (
-    <div role="status" aria-live="polite" className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#151F27]">
+    <div role="status" aria-live="polite" className="rounded-xl border border-border bg-card p-6 shadow-card">
       <span className="sr-only">Loading page</span>
-      <div className="h-5 w-40 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-      <div className="mt-4 h-32 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+      <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+      <div className="mt-4 h-32 animate-pulse rounded-xl bg-muted/60" />
     </div>
   );
 }
@@ -59,6 +59,7 @@ const DEMO_PERSONAS = [
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>('/dashboard');
   const [activePersonaIndex, setActivePersonaIndex] = useState(0);
+  const [personaDrawerOpen, setPersonaDrawerOpen] = useState(false);
 
   const activePersona = DEMO_PERSONAS[activePersonaIndex];
 
@@ -68,6 +69,7 @@ export function App() {
     if (DEMO_PERSONAS[index].role === 'PLATFORM_SUPER_ADMIN') {
       setCurrentPath('/platform-admin');
     }
+    setPersonaDrawerOpen(false);
   };
 
   const renderCurrentView = () => {
@@ -77,7 +79,7 @@ export function App() {
       case '/reports':
         return <ReportsPage />;
       case '/approvals':
-        return <ApprovalsPage />;
+        return <ApprovalsPage activeRole={activePersona.role} activeEmail={activePersona.email} onNavigate={setCurrentPath} />;
       case '/finance':
         return <FinancePage onNavigate={setCurrentPath} />;
       case '/reimbursements':
@@ -97,12 +99,12 @@ export function App() {
         const isTenantAdmin = ['COMPANY_OWNER', 'COMPANY_ADMIN', 'FINANCE_ADMIN'].includes(activePersona.role);
         if (!isPlatformAdmin && !isTenantAdmin) {
           return (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
+            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20 shadow-card">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
                 <ShieldAlert className="h-6 w-6" />
               </div>
-              <h2 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">Admin Guide Restricted</h2>
-              <p className="mx-auto mt-2 max-w-md text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <h2 className="mt-4 text-lg font-bold text-foreground">Admin Guide Restricted</h2>
+              <p className="mx-auto mt-2 max-w-md text-xs text-muted-foreground leading-relaxed">
                 The Company Admin Guide is reserved for Tenant Administrators (Company Owner, Admin, Finance Admin) and Platform Super Admins.
                 As an {activePersona.role.toLowerCase().replace('_', ' ')}, please refer to the comprehensive User Guide.
               </p>
@@ -110,7 +112,7 @@ export function App() {
                 <button
                   type="button"
                   onClick={() => setCurrentPath('/user-guide')}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#008C69] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#007054] transition-all"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 transition-all"
                 >
                   <BookOpen className="h-4 w-4" />
                   <span>Open Employee User Guide</span>
@@ -118,7 +120,7 @@ export function App() {
                 <button
                   type="button"
                   onClick={() => setCurrentPath('/dashboard')}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-[#151F27] dark:text-slate-300"
+                  className="rounded-lg border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-muted"
                 >
                   Return to Dashboard
                 </button>
@@ -145,37 +147,66 @@ export function App() {
       onNavigate={setCurrentPath}
       onLogout={() => window.location.assign('/?signed_out=1')}
     >
-      {/* Persona Bar for Review & Testing */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm dark:border-slate-800 dark:bg-[#151F27]">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-600 dark:text-slate-400">Demo Persona:</span>
-          <span className="font-bold text-[#008C69] dark:text-[#34D399]">{activePersona.label}</span>
-          <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            {activePersona.role}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {DEMO_PERSONAS.map((p, idx) => (
-            <button
-              key={p.role}
-              type="button"
-              onClick={() => handleSwitchPersona(idx)}
-              className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${
-                activePersonaIndex === idx
-                  ? 'bg-[#008C69] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-              }`}
-            >
-              {p.role === 'PLATFORM_SUPER_ADMIN' ? '🛡️ Super Admin' : p.role.split('_')[0]}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <ErrorBoundary>
-        {currentPath === '/dashboard' && <OnboardingChecklist onNavigate={setCurrentPath} />}
         <Suspense fallback={<PageLoading />}>{renderCurrentView()}</Suspense>
       </ErrorBoundary>
+
+      {/* ── Discreet Floating Persona Switcher (For Pair Testing & Evaluation) ── */}
+      <div className="fixed bottom-4 right-4 z-50 select-none">
+        {personaDrawerOpen ? (
+          <div className="rounded-xl border border-border bg-card/95 backdrop-blur-md p-3 shadow-float w-72 space-y-2 animate-fade-in text-xs">
+            <div className="flex items-center justify-between pb-1.5 border-b border-border">
+              <span className="font-semibold text-foreground flex items-center gap-1.5">
+                <UserCheck className="w-3.5 h-3.5 text-km-forest dark:text-km-lime" />
+                <span>Switch Review Persona</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPersonaDrawerOpen(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded"
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="space-y-1">
+              {DEMO_PERSONAS.map((p, idx) => (
+                <button
+                  key={p.role}
+                  type="button"
+                  onClick={() => handleSwitchPersona(idx)}
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-smooth ${
+                    activePersonaIndex === idx
+                      ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                      : 'hover:bg-muted text-foreground'
+                  }`}
+                >
+                  <div>
+                    <div className="font-medium">{p.label}</div>
+                    <div className={`text-[10px] ${activePersonaIndex === idx ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                      {p.role}
+                    </div>
+                  </div>
+                  {activePersonaIndex === idx && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-km-lime" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPersonaDrawerOpen(true)}
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-sidebar text-sidebar-foreground border border-sidebar-border shadow-float hover:border-km-lime/50 transition-smooth text-xs group"
+          >
+            <span className="w-2 h-2 rounded-full bg-km-lime animate-pulse" />
+            <span className="text-[11px] font-medium text-sidebar-foreground/90">
+              Role: <strong className="text-white">{activePersona.role.split('_')[0]}</strong>
+            </span>
+            <ChevronUp className="w-3 h-3 text-sidebar-foreground/60 group-hover:text-white" />
+          </button>
+        )}
+      </div>
     </AppShell>
   );
 }

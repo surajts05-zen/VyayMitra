@@ -225,25 +225,25 @@ export const SettingsPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <span>Tenant Settings & Organization Suite</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
               M1 Ready
             </span>
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
             Enterprise multi-tenant identity, organizational hierarchy, GL chart-of-accounts mappings, and KaaryaMitra suite bridge.
           </p>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto border-b border-[#E5EAF0] dark:border-[#2D3942] gap-2 pb-px text-xs font-medium">
+      <div className="flex overflow-x-auto border-b border-border gap-2 pb-px text-xs font-medium">
         <button
           onClick={() => setActiveTab('profile')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'profile'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -254,7 +254,7 @@ export const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('directory')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'directory'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -265,7 +265,7 @@ export const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('hierarchy')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'hierarchy'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -276,7 +276,7 @@ export const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('categories')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'categories'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -287,7 +287,7 @@ export const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('invites')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'invites'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -298,7 +298,7 @@ export const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('retention')}
           className={`flex items-center gap-2 px-4 py-2.5 border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'retention'
-              ? 'border-[#008C69] text-[#008C69] font-bold'
+              ? 'border-primary text-primary font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
@@ -310,18 +310,18 @@ export const SettingsPage: React.FC = () => {
       {/* Tab 1: Company Profile & Fiscal Settings */}
       {activeTab === 'profile' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#E5EAF0] dark:border-[#2D3942] pb-3">
-              <div className="flex items-center space-x-2 font-bold text-sm text-slate-900 dark:text-slate-100">
-                <Building2 className="w-4 h-4 text-[#008C69]" />
+          <div className="p-6 rounded-2xl bg-card border border-border space-y-4 shadow-card">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center space-x-2 font-bold text-sm text-foreground">
+                <Building2 className="w-4 h-4 text-primary" />
                 <span>Legal Entity & Tenant Branding</span>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-foreground/80">
                 UUID: tnt-horizon-001
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-muted/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <img
                   src="/Blue%20Teal%20Gradient%20Wing%20Logo.png"
@@ -329,7 +329,7 @@ export const SettingsPage: React.FC = () => {
                   className="w-8 h-8 object-contain"
                 />
                 <div>
-                  <span className="block text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="block text-[11px] font-semibold text-foreground">
                     VyayMitra Companion Brand Mark
                   </span>
                   <span className="text-[10px] text-slate-500">
@@ -358,7 +358,7 @@ export const SettingsPage: React.FC = () => {
                   type="text"
                   disabled
                   value="Horizon Scientific India Private Limited"
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200 font-medium"
+                  className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground font-medium"
                 />
               </div>
 
@@ -369,7 +369,7 @@ export const SettingsPage: React.FC = () => {
                     type="text"
                     disabled
                     value="INR (₹) Indian Rupee"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200 font-mono"
+                    className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground font-mono"
                   />
                 </div>
                 <div>
@@ -378,7 +378,7 @@ export const SettingsPage: React.FC = () => {
                     type="text"
                     disabled
                     value="Asia/Kolkata (UTC+5:30)"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200 font-mono"
+                    className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground font-mono"
                   />
                 </div>
               </div>
@@ -390,7 +390,7 @@ export const SettingsPage: React.FC = () => {
                     type="text"
                     disabled
                     value="April 1 - March 31 (Indian FY)"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200"
+                    className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground"
                   />
                 </div>
                 <div>
@@ -399,22 +399,22 @@ export const SettingsPage: React.FC = () => {
                     type="text"
                     disabled
                     value="29AABCH9812K1Z9"
-                    className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200 font-mono"
+                    className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground font-mono"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-4 shadow-sm">
-            <div className="flex items-center space-x-2 font-bold text-sm text-slate-900 dark:text-slate-100 border-b border-[#E5EAF0] dark:border-[#2D3942] pb-3">
-              <Users className="w-4 h-4 text-[#008C69]" />
+          <div className="p-6 rounded-2xl bg-card border border-border space-y-4 shadow-card">
+            <div className="flex items-center space-x-2 font-bold text-sm text-foreground border-b border-border pb-3">
+              <Users className="w-4 h-4 text-primary" />
               <span>HRM Independence & Suite Architecture</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] space-y-3">
+            <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-800 dark:text-slate-200">Standalone Mode (Primary)</span>
+                <span className="font-semibold text-foreground">Standalone Mode (Primary)</span>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                   INDEPENDENT
                 </span>
@@ -431,7 +431,7 @@ export const SettingsPage: React.FC = () => {
                   <input
                     type="text"
                     placeholder="https://hrm.horizonsci.in/api/v1/sync/employees"
-                    className="flex-1 p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200 font-mono text-xs"
+                    className="flex-1 p-2 rounded-lg bg-muted/40 border border-border text-foreground font-mono text-xs"
                   />
                   <button className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1">
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -450,7 +450,7 @@ export const SettingsPage: React.FC = () => {
       {/* Tab 2: Employee Directory */}
       {activeTab === 'directory' && (
         <div className="space-y-4 text-xs">
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-[#151F27] p-4 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942]">
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-card p-4 rounded-xl border border-border">
             <div className="relative w-full sm:w-72">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
@@ -458,7 +458,7 @@ export const SettingsPage: React.FC = () => {
                 placeholder="Search by name, email, or employee #..."
                 value={searchEmployee}
                 onChange={(e) => setSearchEmployee(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200"
+                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-muted/40 border border-border text-foreground"
               />
             </div>
 
@@ -467,7 +467,7 @@ export const SettingsPage: React.FC = () => {
               <select
                 value={selectedDeptFilter}
                 onChange={(e) => setSelectedDeptFilter(e.target.value)}
-                className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200"
+                className="p-1.5 rounded-lg bg-muted/40 border border-border text-foreground"
               >
                 <option value="ALL">All Departments</option>
                 <option value="Research & Development">Research & Development</option>
@@ -478,10 +478,10 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-[#1C2833] border-b border-[#E5EAF0] dark:border-[#2D3942] text-slate-500 font-semibold">
+                <tr className="bg-muted/40 border-b border-border text-slate-500 font-semibold">
                   <th className="p-3.5">Employee</th>
                   <th className="p-3.5">Emp Code</th>
                   <th className="p-3.5">Assigned Role</th>
@@ -491,14 +491,14 @@ export const SettingsPage: React.FC = () => {
                   <th className="p-3.5">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+              <tbody className="divide-y divide-border">
                 {filteredEmployees.map((emp) => (
                   <tr key={emp.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1C2833]/50 transition-colors">
-                    <td className="p-3.5 font-medium text-slate-900 dark:text-slate-100">
+                    <td className="p-3.5 font-medium text-foreground">
                       <div>{emp.name}</div>
                       <div className="text-[11px] text-slate-400 font-normal">{emp.email}</div>
                     </td>
-                    <td className="p-3.5 font-mono text-slate-600 dark:text-slate-300">{emp.employeeNumber}</td>
+                    <td className="p-3.5 font-mono text-foreground/80">{emp.employeeNumber}</td>
                     <td className="p-3.5">
                       <span className="px-2 py-0.5 rounded-md font-semibold text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                         {emp.role}
@@ -531,11 +531,11 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tab 3: Organizational Reporting Tree */}
       {activeTab === 'hierarchy' && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-6 shadow-sm text-xs">
-          <div className="flex items-center justify-between border-b border-[#E5EAF0] dark:border-[#2D3942] pb-3">
+        <div className="p-6 rounded-2xl bg-card border border-border space-y-6 shadow-card text-xs">
+          <div className="flex items-center justify-between border-b border-border pb-3">
             <div>
-              <h2 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Network className="w-4 h-4 text-[#008C69]" />
+              <h2 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <Network className="w-4 h-4 text-primary" />
                 <span>Approval Routing & Reporting Hierarchy</span>
               </h2>
               <p className="text-slate-500 text-[11px] mt-0.5">
@@ -549,13 +549,13 @@ export const SettingsPage: React.FC = () => {
 
           <div className="space-y-4 max-w-xl mx-auto">
             {/* Level 0: Owner */}
-            <div className="p-4 rounded-xl border-2 border-[#008C69] bg-emerald-50/20 dark:bg-[#1C2833] flex items-center justify-between shadow-sm">
+            <div className="p-4 rounded-xl border-2 border-primary bg-emerald-50/20 dark:bg-muted flex items-center justify-between shadow-card">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-[#008C69] text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs">
                   VM
                 </div>
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-slate-100">Vikram Mehta (Company Owner)</div>
+                  <div className="font-bold text-foreground">Vikram Mehta (Company Owner)</div>
                   <div className="text-[11px] text-slate-500">Executive Office • Final Finance Escalation</div>
                 </div>
               </div>
@@ -565,15 +565,15 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             {/* Tree Branch */}
-            <div className="pl-6 border-l-2 border-dashed border-[#008C69]/40 space-y-4 ml-4">
+            <div className="pl-6 border-l-2 border-dashed border-primary/40 space-y-4 ml-4">
               {/* Level 1: Manager */}
-              <div className="p-4 rounded-xl border border-slate-200 dark:border-[#2D3942] bg-white dark:bg-[#151F27] flex items-center justify-between">
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-border bg-card flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
                     AD
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 dark:text-slate-100">Anita Deshmukh (Manager)</div>
+                    <div className="font-bold text-foreground">Anita Deshmukh (Manager)</div>
                     <div className="text-[11px] text-slate-500">Lead, Research & Development • Approval Limit: ₹50,000</div>
                   </div>
                 </div>
@@ -582,19 +582,19 @@ export const SettingsPage: React.FC = () => {
 
               {/* Sub-branch for Anita's Reportees */}
               <div className="pl-6 border-l-2 border-dashed border-blue-400/40 space-y-3 ml-4">
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-[#2D3942] bg-slate-50 dark:bg-[#1C2833] flex items-center justify-between">
+                <div className="p-3 rounded-lg border border-slate-200 dark:border-border bg-muted/40 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-slate-100">Dr. Rahul Sharma</span>
+                    <span className="font-medium text-foreground">Dr. Rahul Sharma</span>
                     <span className="text-slate-400 text-[11px]">(Senior Research Fellow)</span>
                   </div>
                   <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Routes to Anita</span>
                 </div>
 
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-[#2D3942] bg-slate-50 dark:bg-[#1C2833] flex items-center justify-between">
+                <div className="p-3 rounded-lg border border-slate-200 dark:border-border bg-muted/40 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="font-medium text-slate-900 dark:text-slate-100">Priya Sundaram</span>
+                    <span className="font-medium text-foreground">Priya Sundaram</span>
                     <span className="text-slate-400 text-[11px]">(Field Specialist)</span>
                   </div>
                   <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Routes to Anita</span>
@@ -602,13 +602,13 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Level 1: Finance Operator */}
-              <div className="p-4 rounded-xl border border-slate-200 dark:border-[#2D3942] bg-white dark:bg-[#151F27] flex items-center justify-between">
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-border bg-card flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
                     SJ
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 dark:text-slate-100">Sarah Jenkins (Finance Operator)</div>
+                    <div className="font-bold text-foreground">Sarah Jenkins (Finance Operator)</div>
                     <div className="text-[11px] text-slate-500">Finance & Treasury • Reimbursement Verification</div>
                   </div>
                 </div>
@@ -622,22 +622,22 @@ export const SettingsPage: React.FC = () => {
       {/* Tab 4: Expense Categories & GL Mappings */}
       {activeTab === 'categories' && (
         <div className="space-y-4 text-xs">
-          <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between">
             <div>
-              <h2 className="font-bold text-sm text-slate-900 dark:text-slate-100">Chart of Accounts & Expense Codes</h2>
+              <h2 className="font-bold text-sm text-foreground">Chart of Accounts & Expense Codes</h2>
               <p className="text-slate-500 text-[11px] mt-0.5">
                 Every line item submitted in VyayMitra binds directly to a verified General Ledger account and tax rate.
               </p>
             </div>
-            <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+            <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-foreground/80">
               Zoho Books Compatible
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-[#1C2833] border-b border-[#E5EAF0] dark:border-[#2D3942] text-slate-500 font-semibold">
+                <tr className="bg-muted/40 border-b border-border text-slate-500 font-semibold">
                   <th className="p-3.5">Category Name</th>
                   <th className="p-3.5">Code</th>
                   <th className="p-3.5">General Ledger (GL) Account</th>
@@ -646,12 +646,12 @@ export const SettingsPage: React.FC = () => {
                   <th className="p-3.5">Auto-Approval Cap</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+              <tbody className="divide-y divide-border">
                 {categories.map((cat) => (
                   <tr key={cat.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1C2833]/50 transition-colors">
-                    <td className="p-3.5 font-medium text-slate-900 dark:text-slate-100">{cat.name}</td>
-                    <td className="p-3.5 font-mono text-slate-600 dark:text-slate-300">{cat.code}</td>
-                    <td className="p-3.5 font-mono text-slate-800 dark:text-slate-200">{cat.glAccountCode}</td>
+                    <td className="p-3.5 font-medium text-foreground">{cat.name}</td>
+                    <td className="p-3.5 font-mono text-foreground/80">{cat.code}</td>
+                    <td className="p-3.5 font-mono text-foreground">{cat.glAccountCode}</td>
                     <td className="p-3.5">
                       <span className="px-2 py-0.5 rounded font-mono font-semibold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
                         {cat.defaultTaxRatePercent}% GST
@@ -681,10 +681,10 @@ export const SettingsPage: React.FC = () => {
       {/* Tab 5: Team Access & Invitations */}
       {activeTab === 'invites' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
-          <div className="md:col-span-1 p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-4 shadow-sm">
-            <div className="border-b border-[#E5EAF0] dark:border-[#2D3942] pb-3">
-              <h2 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-[#008C69]" />
+          <div className="md:col-span-1 p-6 rounded-2xl bg-card border border-border space-y-4 shadow-card">
+            <div className="border-b border-border pb-3">
+              <h2 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-primary" />
                 <span>Invite New Teammate</span>
               </h2>
               <p className="text-slate-500 text-[11px] mt-0.5">
@@ -718,7 +718,7 @@ export const SettingsPage: React.FC = () => {
                   placeholder="name@horizonsci.in"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200"
+                  className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground"
                 />
               </div>
 
@@ -729,7 +729,7 @@ export const SettingsPage: React.FC = () => {
                   placeholder="e.g. Dr. Rajesh Khanna"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200"
+                  className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground"
                 />
               </div>
 
@@ -738,7 +738,7 @@ export const SettingsPage: React.FC = () => {
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as Role)}
-                  className="w-full p-2 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] text-slate-800 dark:text-slate-200 font-medium"
+                  className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground font-medium"
                 >
                   <option value={Role.EMPLOYEE}>Employee (Submits Expenses)</option>
                   <option value={Role.MANAGER}>Manager (Level 1 Approver)</option>
@@ -764,17 +764,17 @@ export const SettingsPage: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-2 px-4 rounded-lg bg-[#008C69] hover:bg-[#007355] text-white font-medium transition-colors shadow-sm"
+                className="w-full py-2 px-4 rounded-lg bg-primary hover:bg-[#007355] text-white font-medium transition-colors shadow-card"
               >
                 Send Official Invitation
               </button>
             </form>
           </div>
 
-          <div className="md:col-span-2 p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-4 shadow-sm">
-            <div className="border-b border-[#E5EAF0] dark:border-[#2D3942] pb-3">
-              <h2 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#008C69]" />
+          <div className="md:col-span-2 p-6 rounded-2xl bg-card border border-border space-y-4 shadow-card">
+            <div className="border-b border-border pb-3">
+              <h2 className="font-bold text-sm text-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" />
                 <span>Multi-Tenant Role Permissions & Security Matrix</span>
               </h2>
               <p className="text-slate-500 text-[11px] mt-0.5">
@@ -783,8 +783,8 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
-              <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
-                <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl border border-slate-200 dark:border-border space-y-1">
+                <div className="font-bold text-foreground flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   EMPLOYEE
                 </div>
@@ -793,8 +793,8 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
-                <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl border border-slate-200 dark:border-border space-y-1">
+                <div className="font-bold text-foreground flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
                   MANAGER
                 </div>
@@ -803,8 +803,8 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
-                <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl border border-slate-200 dark:border-border space-y-1">
+                <div className="font-bold text-foreground flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-purple-500" />
                   FINANCE OPERATOR
                 </div>
@@ -813,8 +813,8 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
-                <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl border border-slate-200 dark:border-border space-y-1">
+                <div className="font-bold text-foreground flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500" />
                   COMPANY OWNER
                 </div>
@@ -831,18 +831,18 @@ export const SettingsPage: React.FC = () => {
       {activeTab === 'retention' && (
         <div className="space-y-6">
           {/* Header Card */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-3">
+          <div className="p-6 rounded-2xl bg-card border border-border shadow-card space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-base font-bold text-foreground">
                     Data Retention, Privacy & Minimization Policy
                   </h2>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                     M7 Hardened
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Enforces strict data minimization under DPDP/GDPR. Unprocessed or reviewed OCR provider payloads are redacted after retention cutoff, while statutory audit trails and financial ledgers remain immutable.
                 </p>
               </div>
@@ -872,7 +872,7 @@ export const SettingsPage: React.FC = () => {
                   }, 600);
                 }}
                 disabled={retentionPreviewLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-[#008C69] hover:bg-[#007456] text-white rounded-xl text-xs font-semibold shadow-sm transition-all shrink-0"
+                className="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-xs font-semibold shadow-card transition-all shrink-0"
               >
                 {retentionPreviewLoading ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -886,11 +886,11 @@ export const SettingsPage: React.FC = () => {
 
           {/* Retention Windows Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-            <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-1">
+            <div className="p-4 rounded-xl bg-card border border-border shadow-card space-y-1">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 OCR Payload Retention
               </span>
-              <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+              <div className="text-xl font-bold text-foreground font-mono">
                 90 Days
               </div>
               <p className="text-[10px] text-slate-400">
@@ -898,11 +898,11 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-1">
+            <div className="p-4 rounded-xl bg-card border border-border shadow-card space-y-1">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Outbox Job Payloads
               </span>
-              <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+              <div className="text-xl font-bold text-foreground font-mono">
                 30 Days
               </div>
               <p className="text-[10px] text-slate-400">
@@ -910,11 +910,11 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-1">
+            <div className="p-4 rounded-xl bg-card border border-border shadow-card space-y-1">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Webhook Event Logs
               </span>
-              <div className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+              <div className="text-xl font-bold text-foreground font-mono">
                 30 Days
               </div>
               <p className="text-[10px] text-slate-400">
@@ -922,7 +922,7 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-1">
+            <div className="p-4 rounded-xl bg-card border border-border shadow-card space-y-1">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Execution Safeguard
               </span>
@@ -937,9 +937,9 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {/* Immutable Statutory Exclusions */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
-              <FileCheck2 className="w-4 h-4 text-[#008C69]" />
+          <div className="p-6 rounded-2xl bg-card border border-border shadow-card space-y-3">
+            <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <FileCheck2 className="w-4 h-4 text-primary" />
               Immutable Financial & Audit Records (Exclusion Whitelist)
             </div>
             <p className="text-xs text-slate-500">
@@ -959,7 +959,7 @@ export const SettingsPage: React.FC = () => {
               ].map((item) => (
                 <div
                   key={item.name}
-                  className="p-3 rounded-xl border border-slate-200 dark:border-[#2D3942] bg-slate-50/50 dark:bg-slate-900/40 space-y-1"
+                  className="p-3 rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-slate-900/40 space-y-1"
                 >
                   <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-[11px] block truncate">
                     ✓ {item.name}
@@ -975,8 +975,8 @@ export const SettingsPage: React.FC = () => {
             <div className="p-6 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 space-y-4 animate-in fade-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#008C69]" />
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <h3 className="text-sm font-bold text-foreground">
                     Retention Drill Preview Generated
                   </h3>
                 </div>
@@ -986,23 +986,23 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-emerald-100 dark:border-emerald-900 space-y-1">
+                <div className="p-3 rounded-xl bg-card border border-emerald-100 dark:border-emerald-900 space-y-1">
                   <span className="text-slate-500 text-[10px] uppercase font-semibold">Cutoff Boundary</span>
-                  <div className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate">
+                  <div className="font-mono font-bold text-foreground text-xs truncate">
                     {retentionPreviewData.cutoff}
                   </div>
                   <p className="text-[10px] text-slate-400">Claims submitted before this date</p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-emerald-100 dark:border-emerald-900 space-y-1">
+                <div className="p-3 rounded-xl bg-card border border-emerald-100 dark:border-emerald-900 space-y-1">
                   <span className="text-slate-500 text-[10px] uppercase font-semibold">Eligible OCR Payloads</span>
-                  <div className="font-mono font-bold text-slate-900 dark:text-white text-xs">
+                  <div className="font-mono font-bold text-foreground text-xs">
                     {retentionPreviewData.eligiblePayloads} payloads
                   </div>
                   <p className="text-[10px] text-slate-400">Reviewed & ready for redaction</p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-emerald-100 dark:border-emerald-900 space-y-1">
+                <div className="p-3 rounded-xl bg-card border border-emerald-100 dark:border-emerald-900 space-y-1">
                   <span className="text-slate-500 text-[10px] uppercase font-semibold">Preview Signature</span>
                   <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs truncate">
                     {retentionPreviewData.previewToken}
@@ -1012,13 +1012,13 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Execution Safeguard Dialog */}
-              <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-slate-200 dark:border-[#2D3942] space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+              <div className="p-4 rounded-xl bg-card border border-slate-200 dark:border-border space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                   <Lock className="w-4 h-4 text-amber-500" />
                   Redaction Safeguard Challenge
                 </div>
                 <p className="text-xs text-slate-500">
-                  To prevent unintended data loss, execution requires explicit input of the confirmation passphrase <code className="text-[#008C69] font-mono font-bold">REDACT_EXPIRED_OCR_PAYLOADS</code>.
+                  To prevent unintended data loss, execution requires explicit input of the confirmation passphrase <code className="text-primary font-mono font-bold">REDACT_EXPIRED_OCR_PAYLOADS</code>.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -1027,7 +1027,7 @@ export const SettingsPage: React.FC = () => {
                     placeholder="Type REDACT_EXPIRED_OCR_PAYLOADS"
                     value={retentionConfirmationInput}
                     onChange={(e) => setRetentionConfirmationInput(e.target.value)}
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#008C69]"
+                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   <button
                     onClick={() => {
@@ -1049,7 +1049,7 @@ export const SettingsPage: React.FC = () => {
                       }, 500);
                     }}
                     disabled={redactionExecuting}
-                    className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-all shadow-sm disabled:opacity-50"
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-all shadow-card disabled:opacity-50"
                   >
                     {redactionExecuting ? 'Executing...' : 'Execute Redaction'}
                   </button>
@@ -1072,8 +1072,8 @@ export const SettingsPage: React.FC = () => {
           )}
 
           {/* Observability & Runtime Health Card */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
+          <div className="p-6 rounded-2xl bg-card border border-border shadow-card space-y-3">
+            <div className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Activity className="w-4 h-4 text-blue-500" />
               Runtime Hardening & Observability Health
             </div>
@@ -1082,27 +1082,27 @@ export const SettingsPage: React.FC = () => {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-border space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">Process Liveness</span>
+                  <span className="font-semibold text-foreground">Process Liveness</span>
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 </div>
-                <code className="text-[10px] text-[#008C69] font-mono block">GET /api/health/live</code>
+                <code className="text-[10px] text-primary font-mono block">GET /api/health/live</code>
                 <p className="text-[10px] text-slate-400">Process running, returns 200 OK</p>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-border space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">Dependency Readiness</span>
+                  <span className="font-semibold text-foreground">Dependency Readiness</span>
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 </div>
-                <code className="text-[10px] text-[#008C69] font-mono block">GET /api/health/ready</code>
+                <code className="text-[10px] text-primary font-mono block">GET /api/health/ready</code>
                 <p className="text-[10px] text-slate-400">PostgreSQL connected, 503 on fault</p>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-[#2D3942] space-y-1">
+              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-border space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">Prometheus Telemetry</span>
+                  <span className="font-semibold text-foreground">Prometheus Telemetry</span>
                   <span className="w-2 h-2 rounded-full bg-purple-500" />
                 </div>
                 <code className="text-[10px] text-purple-600 dark:text-purple-400 font-mono block">GET /internal/metrics</code>

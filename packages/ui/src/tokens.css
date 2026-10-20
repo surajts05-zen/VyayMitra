@@ -1,97 +1,148 @@
-/* VyayMitra Design System Tokens — KaaryaMitra/PravesMitra Family */
+/* VyayMitra Design System Tokens — KaaryaMitra / PraveshMitra Product Family */
+
 :root {
-  /* Surfaces & Backgrounds */
-  --vyay-bg: #F7F9FB;
-  --vyay-surface: #FFFFFF;
-  --vyay-surface-elevated: #FFFFFF;
-  
-  /* Ink / Typography */
-  --vyay-ink: #142333;
-  --vyay-ink-muted: #607184;
+  color-scheme: light;
+
+  /* ── KaaryaMitra Brand Core Palette ── */
+  --km-lime:   168 230 0;       /* #A8E600 */
+  --km-green:  76 175 80;       /* #4CAF50 */
+  --km-forest: 27 94 59;        /* #1B5E3B */
+  --km-dark:   13 79 60;        /* #0D4F3C */
+
+  /* ── Semantic Tokens (Light) ── */
+  --background:  0 0% 99%;
+  --foreground:  160 20% 10%;
+
+  --card:        0 0% 100%;
+  --card-foreground: 160 20% 10%;
+
+  --popover:     0 0% 100%;
+  --popover-foreground: 160 20% 10%;
+
+  /* Primary = KaaryaMitra Forest Green */
+  --primary:     152 73% 30%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary = KaaryaMitra Lime */
+  --secondary:   80 100% 45%;
+  --secondary-foreground: 160 20% 10%;
+
+  --muted:       160 15% 95%;
+  --muted-foreground: 160 10% 45%;
+
+  --accent:      80 100% 90%;    /* light lime tint */
+  --accent-foreground: 160 50% 20%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:      160 15% 88%;
+  --input:       160 15% 88%;
+  --ring:        152 73% 35%;
+
+  /* ── Border Radius ── */
+  --radius: 0.75rem;   /* 12px base radius */
+
+  /* ── KaaryaMitra Signature Sidebar (Dark Forest) ── */
+  --sidebar:            160 35% 12%;   /* #0d261e dark forest */
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-border:     160 30% 20%;
+  --sidebar-accent:     160 30% 20%;
+  --sidebar-muted:      160 15% 65%;
+
+  /* ── Legacy vyay aliases for backward compatibility ── */
+  --vyay-bg: hsl(var(--background));
+  --vyay-surface: hsl(var(--card));
+  --vyay-surface-elevated: hsl(var(--card));
+  --vyay-ink: hsl(var(--foreground));
+  --vyay-ink-muted: hsl(var(--muted-foreground));
   --vyay-ink-subtle: #8FA0B2;
-  
-  /* Accents */
-  --vyay-primary: #008C69;         /* Emerald — primary actions, approvals */
-  --vyay-primary-hover: #007456;
+  --vyay-primary: #1B5E3B;
+  --vyay-primary-hover: #14492e;
   --vyay-primary-soft: #E6F5F0;
-  
-  --vyay-accent: #B7F500;          /* Lively lime — restrained highlights only */
+  --vyay-accent: #A8E600;
   --vyay-accent-soft: #F4FDE5;
-  
-  --vyay-link: #2563EB;            /* Blue — links/info */
-  
-  /* Semantic Status Colors (never use color alone without text/icon) */
-  --vyay-status-approved: #008C69;
+  --vyay-link: #2563EB;
+  --vyay-status-approved: #1B5E3B;
   --vyay-status-approved-bg: #E6F5F0;
-  
   --vyay-status-pending: #D97706;
   --vyay-status-pending-bg: #FEF3C7;
-  
   --vyay-status-rejected: #DC2626;
   --vyay-status-rejected-bg: #FEE2E2;
-  
   --vyay-status-synced: #2563EB;
   --vyay-status-synced-bg: #EFF6FF;
-
   --vyay-status-failed: #7C3AED;
   --vyay-status-failed-bg: #F3E8FF;
-
-  /* Borders & Dividers */
-  --vyay-border: #E5EAF0;
+  --vyay-border: hsl(var(--border));
   --vyay-border-strong: #CBD5E1;
-
-  /* Radii */
   --vyay-radius-control: 12px;
   --vyay-radius-card: 14px;
   --vyay-radius-pill: 9999px;
-
-  /* Shadows */
-  --vyay-shadow-sm: 0 1px 2px 0 rgba(20, 35, 51, 0.05);
-  --vyay-shadow-md: 0 4px 6px -1px rgba(20, 35, 51, 0.08), 0 2px 4px -2px rgba(20, 35, 51, 0.04);
-  --vyay-shadow-lg: 0 10px 15px -3px rgba(20, 35, 51, 0.1), 0 4px 6px -4px rgba(20, 35, 51, 0.05);
-
-  /* Typography */
+  --vyay-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --vyay-shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.10), 0 2px 6px -2px rgba(0, 0, 0, 0.08);
+  --vyay-shadow-lg: 0 8px 32px -4px rgba(0, 0, 0, 0.16);
   --vyay-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --vyay-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 }
 
 [data-theme="dark"], .dark {
-  --vyay-bg: #0D141A;
-  --vyay-surface: #151F27;
-  --vyay-surface-elevated: #1C2833;
-  
-  --vyay-ink: #EDF4F7;
-  --vyay-ink-muted: #94A3B8;
+  color-scheme: dark;
+  --background:  160 20% 6%;
+  --foreground:  160 10% 95%;
+
+  --card:        160 20% 9%;
+  --card-foreground: 160 10% 95%;
+
+  --popover:     160 20% 9%;
+  --popover-foreground: 160 10% 95%;
+
+  --primary:     155 55% 36%;     /* Elegant deep KaaryaMitra forest green: calm, premium, easy on the eyes */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary:   160 30% 20%;
+  --secondary-foreground: 0 0% 95%;
+
+  --muted:       160 20% 14%;
+  --muted-foreground: 160 10% 55%;
+
+  --accent:      160 25% 16%;
+  --accent-foreground: 155 60% 70%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:      160 20% 18%;
+  --input:       160 20% 18%;
+  --ring:        155 55% 45%;
+
+  --sidebar:            160 25% 8%;
+  --sidebar-foreground: 0 0% 95%;
+  --sidebar-border:     160 20% 14%;
+  --sidebar-accent:     160 20% 14%;
+  --sidebar-muted:      160 10% 60%;
+
+  --vyay-bg: hsl(var(--background));
+  --vyay-surface: hsl(var(--card));
+  --vyay-surface-elevated: #16241e;
+  --vyay-ink: hsl(var(--foreground));
+  --vyay-ink-muted: hsl(var(--muted-foreground));
   --vyay-ink-subtle: #64748B;
-  
-  --vyay-primary: #00A87E;
-  --vyay-primary-hover: #00C292;
-  --vyay-primary-soft: #082921;
-
-  --vyay-accent: #B7F500;
-  --vyay-accent-soft: #1C2605;
-
+  --vyay-primary: #1B5E3B;
+  --vyay-primary-hover: #14492e;
+  --vyay-primary-soft: #12281a;
+  --vyay-accent: #34D399;
+  --vyay-accent-soft: #064E3B;
   --vyay-link: #60A5FA;
-
   --vyay-status-approved: #34D399;
   --vyay-status-approved-bg: #064E3B;
-
   --vyay-status-pending: #FBBF24;
   --vyay-status-pending-bg: #78350F;
-
   --vyay-status-rejected: #F87171;
   --vyay-status-rejected-bg: #7F1D1D;
-
   --vyay-status-synced: #60A5FA;
   --vyay-status-synced-bg: #1E3A8A;
-
   --vyay-status-failed: #A78BFA;
   --vyay-status-failed-bg: #4C1D95;
-
-  --vyay-border: #2D3942;
-  --vyay-border-strong: #3E4E5B;
-
-  --vyay-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --vyay-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --vyay-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --vyay-border: hsl(var(--border));
+  --vyay-border-strong: #2a3d34;
 }

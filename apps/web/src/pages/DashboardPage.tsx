@@ -8,22 +8,15 @@ import {
   Receipt,
   CheckCircle,
   Clock,
-  Sparkles,
-  CheckCircle2,
-  X,
-  ChevronRight,
+  ArrowRight,
+  FileText,
   ShieldCheck,
+  TrendingUp,
+  Layers,
+  Sparkles,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
-  const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('vyay_onboarding_dismissed') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
   const [reports, setReports] = useState<ReportRecord[]>([]);
 
   useEffect(() => {
@@ -43,13 +36,6 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
       isMounted = false;
     };
   }, []);
-
-  const handleDismissOnboarding = () => {
-    setOnboardingDismissed(true);
-    try {
-      localStorage.setItem('vyay_onboarding_dismissed', 'true');
-    } catch {}
-  };
 
   // Compute live KPI figures
   const pendingReports = reports.filter(
@@ -78,211 +64,178 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
 
   return (
     <div className="space-y-6">
-      {/* Top Welcome Bar & Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-        <div className="flex items-center space-x-3.5">
-          <img
-            src="/Blue%20Teal%20Gradient%20Wing%20Logo.png"
-            alt="VyayMitra"
-            className="w-12 h-12 object-contain rounded-xl p-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm"
-          />
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Welcome back, Sarah
+      {/* ── Executive Action Bar ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-border">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Dashboard Overview
             </h1>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
-              Horizon Scientific Ltd &bull; R&D Department
-            </p>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+              Live Feed
+            </span>
           </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Horizon Scientific India Ltd &bull; R&D Operations & Finance Desk
+          </p>
         </div>
-        <div className="flex items-center space-x-3">
+
+        <div className="flex items-center space-x-2.5">
+          <button
+            onClick={() => onNavigate('/reports')}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:bg-muted text-foreground transition-smooth"
+          >
+            <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+            <span>View Reports</span>
+          </button>
           <button
             onClick={() => onNavigate('/expenses')}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-primary hover:opacity-90 text-primary-foreground transition-smooth shadow-card"
           >
-            <Plus className="w-4 h-4" />
-            <span>Create Expense</span>
+            <Plus className="w-3.5 h-3.5 text-km-lime" />
+            <span>New Expense</span>
           </button>
         </div>
       </div>
 
-      {/* Dismissible Commercial Onboarding Checklist (M7) */}
-      {!onboardingDismissed && (
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 dark:border-emerald-500/30 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#008C69] text-white flex items-center justify-center shadow-sm">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:white flex items-center gap-2">
-                  <span>Commercial Release Onboarding Checklist</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    5 of 5 Complete (100%)
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-500">
-                  All foundational release gates, accounting mappings, and security policies are active.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleDismissOnboarding}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg transition-colors"
-              title="Dismiss checklist"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div className="h-full bg-[#008C69] rounded-full w-full" />
-          </div>
-
-          {/* Checklist Items Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1 text-xs">
-            <div
-              onClick={() => onNavigate('/settings')}
-              className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] hover:border-[#008C69] transition-all cursor-pointer space-y-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">1. Tenant Profile</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
-              <p className="text-[10px] text-slate-400">GSTIN & fiscal defaults set</p>
-            </div>
-
-            <div
-              onClick={() => onNavigate('/approvals')}
-              className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] hover:border-[#008C69] transition-all cursor-pointer space-y-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">2. Approval Flow</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
-              <p className="text-[10px] text-slate-400">Multi-stage & delegation active</p>
-            </div>
-
-            <div
-              onClick={() => onNavigate('/expenses')}
-              className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] hover:border-[#008C69] transition-all cursor-pointer space-y-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">3. Receipt Capture</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
-              <p className="text-[10px] text-slate-400">OCR parsing & verification</p>
-            </div>
-
-            <div
-              onClick={() => onNavigate('/integrations')}
-              className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] hover:border-[#008C69] transition-all cursor-pointer space-y-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">4. ERP Sync Connectors</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
-              <p className="text-[10px] text-slate-400">Zoho Books &bull; Xero &bull; Tally Prime</p>
-            </div>
-
-            <div
-              onClick={() => onNavigate('/settings')}
-              className="p-3 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] hover:border-[#008C69] transition-all cursor-pointer space-y-1.5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-900 dark:text-white text-[11px]">5. Data Retention</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
-              <p className="text-[10px] text-slate-400">90-day minimization & safe audit</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Dynamic KPI Cards */}
+      {/* ── KPI Metric Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Pending Approval</span>
-            <Clock className="w-4 h-4 text-amber-500" />
+        {/* Card 1: Pending Approvals */}
+        <div className="p-4 rounded-xl bg-card border border-border shadow-card hover:shadow-card-hover transition-smooth">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>Pending Approvals</span>
+            <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono">
+          <div className="mt-2 text-2xl font-bold font-mono tracking-tight text-foreground">
             <AmountDisplay amount={pendingAmount !== '0.00' ? pendingAmount : '14850.00'} currency="INR" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
-            {pendingReports.length || 2} expense reports pending review
-          </p>
+          <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
+            <span className="text-muted-foreground">
+              {pendingReports.length || 2} claims awaiting review
+            </span>
+            <span className="text-amber-600 dark:text-amber-400 font-medium">Needs Action</span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs">
+        {/* Card 2: Approved / In Review */}
+        <div className="p-4 rounded-xl bg-card border border-border shadow-card hover:shadow-card-hover transition-smooth">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>Approved & Ready</span>
-            <CheckCircle className="w-4 h-4 text-[#008C69]" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <CheckCircle className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono">
+          <div className="mt-2 text-2xl font-bold font-mono tracking-tight text-foreground">
             <AmountDisplay amount={approvedAmount !== '0.00' ? approvedAmount : '6200.00'} currency="INR" />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">In Finance processing queue</p>
+          <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
+            <span className="text-muted-foreground">Finance batch queue</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs">
+        {/* Card 3: Reimbursed MTD */}
+        <div className="p-4 rounded-xl bg-card border border-border shadow-card hover:shadow-card-hover transition-smooth">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
             <span>Reimbursed (MTD)</span>
-            <Receipt className="w-4 h-4 text-blue-500" />
+            <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <Receipt className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="mt-2 text-2xl font-bold font-mono">
+          <div className="mt-2 text-2xl font-bold font-mono tracking-tight text-foreground">
             <AmountDisplay amount={reimbursedAmount !== '0.00' ? reimbursedAmount : '31500.00'} currency="INR" />
           </div>
-          <p className="mt-1 text-[11px] text-emerald-600 font-medium">Paid to bank account</p>
+          <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
+            <span className="text-muted-foreground">Processed bank payouts</span>
+            <span className="text-blue-600 dark:text-blue-400 font-medium">Settled</span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>ERP Integrations</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+        {/* Card 4: Accounting & Suite Status */}
+        <div className="p-4 rounded-xl bg-card border border-border shadow-card hover:shadow-card-hover transition-smooth">
+          <div className="flex items-center justify-between text-muted-foreground text-xs font-medium">
+            <span>ERP & Suite Bridge</span>
+            <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <Layers className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="mt-2 text-base font-bold text-slate-900 dark:text-slate-100">
-            Zoho &bull; Xero &bull; Tally
+          <div className="mt-2 flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-km-lime animate-pulse" />
+            <span className="text-base font-bold text-foreground">Zoho Books &bull; Xero</span>
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">Multi-provider connectors active</p>
+          <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
+            <span className="text-muted-foreground">General Ledger Sync</span>
+            <span className="text-primary font-semibold">100% Active</span>
+          </div>
         </div>
       </div>
 
-      {/* Recent Activity Section */}
-      <div className="rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Claims & Submissions</h2>
-          <button onClick={() => onNavigate('/reports')} className="text-xs text-[#2563EB] font-medium flex items-center space-x-1">
-            <span>View All</span>
+      {/* ── PraveshMitra-Inspired Clean Workflow Rhythm ── */}
+      <div className="p-3.5 rounded-xl bg-muted/30 border border-border flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+        <div className="flex items-center space-x-2 text-muted-foreground">
+          <ShieldCheck className="w-4 h-4 text-primary" />
+          <span className="font-semibold text-foreground">Financial Integrity Guard:</span>
+          <span>Approval, accounting export, and bank reimbursement are strictly decoupled.</span>
+        </div>
+        <div className="flex items-center space-x-2 text-[11px] font-medium text-muted-foreground">
+          <span className="px-2 py-0.5 rounded bg-card border border-border text-foreground">1. Capture</span>
+          <ArrowRight className="w-3 h-3 text-muted-foreground/60" />
+          <span className="px-2 py-0.5 rounded bg-card border border-border text-foreground">2. Approve</span>
+          <ArrowRight className="w-3 h-3 text-muted-foreground/60" />
+          <span className="px-2 py-0.5 rounded bg-card border border-border text-foreground">3. GL Export</span>
+          <ArrowRight className="w-3 h-3 text-muted-foreground/60" />
+          <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground font-semibold">4. Payout</span>
+        </div>
+      </div>
+
+      {/* ── High-Density Recent Activity Data Grid ── */}
+      <div className="rounded-xl bg-card border border-border overflow-hidden shadow-card">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-card/80">
+          <div className="flex items-center space-x-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Recent Expense Claims & Submissions
+            </h2>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground font-mono">
+              {reports.length || 2} entries
+            </span>
+          </div>
+          <button
+            onClick={() => onNavigate('/reports')}
+            className="text-xs text-primary hover:underline font-semibold flex items-center space-x-1"
+          >
+            <span>View Full Ledger</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+            <thead className="bg-muted/40 text-muted-foreground border-b border-border font-semibold">
               <tr>
-                <th className="px-4 py-3 font-medium">Claim Title</th>
-                <th className="px-4 py-3 font-medium">Submitted Date</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Approval Status</th>
-                <th className="px-4 py-3 font-medium">Reimbursement</th>
-                <th className="px-4 py-3 font-medium">ERP Export</th>
+                <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider">Claim / Report Title</th>
+                <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider">Submitted</th>
+                <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider text-right">Amount</th>
+                <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider">Approval Stage</th>
+                <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider">Reimbursement</th>
+                <th className="px-4 py-2.5 text-[11px] uppercase tracking-wider">Accounting Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+            <tbody className="divide-y divide-border">
               {reports.length > 0 ? (
-                reports.slice(0, 5).map((r, idx) => (
-                  <tr key={r.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                      {r.title}
+                reports.slice(0, 6).map((r, idx) => (
+                  <tr key={r.id || idx} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate max-w-xs">{r.title}</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="px-4 py-3 text-muted-foreground">
                       {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-right font-mono font-medium">
                       <AmountDisplay amount={r.totalAmount || '0.00'} currency={r.currency || 'INR'} />
                     </td>
                     <td className="px-4 py-3">
@@ -306,12 +259,15 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
                 ))
               ) : (
                 <>
-                  <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                      Bangalore Lab Equipment & Reagents
+                  <tr className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span>Bangalore Lab Equipment & Reagents</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">18 Oct 2026</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-muted-foreground">18 Oct 2026</td>
+                    <td className="px-4 py-3 text-right font-mono font-medium">
                       <AmountDisplay amount="8450.00" currency="INR" />
                     </td>
                     <td className="px-4 py-3">
@@ -324,12 +280,15 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
                       <StatusBadge status={PostingStatus.QUEUED} />
                     </td>
                   </tr>
-                  <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-                      Delhi Client Field Audit Travel
+                  <tr className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span>Delhi Client Field Audit Travel</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">16 Oct 2026</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-muted-foreground">16 Oct 2026</td>
+                    <td className="px-4 py-3 text-right font-mono font-medium">
                       <AmountDisplay amount="6400.00" currency="INR" />
                     </td>
                     <td className="px-4 py-3">

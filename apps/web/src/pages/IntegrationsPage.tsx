@@ -19,6 +19,9 @@ import {
   Download,
   Server,
   Zap,
+  Users,
+  UserCheck,
+  Sparkles,
 } from 'lucide-react';
 import { ZohoRegion, PostingStatus } from '@vyay/contracts';
 import { api } from '../lib/api';
@@ -45,7 +48,83 @@ interface SyncJob {
   timestamp: string;
 }
 
-type ProviderType = 'zoho_books' | 'xero' | 'tally_prime';
+type ProviderType = 'zoho_books' | 'xero' | 'tally_prime' | 'kaaryamitra';
+
+interface KaaryaMitraEmployee {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  role: string;
+  reportingManager: string;
+  costCenter: string;
+  bankAccountMasked: string;
+  ifsc: string;
+  status: 'ACTIVE' | 'ON_LEAVE';
+}
+
+const INITIAL_KM_EMPLOYEES: KaaryaMitraEmployee[] = [
+  {
+    id: 'emp-101',
+    name: 'Dr. Rahul Sharma',
+    email: 'rahul.sharma@drantigravity.in',
+    department: 'Research & Diagnostics',
+    role: 'Lead Research Scientist',
+    reportingManager: 'Anita Deshmukh',
+    costCenter: 'CC-BIO-04',
+    bankAccountMasked: '•••• •••• 4912',
+    ifsc: 'HDFC0001234',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-102',
+    name: 'Anita Deshmukh',
+    email: 'anita.deshmukh@drantigravity.in',
+    department: 'Research & Diagnostics',
+    role: 'Principal Investigator & Manager',
+    reportingManager: 'Vikram Mehta',
+    costCenter: 'CC-BIO-04',
+    bankAccountMasked: '•••• •••• 8821',
+    ifsc: 'ICIC0000002',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-103',
+    name: 'Sarah Jenkins',
+    email: 'sarah.jenkins@drantigravity.in',
+    department: 'Finance & Compliance',
+    role: 'Finance Controller',
+    reportingManager: 'Vikram Mehta',
+    costCenter: 'CC-OPS-01',
+    bankAccountMasked: '•••• •••• 3340',
+    ifsc: 'SBIN0004512',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-104',
+    name: 'Vikram Mehta',
+    email: 'vikram.mehta@drantigravity.in',
+    department: 'Executive Leadership',
+    role: 'Managing Director & Owner',
+    reportingManager: 'Board of Directors',
+    costCenter: 'CC-EXEC-01',
+    bankAccountMasked: '•••• •••• 9901',
+    ifsc: 'KKBK0001829',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-105',
+    name: 'Pooja Verma',
+    email: 'pooja.verma@drantigravity.in',
+    department: 'Quality Assurance',
+    role: 'QA Compliance Auditor',
+    reportingManager: 'Anita Deshmukh',
+    costCenter: 'CC-QA-02',
+    bankAccountMasked: '•••• •••• 7114',
+    ifsc: 'AXIS0000881',
+    status: 'ACTIVE',
+  },
+];
 
 export const IntegrationsPage: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderType>('zoho_books');
@@ -291,28 +370,52 @@ export const IntegrationsPage: React.FC = () => {
         return 'Xero Accounting';
       case 'tally_prime':
         return 'Tally Prime';
+      case 'kaaryamitra':
+        return 'KaaryaMitra HRMS Bridge';
     }
   }
+
+  const handleSyncKaaryaMitra = () => {
+    setSyncing(true);
+    setTimeout(() => {
+      setSyncing(false);
+      setFeedback({
+        type: 'success',
+        message:
+          'KaaryaMitra HRMS Bridge: Successfully synchronized 48 active employees, 4 department cost centers, and 3-level approval hierarchy with zero errors.',
+      });
+      setTimeout(() => setFeedback(null), 8000);
+    }, 900);
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Layers className="w-6 h-6 text-[#2563EB]" />
             Enterprise Accounting Integrations
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Automated GL posting, Chart of Accounts mapping, and XML vouchers for Zoho Books, Xero, and Tally Prime
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          {selectedProvider === 'tally_prime' ? (
+          {selectedProvider === 'kaaryamitra' ? (
+            <button
+              onClick={handleSyncKaaryaMitra}
+              disabled={syncing}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-card transition-all"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+              <span>{syncing ? 'Syncing HRMS...' : 'Sync Employee Directory Now'}</span>
+            </button>
+          ) : selectedProvider === 'tally_prime' ? (
             <button
               onClick={handleDownloadTallyXml}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-card transition-all"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download Tally XML</span>
@@ -328,26 +431,54 @@ export const IntegrationsPage: React.FC = () => {
             </button>
           )}
 
-          <button
-            onClick={handleTestConnection}
-            disabled={syncing}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#2563EB] text-white hover:bg-blue-700 transition-all shadow-sm"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-            <span>Test Connection</span>
-          </button>
+          {selectedProvider !== 'kaaryamitra' && (
+            <button
+              onClick={handleTestConnection}
+              disabled={syncing}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#2563EB] text-white hover:bg-blue-700 transition-all shadow-card"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+              <span>Test Connection</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Provider Selector Tabs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* Provider Selector Tabs (4 Tiles including KaaryaMitra) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* KaaryaMitra HRMS Bridge Tile */}
+        <button
+          type="button"
+          onClick={() => setSelectedProvider('kaaryamitra')}
+          className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
+            selectedProvider === 'kaaryamitra'
+              ? 'border-emerald-600 bg-emerald-50/70 dark:border-[#34D399] dark:bg-emerald-950/30 ring-2 ring-emerald-500/20 shadow-card'
+              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-card'
+          }`}
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-[#A8E600]">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-sm text-foreground">KaaryaMitra</span>
+              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-900 dark:bg-emerald-950 dark:text-[#A8E600]">
+                HRMS Bridge
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Employee directory sync, org tree, bank IFSC accounts & approval routing.
+            </p>
+          </div>
+        </button>
+
         <button
           type="button"
           onClick={() => setSelectedProvider('zoho_books')}
           className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
             selectedProvider === 'zoho_books'
-              ? 'border-[#008C69] bg-emerald-50/50 dark:border-[#34D399] dark:bg-emerald-950/20 ring-2 ring-[#008C69]/20 shadow-sm'
-              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#151F27]'
+              ? 'border-primary bg-emerald-50/50 dark:border-[#34D399] dark:bg-emerald-950/20 ring-2 ring-primary/20 shadow-card'
+              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-card'
           }`}
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
@@ -355,12 +486,12 @@ export const IntegrationsPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-slate-900 dark:text-white">Zoho Books</span>
+              <span className="font-bold text-sm text-foreground">Zoho Books</span>
               <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                 Connected
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               Multi-region cloud ERP (IN, US, EU, AU). Bills, expenses & GST input codes.
             </p>
           </div>
@@ -371,8 +502,8 @@ export const IntegrationsPage: React.FC = () => {
           onClick={() => setSelectedProvider('xero')}
           className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
             selectedProvider === 'xero'
-              ? 'border-sky-600 bg-sky-50/50 dark:border-sky-400 dark:bg-sky-950/20 ring-2 ring-sky-600/20 shadow-sm'
-              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#151F27]'
+              ? 'border-sky-600 bg-sky-50/50 dark:border-sky-400 dark:bg-sky-950/20 ring-2 ring-sky-600/20 shadow-card'
+              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-card'
           }`}
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">
@@ -380,12 +511,12 @@ export const IntegrationsPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-slate-900 dark:text-white">Xero Accounting</span>
+              <span className="font-bold text-sm text-foreground">Xero Accounting</span>
               <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 dark:bg-sky-950 dark:text-sky-300">
                 Connected
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               Global cloud accounting. ACCPAY bills, expense claims & tracking categories.
             </p>
           </div>
@@ -396,8 +527,8 @@ export const IntegrationsPage: React.FC = () => {
           onClick={() => setSelectedProvider('tally_prime')}
           className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
             selectedProvider === 'tally_prime'
-              ? 'border-amber-600 bg-amber-50/50 dark:border-amber-400 dark:bg-amber-950/20 ring-2 ring-amber-600/20 shadow-sm'
-              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-[#151F27]'
+              ? 'border-amber-600 bg-amber-50/50 dark:border-amber-400 dark:bg-amber-950/20 ring-2 ring-amber-600/20 shadow-card'
+              : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-card'
           }`}
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
@@ -405,13 +536,13 @@ export const IntegrationsPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-slate-900 dark:text-white">Tally Prime</span>
+              <span className="font-bold text-sm text-foreground">Tally Prime</span>
               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                XML & HTTP Gateway
+                XML & Gateway
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              India&apos;s leading ERP. Balanced Dr/Cr vouchers, direct Port 9000 sync & XML files.
+            <p className="mt-1 text-xs text-muted-foreground">
+              India&apos;s leading ERP. Balanced Dr/Cr vouchers & direct Port 9000 sync.
             </p>
           </div>
         </button>
@@ -441,19 +572,21 @@ export const IntegrationsPage: React.FC = () => {
       )}
 
       {/* Provider Details Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#151F27] space-y-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-card space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+              {selectedProvider === 'kaaryamitra' && <Users className="w-5 h-5 text-emerald-600 dark:text-[#A8E600]" />}
               {selectedProvider === 'zoho_books' && <Building className="w-5 h-5 text-emerald-600" />}
               {selectedProvider === 'xero' && <Globe className="w-5 h-5 text-sky-600" />}
               {selectedProvider === 'tally_prime' && <Database className="w-5 h-5 text-amber-600" />}
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-foreground">
                 {getProviderTitle(selectedProvider)} Connection Profile
               </h2>
               <p className="text-xs text-slate-500">
+                {selectedProvider === 'kaaryamitra' && 'Connected Suite: KaaryaMitra HRM & Workforce Suite (v2.4) · Org ID: HORIZON-SCI-BLR-01'}
                 {selectedProvider === 'zoho_books' && 'Connected Organization: Acme BioTech India Pvt Ltd (books.zoho.in)'}
                 {selectedProvider === 'xero' && 'Connected Tenant: Horizon Scientific Global (UK & Global Ops)'}
                 {selectedProvider === 'tally_prime' && 'Tally Company: Horizon Scientific India Pvt Ltd · HTTP Port 9000'}
@@ -510,62 +643,164 @@ export const IntegrationsPage: React.FC = () => {
         )}
       </div>
 
-      {/* GL Mappings Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#151F27] overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Category &amp; Tax Mappings ({getProviderTitle(selectedProvider)})
-            </h2>
-            <p className="text-xs text-slate-500">
-              Mapped to Chart of Accounts and GST Input Tax Credits
-            </p>
-          </div>
-          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-            {activeMappings.length} Active Mappings
-          </span>
-        </div>
+      {/* Render KaaryaMitra HRMS Bridge Panel or GL Mappings Table based on Selected Provider */}
+      {selectedProvider === 'kaaryamitra' ? (
+        <div className="space-y-4">
+          {/* Summary KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3.5 rounded-2xl bg-card border border-border shadow-card space-y-1">
+              <span className="text-slate-400 font-medium">Directory Sync Status</span>
+              <div className="text-base font-bold text-emerald-600 flex items-center space-x-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>48 Active Employees</span>
+              </div>
+              <span className="text-[10px] text-slate-400">Synced via webhook 12m ago</span>
+            </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 uppercase font-semibold">
-              <tr>
-                <th className="px-6 py-3">Expense Category</th>
-                <th className="px-6 py-3">General Ledger Account</th>
-                <th className="px-6 py-3">Statutory Tax Treatment</th>
-                <th className="px-6 py-3 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {activeMappings.map((m) => (
-                <tr key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                  <td className="px-6 py-3 font-semibold text-slate-800 dark:text-slate-200">
-                    {m.categoryName}
-                  </td>
-                  <td className="px-6 py-3 font-mono text-slate-700 dark:text-slate-300">
-                    {m.glAccountName}
-                  </td>
-                  <td className="px-6 py-3 font-medium text-slate-600 dark:text-slate-400">
-                    {m.taxCodeName}
-                  </td>
-                  <td className="px-6 py-3 text-right">
-                    <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                      <Check className="w-3 h-3" />
-                      Mapped
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <div className="p-3.5 rounded-2xl bg-card border border-border shadow-card space-y-1">
+              <span className="text-slate-400 font-medium">Departments Master</span>
+              <div className="text-base font-bold text-foreground">4 Cost Centers</div>
+              <span className="text-[10px] text-slate-400">R&D, QA, Diagnostics, Exec</span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-card border border-border shadow-card space-y-1">
+              <span className="text-slate-400 font-medium">Manager Approval Routes</span>
+              <div className="text-base font-bold text-foreground">3 Hierarchy Levels</div>
+              <span className="text-[10px] text-slate-400">Auto-routes to direct supervisor</span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-card border border-border shadow-card space-y-1">
+              <span className="text-slate-400 font-medium">Reimbursement Bank Accounts</span>
+              <div className="text-base font-bold text-emerald-600">100% IFSC Verified</div>
+              <span className="text-[10px] text-slate-400">Direct deposit ready</span>
+            </div>
+          </div>
+
+          {/* Synced Directory Table */}
+          <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden text-xs">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-foreground flex items-center space-x-2">
+                  <Users className="w-4 h-4 text-emerald-600 dark:text-[#A8E600]" />
+                  <span>KaaryaMitra Synced Employee Directory</span>
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Bi-directional synchronization of roles, departments, direct managers, and bank clearing details
+                </p>
+              </div>
+              <button
+                onClick={handleSyncKaaryaMitra}
+                disabled={syncing}
+                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 transition-all"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                <span>Trigger Resync</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/40 text-slate-500 uppercase font-semibold">
+                  <tr>
+                    <th className="px-4 py-3">Employee Name & Email</th>
+                    <th className="px-4 py-3">Department & Cost Center</th>
+                    <th className="px-4 py-3">Role / Designation</th>
+                    <th className="px-4 py-3">Approval Manager</th>
+                    <th className="px-4 py-3">Bank Clearing Info</th>
+                    <th className="px-4 py-3 text-right">Sync Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {INITIAL_KM_EMPLOYEES.map((emp) => (
+                    <tr key={emp.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-foreground">{emp.name}</div>
+                        <div className="text-[10px] font-mono text-slate-400">{emp.email}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-foreground">{emp.department}</div>
+                        <span className="text-[10px] font-mono text-slate-400">{emp.costCenter}</span>
+                      </td>
+                      <td className="px-4 py-3 text-foreground">{emp.role}</td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-foreground">{emp.reportingManager}</div>
+                        <span className="text-[10px] text-slate-400">1st-Stage Signoff</span>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[11px]">
+                        <div>{emp.bankAccountMasked}</div>
+                        <span className="text-[10px] text-slate-400">IFSC: {emp.ifsc}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                          <Check className="w-3 h-3" />
+                          ACTIVE
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* GL Mappings Table */
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-card dark:border-slate-800 dark:bg-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-foreground">
+                Category &amp; Tax Mappings ({getProviderTitle(selectedProvider)})
+              </h2>
+              <p className="text-xs text-slate-500">
+                Mapped to Chart of Accounts and GST Input Tax Credits
+              </p>
+            </div>
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              {activeMappings.length} Active Mappings
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-muted/40 text-slate-500 uppercase font-semibold">
+                <tr>
+                  <th className="px-6 py-3">Expense Category</th>
+                  <th className="px-6 py-3">General Ledger Account</th>
+                  <th className="px-6 py-3">Statutory Tax Treatment</th>
+                  <th className="px-6 py-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {activeMappings.map((m) => (
+                  <tr key={m.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                    <td className="px-6 py-3 font-semibold text-foreground">
+                      {m.categoryName}
+                    </td>
+                    <td className="px-6 py-3 font-mono text-slate-700 dark:text-slate-300">
+                      {m.glAccountName}
+                    </td>
+                    <td className="px-6 py-3 font-medium text-slate-600 dark:text-slate-400">
+                      {m.taxCodeName}
+                    </td>
+                    <td className="px-6 py-3 text-right">
+                      <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                        <Check className="w-3 h-3" />
+                        Mapped
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Sync Jobs Audit History */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#151F27] overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-card dark:border-slate-800 dark:bg-card overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h2 className="text-sm font-bold text-foreground">
               Accounting Synchronization Log &amp; Audit Trail
             </h2>
             <p className="text-xs text-slate-500">
@@ -577,7 +812,7 @@ export const IntegrationsPage: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 uppercase font-semibold">
+            <thead className="bg-muted/40 text-slate-500 uppercase font-semibold">
               <tr>
                 <th className="px-6 py-3">Provider</th>
                 <th className="px-6 py-3">Report ID</th>
@@ -589,13 +824,13 @@ export const IntegrationsPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {jobs.map((job) => (
                 <tr key={job.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                  <td className="px-6 py-3 font-semibold text-slate-800 dark:text-slate-200 uppercase">
+                  <td className="px-6 py-3 font-semibold text-foreground uppercase">
                     {job.provider.replace('_', ' ')}
                   </td>
                   <td className="px-6 py-3 font-mono text-slate-600 dark:text-slate-400">
                     {job.entityId}
                   </td>
-                  <td className="px-6 py-3 font-mono font-bold text-[#008C69] dark:text-[#34D399]">
+                  <td className="px-6 py-3 font-mono font-bold text-primary dark:text-[#34D399]">
                     {job.remoteReference || 'N/A'}
                   </td>
                   <td className="px-6 py-3">
@@ -616,11 +851,11 @@ export const IntegrationsPage: React.FC = () => {
       {/* Dry Run Modal */}
       {showDryRunModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="max-w-xl w-full rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#151F27] border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="max-w-xl w-full rounded-2xl bg-white p-6 shadow-float dark:bg-card border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Play className="w-5 h-5 text-indigo-600" />
-                <h3 className="font-bold text-slate-900 dark:text-white">
+                <h3 className="font-bold text-foreground">
                   Posting Dry-Run Preview ({getProviderTitle(selectedProvider)})
                 </h3>
               </div>
@@ -634,7 +869,7 @@ export const IntegrationsPage: React.FC = () => {
                 Dry-run validated report <strong>REP-2026-003</strong> against general ledger rules. No financial records were altered.
               </p>
 
-              <div className="rounded-xl bg-slate-50 p-4 dark:bg-[#1C2833] space-y-2 border border-slate-100 dark:border-slate-800">
+              <div className="rounded-xl bg-slate-50 p-4 dark:bg-muted space-y-2 border border-slate-100 dark:border-slate-800">
                 <div className="flex justify-between font-semibold">
                   <span>Report Total:</span>
                   <span className="font-mono text-emerald-600">₹4,500.00</span>
@@ -666,7 +901,7 @@ export const IntegrationsPage: React.FC = () => {
                 type="button"
                 onClick={handleExportReport}
                 disabled={exporting}
-                className="rounded-xl px-4 py-2 text-xs font-semibold bg-[#008C69] hover:bg-[#007054] text-white shadow-sm flex items-center gap-1.5"
+                className="rounded-xl px-4 py-2 text-xs font-semibold bg-primary hover:bg-[#007054] text-white shadow-card flex items-center gap-1.5"
               >
                 {exporting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
                 <span>Execute Actual Export</span>

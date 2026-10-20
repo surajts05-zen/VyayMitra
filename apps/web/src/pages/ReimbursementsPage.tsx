@@ -322,14 +322,14 @@ export const ReimbursementsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
             Reimbursement Register & Disbursements
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Disburse verified employee payments, track partial installments, and maintain an immutable banking audit trail
           </p>
         </div>
-        <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-3.5 py-2 rounded-xl shadow-sm">
+        <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-3.5 py-2 rounded-xl shadow-card">
           <Clock className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>Strict Financial Governance: Approval ≠ Reimbursement</span>
         </div>
@@ -345,12 +345,12 @@ export const ReimbursementsPage: React.FC = () => {
 
       {/* Filter Tabs & Search */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center p-1 bg-slate-100 dark:bg-[#1A2530] rounded-xl text-xs font-semibold">
+        <div className="flex items-center p-1 bg-muted/50 rounded-xl text-xs font-semibold">
           <button
             onClick={() => setFilterTab('ALL')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'ALL'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-card text-foreground shadow-card'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -360,7 +360,7 @@ export const ReimbursementsPage: React.FC = () => {
             onClick={() => setFilterTab('ELIGIBLE')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'ELIGIBLE'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-card text-foreground shadow-card'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -370,7 +370,7 @@ export const ReimbursementsPage: React.FC = () => {
             onClick={() => setFilterTab('PARTIAL')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'PARTIAL'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-card text-foreground shadow-card'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -380,7 +380,7 @@ export const ReimbursementsPage: React.FC = () => {
             onClick={() => setFilterTab('PAID')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'PAID'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-card text-foreground shadow-card'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -395,16 +395,16 @@ export const ReimbursementsPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search employee, report #, title..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#008C69]/20"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
       </div>
 
       {/* Main Reimbursements Table */}
-      <div className="rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] overflow-hidden shadow-sm">
+      <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+            <thead className="bg-muted/40 text-slate-500 border-b border-border">
               <tr>
                 <th className="px-4 py-3 font-medium">Employee Beneficiary</th>
                 <th className="px-4 py-3 font-medium">Claim Reference</th>
@@ -415,7 +415,7 @@ export const ReimbursementsPage: React.FC = () => {
                 <th className="px-4 py-3 font-medium text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+            <tbody className="divide-y divide-border">
               {filteredRecords.map((r) => {
                 const isSettled = r.status === ReimbursementStatus.PAID;
                 const isPartial = r.status === ReimbursementStatus.PARTIALLY_PAID;
@@ -427,7 +427,7 @@ export const ReimbursementsPage: React.FC = () => {
                     className="hover:bg-slate-50/60 dark:hover:bg-[#1A2530] transition-colors cursor-pointer"
                   >
                     <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-900 dark:text-slate-100">
+                      <div className="font-semibold text-foreground">
                         {r.employeeName}
                       </div>
                       <div className="text-[11px] text-slate-400 mt-0.5">
@@ -435,7 +435,7 @@ export const ReimbursementsPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">
+                      <div className="font-semibold text-foreground">
                         {r.reportNumber}
                       </div>
                       <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[200px]">
@@ -467,10 +467,10 @@ export const ReimbursementsPage: React.FC = () => {
                             e.stopPropagation();
                             handleOpenPaymentModal(r);
                           }}
-                          className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-sm transition-all ${
+                          className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-card transition-all ${
                             isPartial
                               ? 'bg-amber-600 hover:bg-amber-700'
-                              : 'bg-[#008C69] hover:bg-[#007456]'
+                              : 'bg-primary hover:opacity-90'
                           }`}
                         >
                           <CreditCard className="w-3.5 h-3.5" />
@@ -493,13 +493,13 @@ export const ReimbursementsPage: React.FC = () => {
       {/* Record Payment Installment Modal */}
       {showPaymentModal && payingRecord && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95">
-            <div className="p-5 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between bg-slate-50/50 dark:bg-[#1C2833]/50">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-lg overflow-hidden shadow-float animate-in zoom-in-95">
+            <div className="p-5 border-b border-border flex items-center justify-between bg-slate-50/50 dark:bg-muted/50">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#008C69]">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
                   Disbursement Execution
                 </span>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                <h2 className="text-base font-bold text-foreground">
                   Record Payout to {payingRecord.employeeName}
                 </h2>
               </div>
@@ -513,9 +513,9 @@ export const ReimbursementsPage: React.FC = () => {
 
             <div className="p-6 space-y-4 text-xs">
               {/* Beneficiary Card */}
-              <div className="p-3 bg-slate-50 dark:bg-[#1C2833] rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] space-y-1">
+              <div className="p-3 bg-muted/40 rounded-xl border border-border space-y-1">
                 <span className="text-slate-400 text-[10px] font-medium">Beneficiary Banking Record</span>
-                <div className="font-semibold text-slate-800 dark:text-slate-200">
+                <div className="font-semibold text-foreground">
                   {payingRecord.employeeName} ({payingRecord.employeeNumber})
                 </div>
                 <div className="text-[11px] text-slate-500">
@@ -548,7 +548,7 @@ export const ReimbursementsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setPaymentAmount(payingRecord.remainingAmount)}
-                    className="text-[#008C69] hover:underline font-semibold text-[11px]"
+                    className="text-primary hover:underline font-semibold text-[11px]"
                   >
                     Pay Full Remaining (₹{payingRecord.remainingAmount})
                   </button>
@@ -557,7 +557,7 @@ export const ReimbursementsPage: React.FC = () => {
                   type="text"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] font-mono font-bold text-sm text-slate-900 dark:text-slate-100"
+                  className="w-full p-2.5 rounded-xl border border-border bg-card font-mono font-bold text-sm text-foreground"
                 />
                 <span className="text-[10px] text-slate-400">
                   Exact partial decimal installments supported. Cannot exceed remaining balance.
@@ -573,7 +573,7 @@ export const ReimbursementsPage: React.FC = () => {
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                    className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                   >
                     <option value={PaymentMethod.BANK_TRANSFER}>Bank Transfer (NEFT / RTGS)</option>
                     <option value={PaymentMethod.UPI}>Corporate UPI Payout</option>
@@ -588,7 +588,7 @@ export const ReimbursementsPage: React.FC = () => {
                   <select
                     value={payerAccount}
                     onChange={(e) => setPayerAccount(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                    className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                   >
                     <option value="HDFC Corporate Operating A/C ****4091">
                       HDFC Operating A/C ****4091
@@ -608,7 +608,7 @@ export const ReimbursementsPage: React.FC = () => {
                   value={transactionRef}
                   onChange={(e) => setTransactionRef(e.target.value)}
                   placeholder="e.g. UTR-2026-NEFT-984102"
-                  className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] font-mono text-slate-900 dark:text-slate-100"
+                  className="w-full p-2.5 rounded-xl border border-border bg-card font-mono text-foreground"
                 />
                 <span className="text-[10px] text-slate-400">
                   Anti-duplicate gate: Every transaction reference must be unique.
@@ -625,12 +625,12 @@ export const ReimbursementsPage: React.FC = () => {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Disbursed via standard banking batch run"
-                  className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                  className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-end space-x-2.5 bg-slate-50/50 dark:bg-[#1C2833]/50">
+            <div className="p-4 border-t border-border flex items-center justify-end space-x-2.5 bg-slate-50/50 dark:bg-muted/50">
               <button
                 onClick={() => setShowPaymentModal(false)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-800"
@@ -639,7 +639,7 @@ export const ReimbursementsPage: React.FC = () => {
               </button>
               <button
                 onClick={handleRecordPayment}
-                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm"
+                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Confirm & Disburse Payout</span>
@@ -652,8 +652,8 @@ export const ReimbursementsPage: React.FC = () => {
       {/* Payment History & Installment Audit Drawer / Modal */}
       {selectedRecord && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in-95">
-            <div className="p-5 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-xl overflow-hidden shadow-float animate-in zoom-in-95">
+            <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
@@ -661,7 +661,7 @@ export const ReimbursementsPage: React.FC = () => {
                   </span>
                   <StatusBadge status={selectedRecord.status} />
                 </div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
+                <h2 className="text-base font-bold text-foreground mt-1">
                   Reimbursement Payout History: {selectedRecord.employeeName}
                 </h2>
               </div>
@@ -674,7 +674,7 @@ export const ReimbursementsPage: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-[#1C2833] rounded-xl flex items-center justify-between">
+              <div className="p-3 bg-muted/40 rounded-xl flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-slate-400">Total Eligible:</span>
                   <div className="font-bold font-mono">₹{selectedRecord.eligibleAmount}</div>
@@ -698,7 +698,7 @@ export const ReimbursementsPage: React.FC = () => {
                   Recorded Installments ({selectedRecord.payments.length})
                 </h4>
                 {selectedRecord.payments.length === 0 ? (
-                  <div className="p-6 text-center text-slate-400 border border-dashed border-[#E5EAF0] dark:border-[#2D3942] rounded-xl">
+                  <div className="p-6 text-center text-slate-400 border border-dashed border-border rounded-xl">
                     No disbursement payments recorded yet for this claim.
                   </div>
                 ) : (
@@ -706,10 +706,10 @@ export const ReimbursementsPage: React.FC = () => {
                     {selectedRecord.payments.map((p) => (
                       <div
                         key={p.id}
-                        className="p-3 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-slate-50/50 dark:bg-[#1C2833]/50 flex items-start justify-between"
+                        className="p-3 rounded-xl border border-border bg-slate-50/50 dark:bg-muted/50 flex items-start justify-between"
                       >
                         <div>
-                          <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                          <div className="font-semibold text-foreground flex items-center space-x-2">
                             <span>₹{p.amount}</span>
                             <span className="text-[10px] text-slate-400 font-mono">
                               ({p.method})
@@ -722,7 +722,7 @@ export const ReimbursementsPage: React.FC = () => {
                             Disbursed by {p.recordedBy} from {p.payerBankAccount}
                           </div>
                           {p.notes && (
-                            <div className="text-[11px] text-slate-600 dark:text-slate-300 italic mt-1">
+                            <div className="text-[11px] text-foreground/80 italic mt-1">
                               &ldquo;{p.notes}&rdquo;
                             </div>
                           )}
@@ -737,13 +737,13 @@ export const ReimbursementsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between bg-slate-50/50 dark:bg-[#1C2833]/50">
+            <div className="p-4 border-t border-border flex items-center justify-between bg-slate-50/50 dark:bg-muted/50">
               <span className="text-[11px] text-slate-400">
                 Immutable banking ledger entry &bull; Section 139 IT Act Compliant
               </span>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-[#1C2833] hover:bg-slate-200 text-slate-700 dark:text-slate-300"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-muted/50 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
               >
                 Close History
               </button>

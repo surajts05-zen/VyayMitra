@@ -18,6 +18,11 @@ import {
   Check,
   X,
   Building,
+  Zap,
+  RefreshCw,
+  CheckCircle2,
+  Download,
+  ExternalLink,
 } from 'lucide-react';
 
 interface GLMappingRow {
@@ -138,6 +143,14 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
   const [taxVerified, setTaxVerified] = useState(true);
   const [glVerified, setGlVerified] = useState(true);
 
+  // ERP Export Modal State
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<'zoho_books' | 'xero' | 'tally_prime'>('zoho_books');
+  const [postingStatus, setPostingStatus] = useState<PostingStatus>(PostingStatus.NOT_QUEUED);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportStep, setExportStep] = useState(0);
+  const [remoteRef, setRemoteRef] = useState<string | null>(null);
+
   // GL Mappings State
   const [glMappings, setGlMappings] = useState<GLMappingRow[]>(INITIAL_GL_MAPPINGS);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -165,6 +178,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
   const handleDryRun = () => {
     setDryRunComplete(true);
+    setPostingStatus(PostingStatus.QUEUED);
     setSyncStatusMsg(
       'Dry-run preview validated: 100% GL Accounts & GST Tax Codes correctly mapped for Zoho Books.'
     );
@@ -172,8 +186,37 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
   };
 
   const handleFinalize = () => {
-    setSyncStatusMsg('Report finalized and queued for transactional outbox export to Zoho Books.');
-    setTimeout(() => setSyncStatusMsg(null), 4000);
+    setPostingStatus(PostingStatus.QUEUED);
+    setSyncStatusMsg('Report finalized and queued in Transactional Outbox for ERP Export.');
+    setShowExportModal(true);
+  };
+
+  const handleExecuteExport = () => {
+    setIsExporting(true);
+    setExportStep(1);
+
+    setTimeout(() => {
+      setExportStep(2);
+      setTimeout(() => {
+        setExportStep(3);
+        setTimeout(() => {
+          setIsExporting(false);
+          setPostingStatus(PostingStatus.SYNCED);
+          const generatedRef =
+            selectedProvider === 'zoho_books'
+              ? 'ZOHO-BILL-8901'
+              : selectedProvider === 'xero'
+              ? 'XERO-INV-4412'
+              : 'TALLY-VCH-8821';
+          setRemoteRef(generatedRef);
+          setSyncStatusMsg(
+            `Successfully posted to ${
+              selectedProvider === 'zoho_books' ? 'Zoho Books' : selectedProvider === 'xero' ? 'Xero' : 'Tally Prime'
+            }! External Voucher Ref: ${generatedRef}`
+          );
+        }, 800);
+      }, 700);
+    }, 700);
   };
 
   return (
@@ -181,34 +224,27 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
             Finance Review & Accounting Engine
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Audit manager-approved submissions, map General Ledger accounts & GST tax rules, monitor budgets, and preview double-entry books
           </p>
         </div>
         <div className="flex items-center space-x-2.5">
           <button
-            onClick={() => onNavigate('/integrations')}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-all"
-          >
-            <Database className="w-3.5 h-3.5" />
-            <span>ERP Sync (Zoho &bull; Xero &bull; Tally)</span>
-          </button>
-          <button
             onClick={() => setActiveTab('LEDGER')}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-[#1C2833] text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-all"
+            className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-muted/50 text-foreground hover:bg-slate-200 dark:hover:bg-slate-800 transition-all border border-border"
           >
             <Eye className="w-3.5 h-3.5 text-slate-500" />
             <span>Ledger Simulator</span>
           </button>
           <button
-            onClick={handleFinalize}
-            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm"
+            onClick={() => setShowExportModal(true)}
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card"
           >
-            <CheckCheck className="w-4 h-4" />
-            <span>Finalize & Queue Export</span>
+            <Zap className="w-4 h-4 text-emerald-300" />
+            <span>Export to Accounting (ERP)</span>
           </button>
         </div>
       </div>
@@ -223,9 +259,9 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
       {/* Accounting Compliance Overview Badges */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-1 shadow-sm">
+        <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-card">
           <span className="text-slate-400 font-medium">Accounting ERP Engine</span>
-          <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+          <div className="font-bold text-foreground text-sm">
             Zoho Books &bull; Xero &bull; Tally Prime
           </div>
           <span className="text-[11px] text-emerald-600 font-medium flex items-center space-x-1">
@@ -234,9 +270,9 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-1 shadow-sm">
+        <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-card">
           <span className="text-slate-400 font-medium">Posting Strategy & Liability</span>
-          <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+          <div className="font-bold text-foreground text-sm">
             Vendor Bill Mode (Accounts Payable)
           </div>
           <span className="text-[11px] text-slate-500">
@@ -244,7 +280,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-1 shadow-sm">
+        <div className="p-4 rounded-2xl bg-card border border-border space-y-1 shadow-card">
           <span className="text-slate-400 font-medium">Indian GST Input Tax Compliance</span>
           <div className="font-bold text-emerald-600 flex items-center space-x-1.5 text-sm">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -257,12 +293,12 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center space-x-1.5 p-1 bg-slate-100 dark:bg-[#1A2530] rounded-xl text-xs font-semibold w-fit">
+      <div className="flex items-center space-x-1.5 p-1 bg-muted/50 rounded-xl text-xs font-semibold w-fit">
         <button
           onClick={() => setActiveTab('QUEUE')}
           className={`px-3 py-1.5 rounded-lg transition-all ${
             activeTab === 'QUEUE'
-              ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+              ? 'bg-card text-foreground shadow-card'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
           }`}
         >
@@ -272,7 +308,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
           onClick={() => setActiveTab('GL_MAPPINGS')}
           className={`px-3 py-1.5 rounded-lg transition-all ${
             activeTab === 'GL_MAPPINGS'
-              ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+              ? 'bg-card text-foreground shadow-card'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
           }`}
         >
@@ -282,7 +318,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
           onClick={() => setActiveTab('BUDGETS')}
           className={`px-3 py-1.5 rounded-lg transition-all ${
             activeTab === 'BUDGETS'
-              ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+              ? 'bg-card text-foreground shadow-card'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
           }`}
         >
@@ -292,7 +328,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
           onClick={() => setActiveTab('LEDGER')}
           className={`px-3 py-1.5 rounded-lg transition-all ${
             activeTab === 'LEDGER'
-              ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm'
+              ? 'bg-card text-foreground shadow-card'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
           }`}
         >
@@ -302,9 +338,9 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
       {/* TAB 1: Review Queue */}
       {activeTab === 'QUEUE' && (
-        <div className="rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+        <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-card">
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground">
               Manager-Approved Reports Awaiting Finance Clearance
             </span>
             <span className="text-[11px] text-slate-500">Total payable: ₹8,450.00</span>
@@ -312,7 +348,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+              <thead className="bg-muted/40 text-slate-500 border-b border-border">
                 <tr>
                   <th className="px-4 py-3 font-medium">Claim Information</th>
                   <th className="px-4 py-3 font-medium">Amount</th>
@@ -323,10 +359,10 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                   <th className="px-4 py-3 font-medium text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+              <tbody className="divide-y divide-border">
                 <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
                   <td className="px-4 py-3.5">
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="font-semibold text-foreground">
                       Bangalore Lab Equipment & Reagents
                     </div>
                     <div className="text-[11px] text-slate-400 mt-0.5">
@@ -342,7 +378,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                         type="checkbox"
                         checked={docVerified}
                         onChange={(e) => setDocVerified(e.target.checked)}
-                        className="rounded text-[#008C69]"
+                        className="rounded text-primary"
                       />
                       <span className={docVerified ? 'text-emerald-700 font-medium' : 'text-slate-400'}>
                         Tax Invoices Verified
@@ -353,7 +389,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                         type="checkbox"
                         checked={taxVerified}
                         onChange={(e) => setTaxVerified(e.target.checked)}
-                        className="rounded text-[#008C69]"
+                        className="rounded text-primary"
                       />
                       <span className={taxVerified ? 'text-emerald-700 font-medium' : 'text-slate-400'}>
                         GST ITC Classified
@@ -364,7 +400,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                         type="checkbox"
                         checked={glVerified}
                         onChange={(e) => setGlVerified(e.target.checked)}
-                        className="rounded text-[#008C69]"
+                        className="rounded text-primary"
                       />
                       <span className={glVerified ? 'text-emerald-700 font-medium' : 'text-slate-400'}>
                         GL 5010 & 6030 Mapped
@@ -380,12 +416,24 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                     <StatusBadge status={ReportStatus.APPROVED} />
                   </td>
                   <td className="px-4 py-3.5">
-                    <StatusBadge status={dryRunComplete ? PostingStatus.QUEUED : PostingStatus.NOT_QUEUED} />
+                    <StatusBadge status={postingStatus} />
+                    {remoteRef && (
+                      <div className="font-mono text-[10px] text-emerald-600 font-bold mt-1">
+                        Ref: {remoteRef}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3.5 text-right space-x-2">
                     <button
+                      onClick={() => setShowExportModal(true)}
+                      className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition-all"
+                    >
+                      <Zap className="w-3 h-3 text-km-lime" />
+                      <span>Export to ERP</span>
+                    </button>
+                    <button
                       onClick={() => onNavigate('/reimbursements')}
-                      className="inline-flex items-center space-x-1 text-xs font-semibold text-[#008C69] hover:underline"
+                      className="inline-flex items-center space-x-1 text-xs font-semibold text-primary hover:underline"
                     >
                       <span>Disburse Payout</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -400,10 +448,10 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
       {/* TAB 2: GL Account & Tax Treatments Mapping */}
       {activeTab === 'GL_MAPPINGS' && (
-        <div className="rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+        <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-card">
+          <div className="p-4 border-b border-border flex items-center justify-between">
             <div>
-              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              <h3 className="text-xs font-bold text-foreground">
                 General Ledger (GL) Code & GST Tax Treatment Mapping
               </h3>
               <p className="text-[11px] text-slate-500">
@@ -421,7 +469,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+              <thead className="bg-muted/40 text-slate-500 border-b border-border">
                 <tr>
                   <th className="px-4 py-3 font-medium">Expense Category</th>
                   <th className="px-4 py-3 font-medium">GL Account Code</th>
@@ -431,13 +479,13 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                   <th className="px-4 py-3 font-medium text-right">Edit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+              <tbody className="divide-y divide-border">
                 {glMappings.map((row) => {
                   const isEditing = editingCategory === row.categoryId;
 
                   return (
                     <tr key={row.categoryId} className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                      <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                      <td className="px-4 py-3 font-semibold text-foreground">
                         {row.categoryName}
                       </td>
                       <td className="px-4 py-3 font-mono">
@@ -446,15 +494,15 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                             type="text"
                             value={editGlCode}
                             onChange={(e) => setEditGlCode(e.target.value)}
-                            className="p-1 rounded border border-[#E5EAF0] dark:border-[#2D3942] w-20 bg-white dark:bg-[#151F27]"
+                            className="p-1 rounded border border-border w-20 bg-card"
                           />
                         ) : (
-                          <span className="bg-slate-100 dark:bg-[#1C2833] px-2 py-0.5 rounded font-bold">
+                          <span className="bg-muted/50 px-2 py-0.5 rounded font-bold">
                             {row.glCode}
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      <td className="px-4 py-3 text-foreground/80">
                         {row.glAccountName}
                       </td>
                       <td className="px-4 py-3">
@@ -462,7 +510,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                           <select
                             value={editTaxTreatment}
                             onChange={(e) => setEditTaxTreatment(e.target.value as any)}
-                            className="p-1 rounded border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27]"
+                            className="p-1 rounded border border-border bg-card"
                           >
                             <option value={TaxTreatment.ITC_ELIGIBLE}>ITC Eligible</option>
                             <option value={TaxTreatment.ITC_INELIGIBLE}>ITC Ineligible (Blocked u/s 17(5))</option>
@@ -491,7 +539,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                           <div className="flex items-center justify-end space-x-1">
                             <button
                               onClick={() => handleSaveEditGL(row.categoryId)}
-                              className="p-1 rounded bg-[#008C69] text-white hover:bg-[#007456]"
+                              className="p-1 rounded bg-primary text-white hover:bg-[#007456]"
                             >
                               <Check className="w-3.5 h-3.5" />
                             </button>
@@ -529,14 +577,14 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
             return (
               <div
                 key={b.id}
-                className="p-5 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-3 shadow-sm"
+                className="p-5 rounded-2xl bg-card border border-border space-y-3 shadow-card"
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       {b.targetType} &bull; {b.period}
                     </span>
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs mt-0.5">
+                    <h3 className="font-bold text-foreground text-xs mt-0.5">
                       {b.name}
                     </h3>
                   </div>
@@ -552,10 +600,10 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-slate-100 dark:bg-[#1C2833] h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-muted/50 h-2 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
-                      isHighUtilization ? 'bg-amber-500' : 'bg-[#008C69]'
+                      isHighUtilization ? 'bg-amber-500' : 'bg-primary'
                     }`}
                     style={{ width: `${Math.min(b.utilizationPercent, 100)}%` }}
                   ></div>
@@ -579,13 +627,13 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
       {/* TAB 4: Double-Entry Ledger Simulator */}
       {activeTab === 'LEDGER' && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] space-y-5 shadow-sm text-xs">
-          <div className="flex items-center justify-between border-b border-[#E5EAF0] dark:border-[#2D3942] pb-4">
+        <div className="p-6 rounded-2xl bg-card border border-border space-y-5 shadow-card text-xs">
+          <div className="flex items-center justify-between border-b border-border pb-4">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#008C69]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
                 Double-Entry Accounting Verification
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+              <h3 className="text-sm font-bold text-foreground mt-0.5">
                 Balanced Ledger Posting Simulation (Report: REP-2026-0891)
               </h3>
             </div>
@@ -597,35 +645,35 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Debit Side */}
-            <div className="p-4 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-slate-50/50 dark:bg-[#1C2833]/50 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E5EAF0] dark:border-[#2D3942]">
-                <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
+            <div className="p-4 rounded-xl border border-border bg-slate-50/50 dark:bg-muted/50 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                   Debit Entries (Expenses & Input Tax Assets)
                 </span>
-                <span className="font-bold text-[#008C69]">Total: ₹8,450.00</span>
+                <span className="font-bold text-primary">Total: ₹8,450.00</span>
               </div>
               <div className="space-y-2">
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+                <div className="p-2.5 rounded-lg bg-card border border-border flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="font-semibold text-foreground">
                       5010 &bull; Direct Scientific Consumables
                     </div>
                     <div className="text-[10px] text-slate-400">Expense Asset &bull; Merck Biosciences Reagents</div>
                   </div>
                   <span className="font-mono font-bold">₹7,656.78</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+                <div className="p-2.5 rounded-lg bg-card border border-border flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="font-semibold text-foreground">
                       2110 &bull; Input Tax Credit - CGST (Receivable)
                     </div>
                     <div className="text-[10px] text-emerald-600">Current Asset &bull; 9% Central GST</div>
                   </div>
                   <span className="font-mono font-bold">₹396.61</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+                <div className="p-2.5 rounded-lg bg-card border border-border flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="font-semibold text-foreground">
                       2111 &bull; Input Tax Credit - SGST (Receivable)
                     </div>
                     <div className="text-[10px] text-emerald-600">Current Asset &bull; 9% State GST</div>
@@ -636,17 +684,17 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
             </div>
 
             {/* Credit Side */}
-            <div className="p-4 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-slate-50/50 dark:bg-[#1C2833]/50 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E5EAF0] dark:border-[#2D3942]">
-                <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
+            <div className="p-4 rounded-xl border border-border bg-slate-50/50 dark:bg-muted/50 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                   Credit Entries (Accounts Payable Liability)
                 </span>
-                <span className="font-bold text-[#008C69]">Total: ₹8,450.00</span>
+                <span className="font-bold text-primary">Total: ₹8,450.00</span>
               </div>
               <div className="space-y-2">
-                <div className="p-2.5 rounded-lg bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+                <div className="p-2.5 rounded-lg bg-card border border-border flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="font-semibold text-foreground">
                       2010 &bull; Employee Reimbursements Payable
                     </div>
                     <div className="text-[10px] text-slate-400">
@@ -655,6 +703,192 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                   </div>
                   <span className="font-mono font-bold">₹8,450.00</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ERP Sync & Accounting Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-float text-xs animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    ERP Sync & Accounting Export (Transactional Outbox)
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    Post double-entry journal vouchers or vendor bills to connected accounting software
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Provider Selection */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">
+                Target Accounting ERP Destination
+              </label>
+              <div className="grid grid-cols-3 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedProvider('zoho_books')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    selectedProvider === 'zoho_books'
+                      ? 'border-emerald-600 bg-emerald-500/10 ring-2 ring-emerald-500/20'
+                      : 'border-border bg-card hover:border-slate-300'
+                  }`}
+                >
+                  <div className="font-bold text-foreground flex items-center justify-between">
+                    <span>Zoho Books</span>
+                    {selectedProvider === 'zoho_books' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">India GST Bills API</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedProvider('xero')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    selectedProvider === 'xero'
+                      ? 'border-sky-600 bg-sky-500/10 ring-2 ring-sky-500/20'
+                      : 'border-border bg-card hover:border-slate-300'
+                  }`}
+                >
+                  <div className="font-bold text-foreground flex items-center justify-between">
+                    <span>Xero Accounting</span>
+                    {selectedProvider === 'xero' && <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">ACCPAY Invoices</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedProvider('tally_prime')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    selectedProvider === 'tally_prime'
+                      ? 'border-amber-600 bg-amber-500/10 ring-2 ring-amber-500/20'
+                      : 'border-border bg-card hover:border-slate-300'
+                  }`}
+                >
+                  <div className="font-bold text-foreground flex items-center justify-between">
+                    <span>Tally Prime</span>
+                    {selectedProvider === 'tally_prime' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">XML Journal Voucher</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Claim Summary Card */}
+            <div className="p-3.5 rounded-xl bg-muted/30 border border-border flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold">Ready for Export</span>
+                <div className="text-xs font-bold text-foreground">REP-2026-0891: Bangalore Lab Equipment & Reagents</div>
+                <div className="text-[11px] text-muted-foreground">Submitter: Dr. Rahul Sharma (R&D) &bull; Mode: Vendor Bill</div>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold">Total Payable</span>
+                <div className="text-base font-bold font-mono text-primary">₹8,450.00</div>
+              </div>
+            </div>
+
+            {/* Double Entry Posting Preview */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Double-Entry Ledger Journal Entries (Zero-Drift)
+              </span>
+              <div className="divide-y divide-border border border-border rounded-xl overflow-hidden font-mono text-[11px]">
+                <div className="p-2.5 flex justify-between bg-emerald-50/40 dark:bg-emerald-950/20">
+                  <span className="text-emerald-700 dark:text-emerald-300">Dr. 5010 Direct Scientific Consumables (Merck)</span>
+                  <span className="font-bold text-foreground">₹5,200.00</span>
+                </div>
+                <div className="p-2.5 flex justify-between bg-emerald-50/40 dark:bg-emerald-950/20">
+                  <span className="text-emerald-700 dark:text-emerald-300">Dr. 6030 Meals & Hospitality (Taj West End)</span>
+                  <span className="font-bold text-foreground">₹1,950.00</span>
+                </div>
+                <div className="p-2.5 flex justify-between bg-emerald-50/40 dark:bg-emerald-950/20">
+                  <span className="text-emerald-700 dark:text-emerald-300">Dr. 6015 Ground Commute (Uber India)</span>
+                  <span className="font-bold text-foreground">₹1,300.00</span>
+                </div>
+                <div className="p-2.5 flex justify-between bg-blue-50/40 dark:bg-blue-950/20">
+                  <span className="text-blue-700 dark:text-blue-300">Dr. 2200 CGST / SGST Input Tax Credit (ITC Eligible)</span>
+                  <span className="font-bold text-foreground">₹793.22</span>
+                </div>
+                <div className="p-2.5 flex justify-between bg-card font-semibold border-t-2 border-border">
+                  <span className="text-rose-600">Cr. 2010 Employee Reimbursement Clearing (AP)</span>
+                  <span className="font-bold text-rose-600 font-mono">₹8,450.00</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Export Outbox Execution Progress */}
+            {isExporting && (
+              <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 space-y-2">
+                <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-300 font-semibold">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>
+                    {exportStep === 1 && 'Step 1/3: Serializing JSON payload & verifying idempotency key...'}
+                    {exportStep === 2 && 'Step 2/3: Dispatching to Zoho Books API with HMAC OAuth bearer token...'}
+                    {exportStep === 3 && 'Step 3/3: Acknowledged by Zoho gateway! Generating immutable ledger entry...'}
+                  </span>
+                </div>
+                <div className="w-full bg-blue-200 dark:bg-blue-900 rounded-full h-1.5">
+                  <div
+                    className="bg-primary h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${(exportStep / 3) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {/* Success Remote Reference Banner */}
+            {remoteRef && (
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-200">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <div>
+                    <div className="font-bold">Sync Transaction Committed</div>
+                    <div className="text-[11px] font-mono">External Reference: {remoteRef}</div>
+                  </div>
+                </div>
+                <span className="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded text-[10px]">
+                  POSTED
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center pt-3 border-t border-border">
+              <span className="text-[11px] text-muted-foreground font-mono">
+                Idempotency Key: outbox_rep_0891_v1
+              </span>
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowExportModal(false)}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-all"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  disabled={isExporting}
+                  onClick={handleExecuteExport}
+                  className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card disabled:opacity-50"
+                >
+                  <Zap className="w-3.5 h-3.5 text-km-lime" />
+                  <span>{isExporting ? 'Exporting...' : 'Execute Export Now'}</span>
+                </button>
               </div>
             </div>
           </div>

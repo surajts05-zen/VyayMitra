@@ -615,16 +615,16 @@ export const ReportsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
             Expense Reports
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Assemble verified expenses into structured claims for automated policy evaluation and multi-stage signoff
           </p>
         </div>
         <button
           onClick={() => setShowWizard(true)}
-          className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] text-white transition-all shadow-sm hover:shadow active:scale-[0.98]"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 text-white transition-all shadow-card hover:shadow active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           <span>Assemble New Claim Report</span>
@@ -641,12 +641,12 @@ export const ReportsPage: React.FC = () => {
 
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center p-1 bg-slate-100 dark:bg-[#1A2530] rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300">
+        <div className="flex items-center p-1 bg-muted/50 rounded-xl text-xs font-medium text-foreground/80">
           <button
             onClick={() => setFilterTab('ALL')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'ALL'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm font-semibold'
+                ? 'bg-card text-foreground shadow-card font-semibold'
                 : 'hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
@@ -656,7 +656,7 @@ export const ReportsPage: React.FC = () => {
             onClick={() => setFilterTab('PENDING')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'PENDING'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm font-semibold'
+                ? 'bg-card text-foreground shadow-card font-semibold'
                 : 'hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
@@ -666,7 +666,7 @@ export const ReportsPage: React.FC = () => {
             onClick={() => setFilterTab('CHANGES')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'CHANGES'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm font-semibold'
+                ? 'bg-card text-foreground shadow-card font-semibold'
                 : 'hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
@@ -676,7 +676,7 @@ export const ReportsPage: React.FC = () => {
             onClick={() => setFilterTab('APPROVED')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               filterTab === 'APPROVED'
-                ? 'bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 shadow-sm font-semibold'
+                ? 'bg-card text-foreground shadow-card font-semibold'
                 : 'hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
@@ -691,16 +691,16 @@ export const ReportsPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search report #, title, employee..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#008C69]/20"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
       </div>
 
       {/* Main Reports Table */}
-      <div className="rounded-xl bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] overflow-hidden shadow-sm">
+      <div className="rounded-xl bg-card border border-border overflow-hidden shadow-card">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+            <thead className="bg-muted/40 text-slate-500 border-b border-border">
               <tr>
                 <th className="px-4 py-3 font-medium">Claim Information</th>
                 <th className="px-4 py-3 font-medium">Department</th>
@@ -712,7 +712,7 @@ export const ReportsPage: React.FC = () => {
                 <th className="px-4 py-3 font-medium text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+            <tbody className="divide-y divide-border">
               {filteredReports.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
@@ -727,7 +727,7 @@ export const ReportsPage: React.FC = () => {
                     onClick={() => setSelectedReport(report)}
                   >
                     <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center space-x-1.5">
+                      <div className="font-semibold text-foreground flex items-center space-x-1.5">
                         <span>{report.title}</span>
                         {report.policyViolations.length > 0 && (
                           <span className="inline-flex items-center text-[10px] bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 px-1.5 py-0.2 rounded font-medium">
@@ -741,17 +741,17 @@ export const ReportsPage: React.FC = () => {
                         <span>{report.submittedBy}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
+                    <td className="px-4 py-3.5 text-foreground/80">
                       <div>{report.department}</div>
                       <div className="text-[10px] text-slate-400">{report.costCenter}</div>
                     </td>
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
+                    <td className="px-4 py-3.5 text-foreground/80">
                       <div className="font-medium">{report.expenses.length} expenses</div>
                       <div className="text-[10px] text-slate-400">
                         {report.expenses.filter((e) => e.hasReceipt).length} verified
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">
+                    <td className="px-4 py-3.5 font-semibold text-foreground">
                       <AmountDisplay amount={report.totalAmount} currency={report.currency} />
                     </td>
                     <td className="px-4 py-3.5">
@@ -778,7 +778,7 @@ export const ReportsPage: React.FC = () => {
                           e.stopPropagation();
                           setSelectedReport(report);
                         }}
-                        className="inline-flex items-center space-x-1 text-xs font-semibold text-[#008C69] hover:underline"
+                        className="inline-flex items-center space-x-1 text-xs font-semibold text-primary hover:underline"
                       >
                         <span>Audit Flow</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -795,9 +795,9 @@ export const ReportsPage: React.FC = () => {
       {/* Report Details & Approval Timeline Modal / Drawer */}
       {selectedReport && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-float animate-in zoom-in-95">
             {/* Modal Header */}
-            <div className="p-5 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-start justify-between">
+            <div className="p-5 border-b border-border flex items-start justify-between">
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -806,7 +806,7 @@ export const ReportsPage: React.FC = () => {
                   <StatusBadge status={selectedReport.status} />
                   <StatusBadge status={selectedReport.reimbursementStatus} />
                 </div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
+                <h2 className="text-base font-bold text-foreground mt-1">
                   {selectedReport.title}
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -825,7 +825,7 @@ export const ReportsPage: React.FC = () => {
             {/* Modal Content Scroll Area */}
             <div className="p-6 overflow-y-auto space-y-6 text-xs">
               {/* Business Purpose Card */}
-              <div className="p-3.5 bg-slate-50 dark:bg-[#1C2833] rounded-xl border border-[#E5EAF0] dark:border-[#2D3942]">
+              <div className="p-3.5 bg-muted/40 rounded-xl border border-border">
                 <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                   Business Purpose & Justification
                 </div>
@@ -852,7 +852,7 @@ export const ReportsPage: React.FC = () => {
               {/* Sequential Multi-Stage Approval Timeline */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px]">
+                  <h3 className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                     Sequential Multi-Stage Approval Flow
                   </h3>
                   <span className="text-[11px] text-slate-400">
@@ -861,7 +861,7 @@ export const ReportsPage: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="relative border-l-2 border-[#E5EAF0] dark:border-[#2D3942] ml-4 pl-6 space-y-5">
+                <div className="relative border-l-2 border-border ml-4 pl-6 space-y-5">
                   {selectedReport.approvalFlow.map((step) => {
                     const isApproved = step.status === 'APPROVED';
                     const isPending = step.status === 'PENDING';
@@ -875,7 +875,7 @@ export const ReportsPage: React.FC = () => {
                             isApproved
                               ? 'bg-emerald-600 text-white ring-4 ring-white dark:ring-[#151F27]'
                               : isPending
-                              ? 'bg-[#008C69] text-white animate-pulse ring-4 ring-white dark:ring-[#151F27]'
+                              ? 'bg-primary text-white animate-pulse ring-4 ring-white dark:ring-[#151F27]'
                               : isRework
                               ? 'bg-amber-500 text-white ring-4 ring-white dark:ring-[#151F27]'
                               : 'bg-slate-300 text-slate-600 ring-4 ring-white dark:ring-[#151F27]'
@@ -884,9 +884,9 @@ export const ReportsPage: React.FC = () => {
                           {isApproved ? '✓' : step.sequence}
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-[#1C2833] p-3 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942]">
+                        <div className="bg-muted/40 p-3 rounded-xl border border-border">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-slate-900 dark:text-slate-100">
+                            <span className="font-semibold text-foreground">
                               {step.stepName}
                             </span>
                             <span
@@ -912,7 +912,7 @@ export const ReportsPage: React.FC = () => {
                             </div>
                           )}
                           {step.comment && (
-                            <div className="mt-2 text-[11px] p-2 bg-white dark:bg-[#151F27] rounded-lg border border-[#E5EAF0] dark:border-[#2D3942] italic text-slate-600 dark:text-slate-300">
+                            <div className="mt-2 text-[11px] p-2 bg-card rounded-lg border border-border italic text-foreground/80">
                               &ldquo;{step.comment}&rdquo;
                             </div>
                           )}
@@ -926,7 +926,7 @@ export const ReportsPage: React.FC = () => {
               {/* Expense Line Items Table */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px]">
+                  <h3 className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                     Attached Expense Items ({selectedReport.expenses.length})
                   </h3>
                   <div className="font-bold text-sm">
@@ -934,9 +934,9 @@ export const ReportsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="border border-[#E5EAF0] dark:border-[#2D3942] rounded-xl overflow-hidden">
+                <div className="border border-border rounded-xl overflow-hidden">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 dark:bg-[#1C2833] text-slate-500 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+                    <thead className="bg-muted/40 text-slate-500 border-b border-border">
                       <tr>
                         <th className="px-3 py-2 font-medium">Merchant / Vendor</th>
                         <th className="px-3 py-2 font-medium">Category</th>
@@ -945,10 +945,10 @@ export const ReportsPage: React.FC = () => {
                         <th className="px-3 py-2 font-medium text-right">Amount</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E5EAF0] dark:divide-[#2D3942]">
+                    <tbody className="divide-y divide-border">
                       {selectedReport.expenses.map((exp) => (
                         <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                          <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-200">
+                          <td className="px-3 py-2 font-medium text-foreground">
                             {exp.merchant}
                           </td>
                           <td className="px-3 py-2 text-slate-500">{exp.category}</td>
@@ -974,17 +974,17 @@ export const ReportsPage: React.FC = () => {
 
               {/* Immutable Audit Log */}
               <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-[11px]">
+                <h3 className="font-bold text-foreground uppercase tracking-wider text-[11px]">
                   Immutable Audit Log
                 </h3>
                 <div className="space-y-1.5">
                   {selectedReport.auditHistory.map((log, idx) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#1C2833] border border-[#E5EAF0] dark:border-[#2D3942] flex items-start justify-between text-[11px]"
+                      className="p-2.5 rounded-lg bg-muted/40 border border-border flex items-start justify-between text-[11px]"
                     >
                       <div>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        <span className="font-semibold text-foreground">
                           {log.actor}
                         </span>{' '}
                         &bull;{' '}
@@ -1003,13 +1003,13 @@ export const ReportsPage: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between">
+            <div className="p-4 border-t border-border flex items-center justify-between">
               <span className="text-xs text-slate-500">
                 Self-approval prevention enforced &bull; Audit lock active
               </span>
               <button
                 onClick={() => setSelectedReport(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-[#1C2833] hover:bg-slate-200 text-slate-700 dark:text-slate-300"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-muted/50 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
               >
                 Close View
               </button>
@@ -1021,14 +1021,14 @@ export const ReportsPage: React.FC = () => {
       {/* Assemble New Report Wizard Modal */}
       {showWizard && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#151F27] border border-[#E5EAF0] dark:border-[#2D3942] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-2xl overflow-hidden shadow-float animate-in zoom-in-95">
             {/* Wizard Header */}
-            <div className="p-5 border-b border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between bg-slate-50/50 dark:bg-[#1C2833]/50">
+            <div className="p-5 border-b border-border flex items-center justify-between bg-slate-50/50 dark:bg-muted/50">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#008C69]">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
                   Claim Assembly Wizard &bull; Step {wizardStep} of 2
                 </span>
-                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                <h2 className="text-base font-bold text-foreground">
                   {wizardStep === 1 ? 'Report Context & Purpose' : 'Select Expenses & Policy Pre-Check'}
                 </h2>
               </div>
@@ -1053,7 +1053,7 @@ export const ReportsPage: React.FC = () => {
                       value={reportTitle}
                       onChange={(e) => setReportTitle(e.target.value)}
                       placeholder="e.g. Hyderabad Q4 Bio-Summit Delegation or October Lab Supplies"
-                      className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#008C69]/20"
+                      className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -1066,7 +1066,7 @@ export const ReportsPage: React.FC = () => {
                       value={businessPurpose}
                       onChange={(e) => setBusinessPurpose(e.target.value)}
                       placeholder="State the commercial justification, project milestone, or client travel context..."
-                      className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#008C69]/20"
+                      className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -1078,7 +1078,7 @@ export const ReportsPage: React.FC = () => {
                       <select
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                        className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                       >
                         <option value="Research & Diagnostics">Research & Diagnostics</option>
                         <option value="Quality Assurance">Quality Assurance</option>
@@ -1095,20 +1095,20 @@ export const ReportsPage: React.FC = () => {
                         type="text"
                         value={costCenter}
                         onChange={(e) => setCostCenter(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-[#E5EAF0] dark:border-[#2D3942] bg-white dark:bg-[#151F27] text-slate-900 dark:text-slate-100"
+                        className="w-full p-2.5 rounded-xl border border-border bg-card text-foreground"
                       />
                     </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-between pb-2 border-b border-[#E5EAF0] dark:border-[#2D3942]">
+                  <div className="flex items-center justify-between pb-2 border-b border-border">
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
                       Unclaimed Verified Expenses ({AVAILABLE_UNCLAIMED_EXPENSES.length})
                     </span>
                     <button
                       onClick={handleSelectAllExpenses}
-                      className="text-[#008C69] hover:underline font-semibold"
+                      className="text-primary hover:underline font-semibold"
                     >
                       {selectedExpenseIds.length === AVAILABLE_UNCLAIMED_EXPENSES.length
                         ? 'Deselect All'
@@ -1125,8 +1125,8 @@ export const ReportsPage: React.FC = () => {
                           onClick={() => handleToggleExpense(exp.id)}
                           className={`p-3 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
                             isSelected
-                              ? 'border-[#008C69] bg-[#E6F5F0]/40 dark:bg-[#082921]/40'
-                              : 'border-[#E5EAF0] dark:border-[#2D3942] hover:bg-slate-50 dark:hover:bg-[#1C2833]'
+                              ? 'border-primary bg-[#E6F5F0]/40 dark:bg-[#082921]/40'
+                              : 'border-border hover:bg-slate-50 dark:hover:bg-[#1C2833]'
                           }`}
                         >
                           <div className="flex items-center space-x-3">
@@ -1134,10 +1134,10 @@ export const ReportsPage: React.FC = () => {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => {}}
-                              className="w-4 h-4 rounded text-[#008C69] focus:ring-[#008C69]"
+                              className="w-4 h-4 rounded text-primary focus:ring-primary"
                             />
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-slate-100">
+                              <div className="font-semibold text-foreground">
                                 {exp.merchant}
                               </div>
                               <div className="text-[11px] text-slate-400">
@@ -1169,16 +1169,16 @@ export const ReportsPage: React.FC = () => {
                   )}
 
                   {/* Summary Bar */}
-                  <div className="p-3.5 bg-slate-50 dark:bg-[#1C2833] rounded-xl flex items-center justify-between">
+                  <div className="p-3.5 bg-muted/40 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="text-slate-500">Selected Items:</span>{' '}
-                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                      <span className="font-bold text-foreground">
                         {selectedExpenseIds.length} receipts
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="text-slate-500">Total Claim:</span>{' '}
-                      <span className="font-bold text-sm text-[#008C69]">
+                      <span className="font-bold text-sm text-primary">
                         ₹{totalWizardAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -1188,7 +1188,7 @@ export const ReportsPage: React.FC = () => {
             </div>
 
             {/* Wizard Navigation Footer */}
-            <div className="p-4 border-t border-[#E5EAF0] dark:border-[#2D3942] flex items-center justify-between bg-slate-50/50 dark:bg-[#1C2833]/50">
+            <div className="p-4 border-t border-border flex items-center justify-between bg-slate-50/50 dark:bg-muted/50">
               {wizardStep === 1 ? (
                 <>
                   <button
@@ -1200,7 +1200,7 @@ export const ReportsPage: React.FC = () => {
                   <button
                     disabled={!reportTitle.trim()}
                     onClick={() => setWizardStep(2)}
-                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] disabled:opacity-50 text-white transition-all shadow-sm"
+                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 disabled:opacity-50 text-white transition-all shadow-card"
                   >
                     <span>Next: Select Expenses</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -1217,14 +1217,14 @@ export const ReportsPage: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleSubmitNewReport(false)}
-                      className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-[#E5EAF0] dark:border-[#2D3942] hover:bg-slate-100 dark:hover:bg-[#1C2833] text-slate-700 dark:text-slate-300"
+                      className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-border hover:bg-slate-100 dark:hover:bg-[#1C2833] text-slate-700 dark:text-slate-300"
                     >
                       Save as Draft
                     </button>
                     <button
                       disabled={selectedExpenseIds.length === 0}
                       onClick={() => handleSubmitNewReport(true)}
-                      className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#008C69] hover:bg-[#007456] disabled:opacity-50 text-white transition-all shadow-sm"
+                      className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:opacity-90 disabled:opacity-50 text-white transition-all shadow-card"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Submit for Approval</span>
