@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Decimal } from 'decimal.js';
@@ -20,6 +21,7 @@ import { ExpensesService } from '../expenses/expenses.service.js';
 import { ApprovalsService } from '../approvals/approvals.service.js';
 import { PolicyService } from '../approvals/policy.service.js';
 import { EmployeesService } from '../employees/employees.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface InMemoryReport {
   id: string;
@@ -45,13 +47,15 @@ interface InMemoryReport {
 
 @Injectable()
 export class ReportsService {
+  private readonly logger = new Logger(ReportsService.name);
   private reports = new Map<string, InMemoryReport>();
 
   constructor(
     private readonly expensesService: ExpensesService,
     private readonly approvalsService: ApprovalsService,
     private readonly policyService: PolicyService,
-    private readonly employeesService: EmployeesService
+    private readonly employeesService: EmployeesService,
+    private readonly prisma: PrismaService
   ) {
     this.seedBaselineReports();
     this.approvalsService.registerReportDecisionHandler(
@@ -77,6 +81,16 @@ export class ReportsService {
           await this.expensesService.unlockFromReport(tenantId, report.expenseIds, 'REJECTED' as any);
         }
         report.updatedAt = new Date().toISOString();
+
+        if (this.prisma?.isConnected) {
+          this.prisma.expenseReport.update({
+            where: { id: reportId },
+            data: {
+              status: report.status,
+              finalizedAt: report.approvedAt ? new Date(report.approvedAt) : null,
+            },
+          }).catch((err) => this.logger.warn(`Prisma report decision update warning: ${err.message}`));
+        }
       }
     );
   }
@@ -184,6 +198,23 @@ export class ReportsService {
     };
 
     this.reports.set(id, report);
+
+    if (this.prisma?.isConnected) {
+      this.prisma.expenseReport.create({
+        data: {
+          id,
+          tenantId,
+          employeeId: employee.id,
+          title: input.title,
+          businessPurpose: input.businessPurpose,
+          status: ReportStatus.DRAFT,
+          totalAmount: total.toFixed(6),
+          reimbursableAmount: reimbursable.toFixed(6),
+          currency,
+        },
+      }).catch((err) => this.logger.warn(`Prisma report create warning: ${err.message}`));
+    }
+
     return this.mapToDto(report);
   }
 
@@ -246,6 +277,16 @@ export class ReportsService {
     report.submittedAt = new Date().toISOString();
     report.policyViolations = policyResult.violations;
     report.updatedAt = new Date().toISOString();
+
+    if (this.prisma?.isConnected) {
+      this.prisma.expenseReport.update({
+        where: { id: report.id },
+        data: {
+          status: ReportStatus.SUBMITTED,
+          submittedAt: new Date(report.submittedAt),
+        },
+      }).catch((err) => this.logger.warn(`Prisma report submit update warning: ${err.message}`));
+    }
 
     return {
       report: this.mapToDto(report),
@@ -392,5 +433,23 @@ export class ReportsService {
       createdAt: rep.createdAt,
       updatedAt: rep.updatedAt,
     };
+  }
+
+  async purgeTenantReports(tenantId: string): Promise<number> {
+    let count = 0;
+    for (const [id, rep] of this.reports.entries()) {
+      if (rep.tenantId === tenantId) {
+        this.reports.delete(id);
+        count++;
+      }
+    }
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.expenseReport.deleteMany({ where: { tenantId } });
+      } catch (err) {
+        this.logger.warn(`Prisma purge reports warning: ${(err as Error).message}`);
+      }
+    }
+    return count;
   }
 }

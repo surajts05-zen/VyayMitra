@@ -12,6 +12,7 @@ import {
   PieChart as PieIcon,
   RefreshCw,
 } from 'lucide-react';
+import { isDemoTenant, isSampleDataPurged } from '../lib/api';
 
 interface CategorySpend {
   category: string;
@@ -35,41 +36,53 @@ interface SpendTrend {
   reimbursed: number;
 }
 
-export const AnalyticsPage: React.FC = () => {
+interface AnalyticsPageProps {
+  tenantName?: string;
+}
+
+export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ tenantName }) => {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | 'fiscal'>('90d');
   const [downloading, setDownloading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Financial figures for Horizon Scientific India Ltd
-  const totalSpend = 136150;
-  const reimbursedSpend = 112450;
-  const pendingDisbursement = 23700;
-  const policyViolationCount = 3;
-  const avgApprovalCycleDays = 1.8;
-  const avgReimbursementCycleDays = 2.4;
+  const isDemo = isDemoTenant() && !isSampleDataPurged();
 
-  const categoryBreakdown: CategorySpend[] = [
-    { category: 'Air Travel & Flights', amount: 54200, percentage: 39.8, color: '#008C69', count: 4 },
-    { category: 'Hotel & Accommodation', amount: 38400, percentage: 28.2, color: '#2563EB', count: 6 },
-    { category: 'Meals & Client Entertainment', amount: 16800, percentage: 12.3, color: '#F59E0B', count: 12 },
-    { category: 'Software & Cloud Tools', amount: 14500, percentage: 10.7, color: '#8B5CF6', count: 5 },
-    { category: 'Local Conveyance & Cabs', amount: 8250, percentage: 6.1, color: '#06B6D4', count: 18 },
-    { category: 'Office Supplies & Misc', amount: 4000, percentage: 2.9, color: '#64748B', count: 8 },
-  ];
+  // Financial figures
+  const totalSpend = isDemo ? 136150 : 0;
+  const reimbursedSpend = isDemo ? 112450 : 0;
+  const pendingDisbursement = isDemo ? 23700 : 0;
+  const policyViolationCount = isDemo ? 3 : 0;
+  const avgApprovalCycleDays = isDemo ? 1.8 : 0;
+  const avgReimbursementCycleDays = isDemo ? 2.4 : 0;
 
-  const departmentBreakdown: DeptSpend[] = [
-    { department: 'Research & Development (R&D)', amount: 62400, budget: 100000, utilization: 62.4 },
-    { department: 'Clinical Operations', amount: 38250, budget: 60000, utilization: 63.8 },
-    { department: 'Regulatory Affairs', amount: 18500, budget: 30000, utilization: 61.7 },
-    { department: 'Quality Assurance & QC', amount: 11000, budget: 25000, utilization: 44.0 },
-    { department: 'Executive & Admin', amount: 6000, budget: 20000, utilization: 30.0 },
-  ];
+  const categoryBreakdown: CategorySpend[] = isDemo
+    ? [
+        { category: 'Air Travel & Flights', amount: 54200, percentage: 39.8, color: '#008C69', count: 4 },
+        { category: 'Hotel & Accommodation', amount: 38400, percentage: 28.2, color: '#2563EB', count: 6 },
+        { category: 'Meals & Client Entertainment', amount: 16800, percentage: 12.3, color: '#F59E0B', count: 12 },
+        { category: 'Software & Cloud Tools', amount: 14500, percentage: 10.7, color: '#8B5CF6', count: 5 },
+        { category: 'Local Conveyance & Cabs', amount: 8250, percentage: 6.1, color: '#06B6D4', count: 18 },
+        { category: 'Office Supplies & Misc', amount: 4000, percentage: 2.9, color: '#64748B', count: 8 },
+      ]
+    : [];
 
-  const spendTrendData: SpendTrend[] = [
-    { period: 'Aug 2026', amount: 38200, reportCount: 14, reimbursed: 38200 },
-    { period: 'Sep 2026', amount: 44950, reportCount: 18, reimbursed: 44950 },
-    { period: 'Oct 2026 (MTD)', amount: 53000, reportCount: 21, reimbursed: 29300 },
-  ];
+  const departmentBreakdown: DeptSpend[] = isDemo
+    ? [
+        { department: 'Research & Development (R&D)', amount: 62400, budget: 100000, utilization: 62.4 },
+        { department: 'Clinical Operations', amount: 38250, budget: 60000, utilization: 63.8 },
+        { department: 'Regulatory Affairs', amount: 18500, budget: 30000, utilization: 61.7 },
+        { department: 'Quality Assurance & QC', amount: 11000, budget: 25000, utilization: 44.0 },
+        { department: 'Executive & Admin', amount: 6000, budget: 20000, utilization: 30.0 },
+      ]
+    : [];
+
+  const spendTrendData: SpendTrend[] = isDemo
+    ? [
+        { period: 'Aug 2026', amount: 38200, reportCount: 14, reimbursed: 38200 },
+        { period: 'Sep 2026', amount: 44950, reportCount: 18, reimbursed: 44950 },
+        { period: 'Oct 2026 (MTD)', amount: 53000, reportCount: 21, reimbursed: 29300 },
+      ]
+    : [];
 
   const handleDownloadCsv = () => {
     setDownloading(true);
@@ -176,10 +189,12 @@ export const AnalyticsPage: React.FC = () => {
               ₹{totalSpend.toLocaleString('en-IN')}
             </span>
             <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center">
-              <ArrowUpRight className="w-3 h-3" /> +12.4% MoM
+              <ArrowUpRight className="w-3 h-3" /> {isDemo ? '+12.4% MoM' : '0.0% MoM'}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">Across 53 approved expenses</p>
+          <p className="text-xs text-slate-500 mt-2">
+            {isDemo ? 'Across 53 approved expenses' : 'Across 0 approved expenses'}
+          </p>
         </div>
 
         {/* Reimbursed vs Pending */}
@@ -193,11 +208,13 @@ export const AnalyticsPage: React.FC = () => {
               ₹{reimbursedSpend.toLocaleString('en-IN')}
             </span>
             <span className="text-xs text-slate-500">
-              ({((reimbursedSpend / totalSpend) * 100).toFixed(0)}%)
+              ({totalSpend > 0 ? ((reimbursedSpend / totalSpend) * 100).toFixed(0) : '0'}%)
             </span>
           </div>
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-            ₹{pendingDisbursement.toLocaleString('en-IN')} in queue for payroll batch
+            {pendingDisbursement > 0
+              ? `₹${pendingDisbursement.toLocaleString('en-IN')} in queue for payroll batch`
+              : 'No pending disbursements in queue'}
           </p>
         </div>
 
@@ -209,14 +226,16 @@ export const AnalyticsPage: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-foreground">
-              {avgApprovalCycleDays} Days
+              {avgApprovalCycleDays > 0 ? `${avgApprovalCycleDays} Days` : '0.0 Days'}
             </span>
             <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
-              SLA Met (Goal: &lt;3d)
+              {isDemo ? 'SLA Met (Goal: <3d)' : 'Awaiting Claims'}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            Avg disbursement: {avgReimbursementCycleDays} days post-approval
+            {avgReimbursementCycleDays > 0
+              ? `Avg disbursement: ${avgReimbursementCycleDays} days post-approval`
+              : 'Disbursement turnaround will calculate upon settlement'}
           </p>
         </div>
 
@@ -231,10 +250,12 @@ export const AnalyticsPage: React.FC = () => {
               {policyViolationCount} Flags
             </span>
             <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-              94.3% Clean
+              {isDemo ? '94.3% Clean' : '100% Clean'}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">Top flag: Daily meal per-diem exceeded</p>
+          <p className="text-xs text-slate-500 mt-2">
+            {isDemo ? 'Top flag: Daily meal per-diem exceeded' : 'Zero compliance policy violations'}
+          </p>
         </div>
       </div>
 
@@ -250,42 +271,52 @@ export const AnalyticsPage: React.FC = () => {
             <span className="text-xs text-slate-500">{categoryBreakdown.length} Active Categories</span>
           </div>
 
-          <div className="space-y-3.5 pt-2">
-            {categoryBreakdown.map((cat) => (
-              <div key={cat.category} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: cat.color }}
+          {categoryBreakdown.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground text-xs">
+              <PieIcon className="w-8 h-8 mx-auto mb-2 opacity-30 text-primary" />
+              <p className="font-semibold text-foreground text-sm">No category spend recorded yet</p>
+              <p className="mt-1 max-w-xs mx-auto">
+                Categorized expense claims will be aggregated and visually broken down here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3.5 pt-2">
+              {categoryBreakdown.map((cat) => (
+                <div key={cat.category} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <span className="font-medium text-foreground">
+                        {cat.category}
+                      </span>
+                      <span className="text-xs text-slate-400">({cat.count} claims)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-foreground">
+                        ₹{cat.amount.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-xs font-mono text-slate-500 w-12 text-right">
+                        {cat.percentage}%
+                      </span>
+                    </div>
+                  </div>
+                  {/* Visual Progress Bar */}
+                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${cat.percentage}%`,
+                        backgroundColor: cat.color,
+                      }}
                     />
-                    <span className="font-medium text-foreground">
-                      {cat.category}
-                    </span>
-                    <span className="text-xs text-slate-400">({cat.count} claims)</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-foreground">
-                      ₹{cat.amount.toLocaleString('en-IN')}
-                    </span>
-                    <span className="text-xs font-mono text-slate-500 w-12 text-right">
-                      {cat.percentage}%
-                    </span>
                   </div>
                 </div>
-                {/* Visual Progress Bar */}
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${cat.percentage}%`,
-                      backgroundColor: cat.color,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Department Budget & Spend Utilization */}
@@ -298,41 +329,51 @@ export const AnalyticsPage: React.FC = () => {
             <span className="text-xs text-slate-500">FY 2026–27 Allocation</span>
           </div>
 
-          <div className="space-y-4 pt-2">
-            {departmentBreakdown.map((dept) => (
-              <div key={dept.department} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-foreground">
-                    {dept.department}
-                  </span>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="font-semibold text-foreground">
-                      ₹{dept.amount.toLocaleString('en-IN')}
+          {departmentBreakdown.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground text-xs">
+              <Layers className="w-8 h-8 mx-auto mb-2 opacity-30 text-blue-600" />
+              <p className="font-semibold text-foreground text-sm">No departmental spend recorded yet</p>
+              <p className="mt-1 max-w-xs mx-auto">
+                Departmental budget allocations and employee claims will track here automatically.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-2">
+              {departmentBreakdown.map((dept) => (
+                <div key={dept.department} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-foreground">
+                      {dept.department}
                     </span>
-                    <span className="text-slate-400">/ ₹{dept.budget.toLocaleString('en-IN')}</span>
-                    <span
-                      className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
-                        dept.utilization > 80
-                          ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="font-semibold text-foreground">
+                        ₹{dept.amount.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-slate-400">/ ₹{dept.budget.toLocaleString('en-IN')}</span>
+                      <span
+                        className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
+                          dept.utilization > 80
+                            ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                        }`}
+                      >
+                        {dept.utilization}%
+                      </span>
+                    </div>
+                  </div>
+                  {/* Visual Utilization Bar */}
+                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        dept.utilization > 80 ? 'bg-rose-500' : 'bg-blue-600'
                       }`}
-                    >
-                      {dept.utilization}%
-                    </span>
+                      style={{ width: `${dept.utilization}%` }}
+                    />
                   </div>
                 </div>
-                {/* Visual Utilization Bar */}
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      dept.utilization > 80 ? 'bg-rose-500' : 'bg-blue-600'
-                    }`}
-                    style={{ width: `${dept.utilization}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -361,41 +402,53 @@ export const AnalyticsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {spendTrendData.map((row) => {
-                const rate = ((row.reimbursed / row.amount) * 100).toFixed(1);
-                return (
-                  <tr key={row.period} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-semibold text-foreground">
-                      {row.period}
-                    </td>
-                    <td className="py-3 px-4 text-foreground/80">
-                      {row.reportCount} reports
-                    </td>
-                    <td className="py-3 px-4 font-semibold text-foreground">
-                      ₹{row.amount.toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-medium">
-                      ₹{row.reimbursed.toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium">{rate}%</span>
-                        <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full"
-                            style={{ width: `${rate}%` }}
-                          />
+              {spendTrendData.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground text-xs">
+                    <Calendar className="w-8 h-8 mx-auto mb-2 opacity-30 text-purple-600" />
+                    <p className="font-semibold text-foreground text-sm">No historical periods recorded yet</p>
+                    <p className="mt-1 max-w-xs mx-auto">
+                      Monthly trajectory and settlement velocities will populate as claims are filed and settled.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                spendTrendData.map((row) => {
+                  const rate = ((row.reimbursed / row.amount) * 100).toFixed(1);
+                  return (
+                    <tr key={row.period} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                      <td className="py-3 px-4 font-semibold text-foreground">
+                        {row.period}
+                      </td>
+                      <td className="py-3 px-4 text-foreground/80">
+                        {row.reportCount} reports
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-foreground">
+                        ₹{row.amount.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-medium">
+                        ₹{row.reimbursed.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">{rate}%</span>
+                          <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full"
+                              style={{ width: `${rate}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                        Ledger Synced
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          Ledger Synced
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

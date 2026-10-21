@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ReportStatus, ReimbursementStatus, Role } from '@vyay/contracts';
-import { api } from '../lib/api';
+import { api, isDemoTenant, isSampleDataPurged } from '../lib/api';
 import {
   Plus,
   Search,
@@ -348,8 +348,12 @@ const INITIAL_REPORTS: ReportItem[] = [
 ];
 
 export const ReportsPage: React.FC = () => {
-  const [reports, setReports] = useState<ReportItem[]>(INITIAL_REPORTS);
-  const [availableExpenses, setAvailableExpenses] = useState<ExpenseRef[]>(AVAILABLE_UNCLAIMED_EXPENSES);
+  const [reports, setReports] = useState<ReportItem[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? INITIAL_REPORTS : []
+  );
+  const [availableExpenses, setAvailableExpenses] = useState<ExpenseRef[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? AVAILABLE_UNCLAIMED_EXPENSES : []
+  );
   const [filterTab, setFilterTab] = useState<'ALL' | 'PENDING' | 'CHANGES' | 'APPROVED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
@@ -375,7 +379,7 @@ export const ReportsPage: React.FC = () => {
         ]);
         if (!isMounted) return;
 
-        if (liveExpenses && liveExpenses.length > 0) {
+        if (Array.isArray(liveExpenses)) {
           const transformedExpenses: ExpenseRef[] = liveExpenses.map((e) => ({
             id: e.id,
             merchant: e.merchant,
@@ -385,14 +389,18 @@ export const ReportsPage: React.FC = () => {
             hasReceipt: !!e.receiptUrl || !!e.receiptName,
             duplicateWarning: e.duplicateWarning,
           }));
-          setAvailableExpenses((prev) => {
-            const seen = new Set(prev.map((p) => p.id));
-            const newOnes = transformedExpenses.filter((e) => !seen.has(e.id));
-            return [...newOnes, ...prev];
-          });
+          if (isDemoTenant() && !isSampleDataPurged()) {
+            setAvailableExpenses((prev) => {
+              const seen = new Set(prev.map((p) => p.id));
+              const newOnes = transformedExpenses.filter((e) => !seen.has(e.id));
+              return [...newOnes, ...prev];
+            });
+          } else {
+            setAvailableExpenses(transformedExpenses);
+          }
         }
 
-        if (liveReports && liveReports.length > 0) {
+        if (Array.isArray(liveReports)) {
           const transformedReports: ReportItem[] = liveReports.map((r, idx) => ({
             id: r.id,
             reportNumber: `REP-2026-${String(890 + idx).padStart(4, '0')}`,
@@ -443,11 +451,15 @@ export const ReportsPage: React.FC = () => {
             ],
           }));
 
-          setReports((prev) => {
-            const existingIds = new Set(transformedReports.map((x) => x.id));
-            const unmerged = prev.filter((p) => !existingIds.has(p.id));
-            return [...transformedReports, ...unmerged];
-          });
+          if (isDemoTenant() && !isSampleDataPurged()) {
+            setReports((prev) => {
+              const existingIds = new Set(transformedReports.map((x) => x.id));
+              const unmerged = prev.filter((p) => !existingIds.has(p.id));
+              return [...transformedReports, ...unmerged];
+            });
+          } else {
+            setReports(transformedReports);
+          }
         }
       } catch (err) {
         console.warn('Failed to load dynamic reports data', err);
@@ -460,7 +472,8 @@ export const ReportsPage: React.FC = () => {
   }, []);
 
   // Calculate live wizard figures
-  const selectedExpenses = availableExpenses.filter((e) =>
+  const activeUnclaimedList = availableExpenses.length > 0 ? availableExpenses : AVAILABLE_UNCLAIMED_EXPENSES;
+  const selectedExpenses = activeUnclaimedList.filter((e) =>
     selectedExpenseIds.includes(e.id)
   );
   const totalWizardAmount = selectedExpenses.reduce(
@@ -479,10 +492,10 @@ export const ReportsPage: React.FC = () => {
   };
 
   const handleSelectAllExpenses = () => {
-    if (selectedExpenseIds.length === availableExpenses.length) {
+    if (selectedExpenseIds.length === activeUnclaimedList.length) {
       setSelectedExpenseIds([]);
     } else {
-      setSelectedExpenseIds(availableExpenses.map((e) => e.id));
+      setSelectedExpenseIds(activeUnclaimedList.map((e) => e.id));
     }
   };
 
@@ -715,8 +728,16 @@ export const ReportsPage: React.FC = () => {
             <tbody className="divide-y divide-border">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
-                    No expense reports found matching your active filter.
+                  <td colSpan={8} className="px-4 py-16 text-center text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground">No expense reports submitted yet</p>
+                      <p className="text-xs text-muted-foreground max-w-sm">
+                        This organization has no reports. Bundle existing expenses into a report by clicking &quot;+ New Report&quot; above.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -1104,20 +1125,20 @@ export const ReportsPage: React.FC = () => {
                 <>
                   <div className="flex items-center justify-between pb-2 border-b border-border">
                     <span className="font-semibold text-slate-700 dark:text-slate-300">
-                      Unclaimed Verified Expenses ({AVAILABLE_UNCLAIMED_EXPENSES.length})
+                      Unclaimed Verified Expenses ({activeUnclaimedList.length})
                     </span>
                     <button
                       onClick={handleSelectAllExpenses}
                       className="text-primary hover:underline font-semibold"
                     >
-                      {selectedExpenseIds.length === AVAILABLE_UNCLAIMED_EXPENSES.length
+                      {selectedExpenseIds.length === activeUnclaimedList.length
                         ? 'Deselect All'
                         : 'Select All Items'}
                     </button>
                   </div>
 
                   <div className="max-h-60 overflow-y-auto space-y-2">
-                    {AVAILABLE_UNCLAIMED_EXPENSES.map((exp) => {
+                    {activeUnclaimedList.map((exp) => {
                       const isSelected = selectedExpenseIds.includes(exp.id);
                       return (
                         <div

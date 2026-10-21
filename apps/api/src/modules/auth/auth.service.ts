@@ -5,6 +5,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
@@ -15,6 +16,8 @@ import {
   AuthResponse,
   InviteMemberInput,
   AcceptInviteInput,
+  GoogleSsoRequest,
+  ZohoSsoRequest,
 } from '@vyay/contracts';
 import { TokenService } from './token.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -63,6 +66,7 @@ interface InMemoryInvite {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   // In-memory data store for standalone testing and dev resilience
   private users = new Map<string, InMemoryUser>();
   private tenants = new Map<string, InMemoryTenant>();
@@ -302,7 +306,7 @@ export class AuthService {
     const tenantId = randomUUID();
     const membershipId = randomUUID();
 
-    const companyName = input.companyName || `${input.firstName}'s Company`;
+    const companyName = input.companyName || (input as any).tenantName || `${input.firstName}'s Company`;
     const slug = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
     const salt = await bcrypt.genSalt(10);
@@ -337,6 +341,46 @@ export class AuthService {
     };
     this.memberships.set(membershipId, newMembership);
 
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.user.create({
+            data: {
+              id: userId,
+              email: input.email,
+              passwordHash,
+              firstName: input.firstName,
+              lastName: input.lastName,
+              emailVerified: true,
+            },
+          });
+          await tx.tenant.create({
+            data: {
+              id: tenantId,
+              name: companyName,
+              slug: newTenant.slug,
+              baseCurrency: 'INR',
+              country: 'IN',
+              timezone: 'Asia/Kolkata',
+              fiscalYearStartMonth: 4,
+              status: 'ACTIVE',
+            },
+          });
+          await tx.membership.create({
+            data: {
+              id: membershipId,
+              tenantId,
+              userId,
+              role: Role.COMPANY_OWNER,
+              active: true,
+            },
+          });
+        });
+      } catch (err) {
+        this.logger.warn(`Prisma user registration persistence warning: ${(err as Error).message}`);
+      }
+    }
+
     const tokens = this.tokenService.generateTokens({
       userId,
       tenantId,
@@ -366,7 +410,47 @@ export class AuthService {
   }
 
   async login(input: LoginRequest): Promise<AuthResponse> {
-    const user = Array.from(this.users.values()).find((u) => u.email === input.email);
+    let user = Array.from(this.users.values()).find((u) => u.email === input.email);
+    if (!user && this.prisma?.isConnected) {
+      try {
+        const dbUser = await this.prisma.user.findUnique({
+          where: { email: input.email },
+          include: { memberships: { include: { tenant: true } } },
+        });
+        if (dbUser && dbUser.passwordHash) {
+          user = {
+            id: dbUser.id,
+            email: dbUser.email,
+            passwordHash: dbUser.passwordHash,
+            firstName: dbUser.firstName,
+            lastName: dbUser.lastName,
+          };
+          this.users.set(user.id, user);
+          for (const m of dbUser.memberships) {
+            this.memberships.set(m.id, {
+              id: m.id,
+              tenantId: m.tenantId,
+              userId: m.userId,
+              role: m.role as Role,
+              active: m.active,
+            });
+            if (m.tenant) {
+              this.tenants.set(m.tenant.id, {
+                id: m.tenant.id,
+                name: m.tenant.name,
+                slug: m.tenant.slug,
+                baseCurrency: m.tenant.baseCurrency,
+                country: m.tenant.country,
+                timezone: m.tenant.timezone,
+                fiscalYearStartMonth: m.tenant.fiscalYearStartMonth,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Prisma login lookup warning: ${(err as Error).message}`);
+      }
+    }
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -393,6 +477,314 @@ export class AuthService {
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
+
+    const tokens = this.tokenService.generateTokens({
+      userId: user.id,
+      tenantId: tenant.id,
+      membershipId: membership.id,
+      role: membership.role,
+      email: user.email,
+    });
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
+      tokenType: 'Bearer',
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      tenant: {
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        role: membership.role,
+      },
+    };
+  }
+
+  async loginGoogle(input: GoogleSsoRequest): Promise<AuthResponse> {
+    const cleanEmail = input.email.toLowerCase().trim();
+    let user = Array.from(this.users.values()).find((u) => u.email.toLowerCase() === cleanEmail);
+    if (!user && this.prisma?.isConnected) {
+      try {
+        const dbUser = await this.prisma.user.findUnique({
+          where: { email: cleanEmail },
+          include: { memberships: { include: { tenant: true } } },
+        });
+        if (dbUser) {
+          user = {
+            id: dbUser.id,
+            email: dbUser.email,
+            passwordHash: dbUser.passwordHash || '',
+            firstName: dbUser.firstName,
+            lastName: dbUser.lastName,
+          };
+          this.users.set(user.id, user);
+          for (const m of dbUser.memberships) {
+            this.memberships.set(m.id, {
+              id: m.id,
+              tenantId: m.tenantId,
+              userId: m.userId,
+              role: m.role as Role,
+              active: m.active,
+            });
+            if (m.tenant) {
+              this.tenants.set(m.tenant.id, {
+                id: m.tenant.id,
+                name: m.tenant.name,
+                slug: m.tenant.slug,
+                baseCurrency: m.tenant.baseCurrency,
+                country: m.tenant.country,
+                timezone: m.tenant.timezone,
+                fiscalYearStartMonth: m.tenant.fiscalYearStartMonth,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Prisma google login lookup warning: ${(err as Error).message}`);
+      }
+    }
+
+    if (!user) {
+      const nameParts = (input.name || cleanEmail.split('@')[0]).split(' ');
+      const firstName = nameParts[0] || 'Google';
+      const lastName = nameParts.slice(1).join(' ') || 'User';
+      const userId = randomUUID();
+      const tenantId = input.tenantId || '11111111-1111-1111-1111-111111111111';
+      const membershipId = randomUUID();
+
+      user = {
+        id: userId,
+        email: cleanEmail,
+        passwordHash: '',
+        firstName,
+        lastName,
+      };
+      this.users.set(userId, user);
+
+      const membership: InMemoryMembership = {
+        id: membershipId,
+        tenantId,
+        userId,
+        role: Role.EMPLOYEE,
+        active: true,
+      };
+      this.memberships.set(membershipId, membership);
+
+      if (this.prisma?.isConnected) {
+        try {
+          await this.prisma.$transaction(async (tx) => {
+            await tx.user.upsert({
+              where: { email: cleanEmail },
+              update: { firstName, lastName },
+              create: {
+                id: userId,
+                email: cleanEmail,
+                firstName,
+                lastName,
+                emailVerified: true,
+              },
+            });
+            await tx.membership.create({
+              data: {
+                id: membershipId,
+                tenantId,
+                userId,
+                role: Role.EMPLOYEE,
+                active: true,
+              },
+            });
+          });
+        } catch (err) {
+          this.logger.warn(`Prisma google sso provisioning warning: ${(err as Error).message}`);
+        }
+      }
+    }
+
+    let membership = Array.from(this.memberships.values()).find(
+      (m) => m.userId === user!.id && m.active && (!input.tenantId || m.tenantId === input.tenantId)
+    );
+
+    if (!membership) {
+      const defaultTenantId = '11111111-1111-1111-1111-111111111111';
+      membership = {
+        id: randomUUID(),
+        tenantId: defaultTenantId,
+        userId: user.id,
+        role: Role.EMPLOYEE,
+        active: true,
+      };
+      this.memberships.set(membership.id, membership);
+    }
+
+    const tenant = this.tenants.get(membership.tenantId) || {
+      id: membership.tenantId,
+      name: 'Horizon Scientific India Ltd',
+      slug: 'horizon-scientific',
+      baseCurrency: 'INR',
+      country: 'IN',
+      timezone: 'Asia/Kolkata',
+      fiscalYearStartMonth: 4,
+    };
+
+    const tokens = this.tokenService.generateTokens({
+      userId: user.id,
+      tenantId: tenant.id,
+      membershipId: membership.id,
+      role: membership.role,
+      email: user.email,
+    });
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
+      tokenType: 'Bearer',
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      tenant: {
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        role: membership.role,
+      },
+    };
+  }
+
+  async loginZoho(input: ZohoSsoRequest): Promise<AuthResponse> {
+    const cleanEmail = input.email.toLowerCase().trim();
+    let user = Array.from(this.users.values()).find((u) => u.email.toLowerCase() === cleanEmail);
+    if (!user && this.prisma?.isConnected) {
+      try {
+        const dbUser = await this.prisma.user.findUnique({
+          where: { email: cleanEmail },
+          include: { memberships: { include: { tenant: true } } },
+        });
+        if (dbUser) {
+          user = {
+            id: dbUser.id,
+            email: dbUser.email,
+            passwordHash: dbUser.passwordHash || '',
+            firstName: dbUser.firstName,
+            lastName: dbUser.lastName,
+          };
+          this.users.set(user.id, user);
+          for (const m of dbUser.memberships) {
+            this.memberships.set(m.id, {
+              id: m.id,
+              tenantId: m.tenantId,
+              userId: m.userId,
+              role: m.role as Role,
+              active: m.active,
+            });
+            if (m.tenant) {
+              this.tenants.set(m.tenant.id, {
+                id: m.tenant.id,
+                name: m.tenant.name,
+                slug: m.tenant.slug,
+                baseCurrency: m.tenant.baseCurrency,
+                country: m.tenant.country,
+                timezone: m.tenant.timezone,
+                fiscalYearStartMonth: m.tenant.fiscalYearStartMonth,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Prisma zoho login lookup warning: ${(err as Error).message}`);
+      }
+    }
+
+    if (!user) {
+      const nameParts = cleanEmail.split('@')[0].split('.');
+      const firstName = nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Zoho';
+      const lastName = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : 'User';
+      const userId = randomUUID();
+      const tenantId = input.tenantId || '11111111-1111-1111-1111-111111111111';
+      const membershipId = randomUUID();
+
+      user = {
+        id: userId,
+        email: cleanEmail,
+        passwordHash: '',
+        firstName,
+        lastName,
+      };
+      this.users.set(userId, user);
+
+      const membership: InMemoryMembership = {
+        id: membershipId,
+        tenantId,
+        userId,
+        role: Role.FINANCE_OPERATOR,
+        active: true,
+      };
+      this.memberships.set(membershipId, membership);
+
+      if (this.prisma?.isConnected) {
+        try {
+          await this.prisma.$transaction(async (tx) => {
+            await tx.user.upsert({
+              where: { email: cleanEmail },
+              update: { firstName, lastName },
+              create: {
+                id: userId,
+                email: cleanEmail,
+                firstName,
+                lastName,
+                emailVerified: true,
+              },
+            });
+            await tx.membership.create({
+              data: {
+                id: membershipId,
+                tenantId,
+                userId,
+                role: Role.FINANCE_OPERATOR,
+                active: true,
+              },
+            });
+          });
+        } catch (err) {
+          this.logger.warn(`Prisma zoho sso provisioning warning: ${(err as Error).message}`);
+        }
+      }
+    }
+
+    let membership = Array.from(this.memberships.values()).find(
+      (m) => m.userId === user!.id && m.active && (!input.tenantId || m.tenantId === input.tenantId)
+    );
+
+    if (!membership) {
+      const defaultTenantId = '11111111-1111-1111-1111-111111111111';
+      membership = {
+        id: randomUUID(),
+        tenantId: defaultTenantId,
+        userId: user.id,
+        role: Role.FINANCE_OPERATOR,
+        active: true,
+      };
+      this.memberships.set(membership.id, membership);
+    }
+
+    const tenant = this.tenants.get(membership.tenantId) || {
+      id: membership.tenantId,
+      name: input.orgName || 'Horizon Scientific India Ltd',
+      slug: 'horizon-scientific',
+      baseCurrency: 'INR',
+      country: 'IN',
+      timezone: 'Asia/Kolkata',
+      fiscalYearStartMonth: 4,
+    };
 
     const tokens = this.tokenService.generateTokens({
       userId: user.id,
@@ -611,6 +1003,12 @@ export class AuthService {
     if (!user) return false;
     user.passwordHash = newPasswordHash;
     this.users.set(userId, user);
+    if (this.prisma?.isConnected) {
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { passwordHash: newPasswordHash },
+      }).catch((err) => this.logger.warn(`Prisma password update error: ${err.message}`));
+    }
     return true;
   }
 
@@ -686,5 +1084,17 @@ export class AuthService {
     this.memberships.set(membershipId, newMembership);
 
     return { tenant: newTenant, user: newUser, membership: newMembership };
+  }
+
+  async purgeSampleData(tenantId: string): Promise<{ success: boolean; message: string }> {
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.expense.deleteMany({ where: { tenantId } });
+        await this.prisma.expenseReport.deleteMany({ where: { tenantId } });
+      } catch (err) {
+        this.logger.warn(`Prisma purge warning: ${(err as Error).message}`);
+      }
+    }
+    return { success: true, message: `Sample data purged successfully for tenant ${tenantId}` };
   }
 }

@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Optional } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/prisma.service.js';
 import {
   ExternalMapping,
   UpdateMappingBatchInput,
@@ -53,7 +54,7 @@ export class IntegrationsService {
   private xeroConnectors = new Map<string, XeroConnector>();
   private tallyConnectors = new Map<string, TallyPrimeConnector>();
 
-  constructor() {
+  constructor(@Optional() private readonly prisma?: PrismaService) {
     this.seedDefaultData();
   }
 
@@ -360,6 +361,58 @@ export class IntegrationsService {
       integration.externalOrgName = orgs[0].name;
     }
 
+    if (this.prisma?.isConnected) {
+      try {
+        const dbIntegration = await this.prisma.integration.upsert({
+          where: {
+            tenantId_provider: {
+              tenantId,
+              provider: 'zoho_books',
+            },
+          },
+          update: {
+            status: 'CONNECTED',
+            apiDomain: tokens.apiDomain,
+            externalOrgId: integration.externalOrgId,
+          },
+          create: {
+            id: integration.id,
+            tenantId,
+            provider: 'zoho_books',
+            status: 'CONNECTED',
+            apiDomain: tokens.apiDomain,
+            externalOrgId: integration.externalOrgId,
+          },
+        });
+        await this.prisma.oAuthCredential.upsert({
+          where: { integrationId: dbIntegration.id },
+          update: {
+            encryptedToken: `aes_256_enc_${tokens.refreshToken}`,
+            scopes: JSON.stringify([
+              'ZohoBooks.expenses.ALL',
+              'ZohoBooks.bills.ALL',
+              'ZohoBooks.settings.READ',
+              'ZohoBooks.contacts.READ',
+            ]),
+            tokenExpiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
+          },
+          create: {
+            integrationId: dbIntegration.id,
+            encryptedToken: `aes_256_enc_${tokens.refreshToken}`,
+            scopes: JSON.stringify([
+              'ZohoBooks.expenses.ALL',
+              'ZohoBooks.bills.ALL',
+              'ZohoBooks.settings.READ',
+              'ZohoBooks.contacts.READ',
+            ]),
+            tokenExpiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
+          },
+        });
+      } catch (err: any) {
+        // Fallback gracefully to in-memory store
+      }
+    }
+
     return {
       status: 'CONNECTED',
       integrationId: integration.id,
@@ -376,6 +429,17 @@ export class IntegrationsService {
     integration.status = 'DISCONNECTED';
     integration.updatedAt = new Date().toISOString();
     this.credentials.delete(integration.id);
+
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.integration.updateMany({
+          where: { tenantId, provider: 'zoho_books' },
+          data: { status: 'DISCONNECTED' },
+        });
+      } catch {
+        // Fallback
+      }
+    }
 
     return { success: true, message: 'Zoho Books connection revoked successfully' };
   }
@@ -468,6 +532,52 @@ export class IntegrationsService {
     }
 
     this.mappings.set(tenantId, updated);
+
+    if (this.prisma?.isConnected) {
+      try {
+        let dbInteg = await this.prisma.integration.findUnique({
+          where: { tenantId_provider: { tenantId, provider } },
+        });
+        if (!dbInteg) {
+          dbInteg = await this.prisma.integration.create({
+            data: {
+              tenantId,
+              provider,
+              status: 'CONNECTED',
+            },
+          });
+        }
+        for (const item of input.mappings) {
+          await this.prisma.externalMapping.upsert({
+            where: {
+              integrationId_localType_localId: {
+                integrationId: dbInteg.id,
+                localType: item.localType,
+                localId: item.localId,
+              },
+            },
+            update: {
+              externalType: item.externalType,
+              externalId: item.externalId,
+              externalName: item.externalName,
+            },
+            create: {
+              tenantId,
+              integrationId: dbInteg.id,
+              provider,
+              localType: item.localType,
+              localId: item.localId,
+              externalType: item.externalType,
+              externalId: item.externalId,
+              externalName: item.externalName,
+            },
+          });
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
     return updated.filter((m) => m.provider === provider);
   }
 
@@ -601,6 +711,46 @@ export class IntegrationsService {
       newJob.remoteReference = result.externalId;
       newJob.updatedAt = new Date().toISOString();
 
+      if (this.prisma?.isConnected) {
+        try {
+          let dbInteg = await this.prisma.integration.findUnique({
+            where: { tenantId_provider: { tenantId, provider } },
+          });
+          if (!dbInteg) {
+            dbInteg = await this.prisma.integration.create({
+              data: {
+                tenantId,
+                provider,
+                status: 'CONNECTED',
+              },
+            });
+          }
+          await this.prisma.integrationJob.upsert({
+            where: { idempotencyKey },
+            update: {
+              status: newJob.status,
+              remoteReference: newJob.remoteReference,
+              lastError: newJob.lastError,
+              completedAt: new Date(),
+            },
+            create: {
+              id: jobId,
+              tenantId,
+              integrationId: dbInteg.id,
+              entityType: 'EXPENSE_REPORT',
+              entityId: reportId,
+              idempotencyKey,
+              status: newJob.status,
+              remoteReference: newJob.remoteReference,
+              lastError: newJob.lastError,
+              completedAt: new Date(),
+            },
+          });
+        } catch {
+          // Fallback
+        }
+      }
+
       return {
         jobId: newJob.id,
         status: PostingStatus.SYNCED,
@@ -611,6 +761,42 @@ export class IntegrationsService {
       newJob.status = PostingStatus.RETRYABLE_FAILURE;
       newJob.lastError = err.message || `Unknown error exporting to ${provider}`;
       newJob.updatedAt = new Date().toISOString();
+
+      if (this.prisma?.isConnected) {
+        try {
+          let dbInteg = await this.prisma.integration.findUnique({
+            where: { tenantId_provider: { tenantId, provider } },
+          });
+          if (!dbInteg) {
+            dbInteg = await this.prisma.integration.create({
+              data: {
+                tenantId,
+                provider,
+                status: 'CONNECTED',
+              },
+            });
+          }
+          await this.prisma.integrationJob.upsert({
+            where: { idempotencyKey },
+            update: {
+              status: newJob.status,
+              lastError: newJob.lastError,
+            },
+            create: {
+              id: jobId,
+              tenantId,
+              integrationId: dbInteg.id,
+              entityType: 'EXPENSE_REPORT',
+              entityId: reportId,
+              idempotencyKey,
+              status: newJob.status,
+              lastError: newJob.lastError,
+            },
+          });
+        } catch {
+          // Fallback
+        }
+      }
 
       if (err.status === 429) {
         throw new BadRequestException(
@@ -693,11 +879,45 @@ export class IntegrationsService {
       job.status = PostingStatus.SYNCED;
       job.remoteReference = result.externalId;
       job.updatedAt = new Date().toISOString();
+
+      if (this.prisma?.isConnected) {
+        try {
+          await this.prisma.integrationJob.update({
+            where: { id: jobId },
+            data: {
+              attempts: job.attempts,
+              status: job.status,
+              remoteReference: job.remoteReference,
+              lastError: job.lastError,
+              completedAt: new Date(),
+            },
+          });
+        } catch {
+          // Fallback
+        }
+      }
+
       return job;
     } catch (err: any) {
       job.status = PostingStatus.RETRYABLE_FAILURE;
       job.lastError = err.message;
       job.updatedAt = new Date().toISOString();
+
+      if (this.prisma?.isConnected) {
+        try {
+          await this.prisma.integrationJob.update({
+            where: { id: jobId },
+            data: {
+              attempts: job.attempts,
+              status: job.status,
+              lastError: job.lastError,
+            },
+          });
+        } catch {
+          // Fallback
+        }
+      }
+
       throw new BadRequestException(`Retry failed: ${err.message}`);
     }
   }

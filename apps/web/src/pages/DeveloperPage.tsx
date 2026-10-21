@@ -18,6 +18,7 @@ import {
   Sparkles,
   RefreshCw,
 } from 'lucide-react';
+import { isDemoTenant, isSampleDataPurged } from '../lib/api';
 
 interface ApiCredentialItem {
   id: string;
@@ -49,66 +50,78 @@ interface DeliveryLogItem {
   success: boolean;
 }
 
+const DEMO_CREDENTIALS: ApiCredentialItem[] = [
+  {
+    id: 'cred-001',
+    name: 'Nightly ERP Sync Service',
+    clientId: 'vyay_9f82ab7c10d3e52109a1',
+    scopes: ['expenses:read', 'reports:read', 'analytics:read'],
+    lastUsedAt: '12 minutes ago',
+    createdAt: '2026-10-15',
+  },
+  {
+    id: 'cred-002',
+    name: 'KaaryaMitra HRMS Bridge',
+    clientId: 'vyay_3e19dd401a89c256ef89',
+    scopes: ['expenses:write', 'reports:read'],
+    lastUsedAt: '2 hours ago',
+    createdAt: '2026-10-18',
+  },
+];
+
+const DEMO_WEBHOOKS: WebhookItem[] = [
+  {
+    id: 'wh-001',
+    url: 'https://api.horizonsci.in/webhooks/expenses',
+    events: ['report.approved', 'reimbursement.paid'],
+    active: true,
+    signingKeyHint: '7e2f',
+    successCount: 42,
+    failureCount: 0,
+    lastTriggeredAt: '20 minutes ago',
+  },
+];
+
+const DEMO_DELIVERY_LOGS: DeliveryLogItem[] = [
+  {
+    id: 'log-001',
+    event: 'reimbursement.paid',
+    targetUrl: 'https://api.horizonsci.in/webhooks/expenses',
+    httpStatus: 200,
+    durationMs: 38,
+    timestamp: 'Today, 11:15 AM',
+    success: true,
+  },
+  {
+    id: 'log-002',
+    event: 'report.approved',
+    targetUrl: 'https://api.horizonsci.in/webhooks/expenses',
+    httpStatus: 200,
+    durationMs: 44,
+    timestamp: 'Today, 09:30 AM',
+    success: true,
+  },
+];
+
 export const DeveloperPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'credentials' | 'webhooks' | 'docs'>('credentials');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // API Credentials state
-  const [credentials, setCredentials] = useState<ApiCredentialItem[]>([
-    {
-      id: 'cred-001',
-      name: 'Nightly ERP Sync Service',
-      clientId: 'vyay_9f82ab7c10d3e52109a1',
-      scopes: ['expenses:read', 'reports:read', 'analytics:read'],
-      lastUsedAt: '12 minutes ago',
-      createdAt: '2026-10-15',
-    },
-    {
-      id: 'cred-002',
-      name: 'KaaryaMitra HRMS Bridge',
-      clientId: 'vyay_3e19dd401a89c256ef89',
-      scopes: ['expenses:write', 'reports:read'],
-      lastUsedAt: '2 hours ago',
-      createdAt: '2026-10-18',
-    },
-  ]);
+  const [credentials, setCredentials] = useState<ApiCredentialItem[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? DEMO_CREDENTIALS : []
+  );
 
   // Webhooks state
-  const [webhooks, setWebhooks] = useState<WebhookItem[]>([
-    {
-      id: 'wh-001',
-      url: 'https://api.horizonsci.in/webhooks/expenses',
-      events: ['report.approved', 'reimbursement.paid'],
-      active: true,
-      signingKeyHint: '7e2f',
-      successCount: 42,
-      failureCount: 0,
-      lastTriggeredAt: '20 minutes ago',
-    },
-  ]);
+  const [webhooks, setWebhooks] = useState<WebhookItem[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? DEMO_WEBHOOKS : []
+  );
 
   // Delivery logs state
-  const [deliveryLogs, setDeliveryLogs] = useState<DeliveryLogItem[]>([
-    {
-      id: 'log-001',
-      event: 'reimbursement.paid',
-      targetUrl: 'https://api.horizonsci.in/webhooks/expenses',
-      httpStatus: 200,
-      durationMs: 38,
-      timestamp: 'Today, 11:15 AM',
-      success: true,
-    },
-    {
-      id: 'log-002',
-      event: 'report.approved',
-      targetUrl: 'https://api.horizonsci.in/webhooks/expenses',
-      httpStatus: 200,
-      durationMs: 44,
-      timestamp: 'Today, 09:30 AM',
-      success: true,
-    },
-  ]);
+  const [deliveryLogs, setDeliveryLogs] = useState<DeliveryLogItem[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? DEMO_DELIVERY_LOGS : []
+  );
 
   // Modal states
   const [showCreateCredModal, setShowCreateCredModal] = useState(false);
@@ -388,52 +401,62 @@ export const DeveloperPage: React.FC = () => {
           </div>
 
           <div className="bg-card rounded-2xl border border-border shadow-card divide-y divide-slate-100 dark:divide-slate-800">
-            {credentials.map((cred) => (
-              <div key={cred.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-foreground text-base">{cred.name}</span>
-                    <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-foreground/80">
-                      Client ID: {cred.clientId}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {cred.scopes.map((scope) => (
-                      <span
-                        key={scope}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-primary dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800"
-                      >
-                        {scope}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
-                    <span>Created: {cred.createdAt}</span>
-                    <span>Last used: {cred.lastUsedAt || 'Never'}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleCopy(cred.clientId, cred.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-foreground/80 hover:text-slate-900"
-                  >
-                    {copiedKey === cred.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    Copy Client ID
-                  </button>
-
-                  <button
-                    onClick={() => handleRevokeCredential(cred.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Revoke
-                  </button>
-                </div>
+            {credentials.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-xs">
+                <KeyRound className="w-8 h-8 mx-auto mb-2 opacity-30 text-primary" />
+                <p className="font-semibold text-foreground text-sm">No API credentials generated</p>
+                <p className="mt-1 max-w-xs mx-auto">
+                  Generate Machine-to-Machine API keys for background ERP synchronization or custom services.
+                </p>
               </div>
-            ))}
+            ) : (
+              credentials.map((cred) => (
+                <div key={cred.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground text-base">{cred.name}</span>
+                      <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-foreground/80">
+                        Client ID: {cred.clientId}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {cred.scopes.map((scope) => (
+                        <span
+                          key={scope}
+                          className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-primary dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800"
+                        >
+                          {scope}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                      <span>Created: {cred.createdAt}</span>
+                      <span>Last used: {cred.lastUsedAt || 'Never'}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleCopy(cred.clientId, cred.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-foreground/80 hover:text-slate-900"
+                    >
+                      {copiedKey === cred.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      Copy Client ID
+                    </button>
+
+                    <button
+                      onClick={() => handleRevokeCredential(cred.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Revoke
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -468,55 +491,65 @@ export const DeveloperPage: React.FC = () => {
 
           {/* Webhook Endpoints List */}
           <div className="bg-card rounded-2xl border border-border shadow-card divide-y divide-slate-100 dark:divide-slate-800">
-            {webhooks.map((wh) => (
-              <div key={wh.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-foreground text-sm break-all">
-                      {wh.url}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                      Active
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {wh.events.map((evt) => (
-                      <span
-                        key={evt}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-semibold"
-                      >
-                        {evt}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
-                    <span>Secret Key: <code className="font-mono text-foreground/80">••••••••••••{wh.signingKeyHint}</code></span>
-                    <span>Delivered: {wh.successCount} OK / {wh.failureCount} failed</span>
-                    <span>Last triggered: {wh.lastTriggeredAt}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleRotateWebhookKey(wh.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-foreground/80 hover:text-slate-900"
-                  >
-                    <RotateCw className="w-3.5 h-3.5" />
-                    Rotate Secret
-                  </button>
-
-                  <button
-                    onClick={() => setWebhooks(webhooks.filter((w) => w.id !== wh.id))}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete
-                  </button>
-                </div>
+            {webhooks.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-xs">
+                <Webhook className="w-8 h-8 mx-auto mb-2 opacity-30 text-purple-600" />
+                <p className="font-semibold text-foreground text-sm">No webhook endpoints registered</p>
+                <p className="mt-1 max-w-xs mx-auto">
+                  Add destination URLs to receive signed real-time events for expense and reimbursement events.
+                </p>
               </div>
-            ))}
+            ) : (
+              webhooks.map((wh) => (
+                <div key={wh.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-foreground text-sm break-all">
+                        {wh.url}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                        Active
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {wh.events.map((evt) => (
+                        <span
+                          key={evt}
+                          className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-semibold"
+                        >
+                          {evt}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                      <span>Secret Key: <code className="font-mono text-foreground/80">••••••••••••{wh.signingKeyHint}</code></span>
+                      <span>Delivered: {wh.successCount} OK / {wh.failureCount} failed</span>
+                      <span>Last triggered: {wh.lastTriggeredAt}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleRotateWebhookKey(wh.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-foreground/80 hover:text-slate-900"
+                    >
+                      <RotateCw className="w-3.5 h-3.5" />
+                      Rotate Secret
+                    </button>
+
+                    <button
+                      onClick={() => setWebhooks(webhooks.filter((w) => w.id !== wh.id))}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Delivery Logs Viewer */}
@@ -538,27 +571,35 @@ export const DeveloperPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {deliveryLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                      <td className="py-2.5 px-3 font-mono font-semibold text-purple-600 dark:text-purple-400">
-                        {log.event}
-                      </td>
-                      <td className="py-2.5 px-3 font-mono text-foreground/80 truncate max-w-xs">
-                        {log.targetUrl}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                          {log.httpStatus} OK
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-500 font-mono">
-                        {log.durationMs}ms
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-500">
-                        {log.timestamp}
+                  {deliveryLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        No webhook delivery attempts logged yet
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    deliveryLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="py-2.5 px-3 font-mono font-semibold text-purple-600 dark:text-purple-400">
+                          {log.event}
+                        </td>
+                        <td className="py-2.5 px-3 font-mono text-foreground/80 truncate max-w-xs">
+                          {log.targetUrl}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            {log.httpStatus} OK
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-500 font-mono">
+                          {log.durationMs}ms
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-500">
+                          {log.timestamp}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

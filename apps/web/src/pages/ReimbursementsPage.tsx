@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ReimbursementStatus, PaymentMethod } from '@vyay/contracts';
-import { api } from '../lib/api';
+import { api, isDemoTenant, isSampleDataPurged } from '../lib/api';
 import {
   CreditCard,
   PlusCircle,
@@ -126,7 +126,9 @@ const INITIAL_REIMBURSEMENTS: ReimbursementRecord[] = [
 ];
 
 export const ReimbursementsPage: React.FC = () => {
-  const [records, setRecords] = useState<ReimbursementRecord[]>(INITIAL_REIMBURSEMENTS);
+  const [records, setRecords] = useState<ReimbursementRecord[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? INITIAL_REIMBURSEMENTS : []
+  );
   const [filterTab, setFilterTab] = useState<'ALL' | 'ELIGIBLE' | 'PARTIAL' | 'PAID'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<ReimbursementRecord | null>(null);
@@ -145,39 +147,41 @@ export const ReimbursementsPage: React.FC = () => {
             r.reimbursementStatus === ReimbursementStatus.PAID
         );
 
-        if (eligibleReports.length > 0) {
-          const dynamicRecords: ReimbursementRecord[] = eligibleReports.map((r, idx) => ({
-            id: `reimb-dyn-${r.id}`,
-            reportId: r.id,
-            reportNumber: `REP-2026-${String(890 + idx).padStart(4, '0')}`,
-            reportTitle: r.title,
-            employeeName: r.employeeName || 'Dr. Rahul Sharma',
-            employeeNumber: `EMP-${100 + idx}`,
-            bankName: 'HDFC Bank Ltd',
-            bankAccountMasked: '•••• •••• 9841',
-            ifscCode: 'HDFC0001234',
-            currency: r.currency || 'INR',
-            eligibleAmount: r.totalAmount,
-            paidAmount: r.reimbursementStatus === ReimbursementStatus.PAID ? r.totalAmount : '0.00',
-            remainingAmount: r.reimbursementStatus === ReimbursementStatus.PAID ? '0.00' : r.totalAmount,
-            status: r.reimbursementStatus,
-            payments:
-              r.reimbursementStatus === ReimbursementStatus.PAID
-                ? [
-                    {
-                      id: `pay-${r.id}`,
-                      amount: r.totalAmount,
-                      paidAt: r.paidAt || new Date().toISOString(),
-                      method: PaymentMethod.BANK_TRANSFER,
-                      transactionRef: r.transactionRef || 'UTR-2026-IMPS-AUTO',
-                      payerBankAccount: 'HDFC Corporate Operating A/C ****4091',
-                      recordedBy: 'Sarah Jenkins (Finance)',
-                      notes: 'Disbursement settlement.',
-                    },
-                  ]
-                : [],
-          }));
+        const dynamicRecords: ReimbursementRecord[] = eligibleReports.map((r, idx) => ({
+          id: `reimb-dyn-${r.id}`,
+          reportId: r.id,
+          reportNumber: `REP-2026-${String(890 + idx).padStart(4, '0')}`,
+          reportTitle: r.title,
+          employeeName: r.employeeName || 'Staff Member',
+          employeeNumber: `EMP-${100 + idx}`,
+          bankName: 'Corporate Bank Ltd',
+          bankAccountMasked: '•••• •••• 9841',
+          ifscCode: 'CORP0001234',
+          currency: r.currency || 'INR',
+          eligibleAmount: r.totalAmount,
+          paidAmount: r.reimbursementStatus === ReimbursementStatus.PAID ? r.totalAmount : '0.00',
+          remainingAmount: r.reimbursementStatus === ReimbursementStatus.PAID ? '0.00' : r.totalAmount,
+          status: r.reimbursementStatus,
+          payments:
+            r.reimbursementStatus === ReimbursementStatus.PAID
+              ? [
+                  {
+                    id: `pay-${r.id}`,
+                    amount: r.totalAmount,
+                    paidAt: r.paidAt || new Date().toISOString(),
+                    method: PaymentMethod.BANK_TRANSFER,
+                    transactionRef: r.transactionRef || 'UTR-2026-IMPS-AUTO',
+                    payerBankAccount: 'Corporate Operating A/C ****4091',
+                    recordedBy: 'Finance Operations',
+                    notes: 'Disbursement settlement.',
+                  },
+                ]
+              : [],
+        }));
 
+        if (!isDemoTenant() || isSampleDataPurged()) {
+          setRecords(dynamicRecords);
+        } else {
           setRecords((prev) => {
             const existingIds = new Set(prev.map((p) => p.reportId));
             const toAdd = dynamicRecords.filter((d) => !existingIds.has(d.reportId));
@@ -416,75 +420,89 @@ export const ReimbursementsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredRecords.map((r) => {
-                const isSettled = r.status === ReimbursementStatus.PAID;
-                const isPartial = r.status === ReimbursementStatus.PARTIALLY_PAID;
+              {filteredRecords.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto mb-3 text-slate-400">
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                    <div className="text-sm font-semibold text-foreground">No reimbursement claims found</div>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                      When expense reports are approved and cleared by finance, they appear here ready for disbursement and settlement.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredRecords.map((r) => {
+                  const isSettled = r.status === ReimbursementStatus.PAID;
+                  const isPartial = r.status === ReimbursementStatus.PARTIALLY_PAID;
 
-                return (
-                  <tr
-                    key={r.id}
-                    onClick={() => setSelectedRecord(r)}
-                    className="hover:bg-slate-50/60 dark:hover:bg-[#1A2530] transition-colors cursor-pointer"
-                  >
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-foreground">
-                        {r.employeeName}
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
-                        {r.bankName} &bull; {r.bankAccountMasked} (IFSC: {r.ifscCode})
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-foreground">
-                        {r.reportNumber}
-                      </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[200px]">
-                        {r.reportTitle}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 font-bold font-mono">
-                      <AmountDisplay amount={r.eligibleAmount} currency={r.currency} />
-                    </td>
-                    <td className="px-4 py-3.5 font-mono text-emerald-600 font-medium">
-                      <AmountDisplay amount={r.paidAmount} currency={r.currency} />
-                    </td>
-                    <td className="px-4 py-3.5 font-bold font-mono">
-                      {parseFloat(r.remainingAmount) > 0 ? (
-                        <span className="text-amber-600">
-                          <AmountDisplay amount={r.remainingAmount} currency={r.currency} />
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 font-normal">₹0.00 (Settled)</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <StatusBadge status={r.status} />
-                    </td>
-                    <td className="px-4 py-3.5 text-right space-x-2">
-                      {!isSettled ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenPaymentModal(r);
-                          }}
-                          className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-card transition-all ${
-                            isPartial
-                              ? 'bg-amber-600 hover:bg-amber-700'
-                              : 'bg-primary hover:opacity-90'
-                          }`}
-                        >
-                          <CreditCard className="w-3.5 h-3.5" />
-                          <span>{isPartial ? 'Pay Installment' : 'Disburse Payout'}</span>
-                        </button>
-                      ) : (
-                        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-lg">
-                          Settled
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr
+                      key={r.id}
+                      onClick={() => setSelectedRecord(r)}
+                      className="hover:bg-slate-50/60 dark:hover:bg-[#1A2530] transition-colors cursor-pointer"
+                    >
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold text-foreground">
+                          {r.employeeName}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          {r.bankName} &bull; {r.bankAccountMasked} (IFSC: {r.ifscCode})
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold text-foreground">
+                          {r.reportNumber}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[200px]">
+                          {r.reportTitle}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 font-bold font-mono">
+                        <AmountDisplay amount={r.eligibleAmount} currency={r.currency} />
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-emerald-600 font-medium">
+                        <AmountDisplay amount={r.paidAmount} currency={r.currency} />
+                      </td>
+                      <td className="px-4 py-3.5 font-bold font-mono">
+                        {parseFloat(r.remainingAmount) > 0 ? (
+                          <span className="text-amber-600">
+                            <AmountDisplay amount={r.remainingAmount} currency={r.currency} />
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 font-normal">₹0.00 (Settled)</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <StatusBadge status={r.status} />
+                      </td>
+                      <td className="px-4 py-3.5 text-right space-x-2">
+                        {!isSettled ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenPaymentModal(r);
+                            }}
+                            className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-card transition-all ${
+                              isPartial
+                                ? 'bg-amber-600 hover:bg-amber-700'
+                                : 'bg-primary hover:opacity-90'
+                            }`}
+                          >
+                            <CreditCard className="w-3.5 h-3.5" />
+                            <span>{isPartial ? 'Pay Installment' : 'Disburse Payout'}</span>
+                          </button>
+                        ) : (
+                          <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-lg">
+                            Settled
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

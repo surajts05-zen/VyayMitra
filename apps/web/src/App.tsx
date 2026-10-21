@@ -1,10 +1,11 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { AppShell } from '@vyay/ui';
 import { ShieldAlert, BookOpen, UserCheck, ChevronUp, ChevronDown } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { OnboardingChecklist } from './components/OnboardingChecklist';
-import { setActivePersona } from './lib/api';
+import { getStoredSession, saveSession, UserSession, setActivePersona } from './lib/api';
 
+const LoginPage = lazy(() => import('./pages/LoginPage').then((module) => ({ default: module.LoginPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
 const ExpensesPage = lazy(() => import('./pages/ExpensesPage').then((module) => ({ default: module.ExpensesPage })));
 const ReportsPage = lazy(() => import('./pages/ReportsPage').then((module) => ({ default: module.ReportsPage })));
@@ -58,18 +59,81 @@ const DEMO_PERSONAS = [
 
 export function App() {
   const [currentPath, setCurrentPath] = useState<string>('/dashboard');
+  const [session, setSession] = useState<UserSession | null>(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('signed_out=1')) {
+      saveSession(null);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return null;
+    }
+    return getStoredSession();
+  });
   const [activePersonaIndex, setActivePersonaIndex] = useState(0);
   const [personaDrawerOpen, setPersonaDrawerOpen] = useState(false);
 
-  const activePersona = DEMO_PERSONAS[activePersonaIndex];
+  useEffect(() => {
+    if (session) {
+      setActivePersona(session.user.email);
+    }
+  }, [session]);
+
+  const handleLogout = () => {
+    saveSession(null);
+    setSession(null);
+  };
 
   const handleSwitchPersona = (index: number) => {
     setActivePersonaIndex(index);
-    setActivePersona(DEMO_PERSONAS[index].email);
-    if (DEMO_PERSONAS[index].role === 'PLATFORM_SUPER_ADMIN') {
+    const p = DEMO_PERSONAS[index];
+    setActivePersona(p.email);
+    if (session) {
+      const updated: UserSession = {
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+        user: {
+          id: session.user.id,
+          email: p.email,
+          firstName: p.label.split(' ')[0],
+          lastName: p.label.split(' ').slice(1).join(' '),
+        },
+        tenant: {
+          id: session.tenant.id,
+          name: p.tenant,
+          slug: p.tenant.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+          role: p.role,
+        },
+      };
+      saveSession(updated);
+      setSession(updated);
+    }
+    if (p.role === 'PLATFORM_SUPER_ADMIN') {
       setCurrentPath('/platform-admin');
     }
     setPersonaDrawerOpen(false);
+  };
+
+  if (!session) {
+    return (
+      <Suspense fallback={<PageLoading />}>
+        <LoginPage
+          onLoginSuccess={(newSession) => {
+            setSession(newSession);
+            setActivePersona(newSession.user.email);
+            if (newSession.tenant.role === 'PLATFORM_SUPER_ADMIN') {
+              setCurrentPath('/platform-admin');
+            } else {
+              setCurrentPath('/dashboard');
+            }
+          }}
+        />
+      </Suspense>
+    );
+  }
+
+  const activePersona = {
+    role: session.tenant.role,
+    email: session.user.email,
+    tenant: session.tenant.name,
+    label: `${session.user.firstName} ${session.user.lastName}`.trim() || session.user.email,
   };
 
   const renderCurrentView = () => {
@@ -81,13 +145,13 @@ export function App() {
       case '/approvals':
         return <ApprovalsPage activeRole={activePersona.role} activeEmail={activePersona.email} onNavigate={setCurrentPath} />;
       case '/finance':
-        return <FinancePage onNavigate={setCurrentPath} />;
+        return <FinancePage onNavigate={setCurrentPath} tenantName={activePersona.tenant} />;
       case '/reimbursements':
         return <ReimbursementsPage />;
       case '/analytics':
-        return <AnalyticsPage />;
+        return <AnalyticsPage tenantName={activePersona.tenant} />;
       case '/integrations':
-        return <IntegrationsPage />;
+        return <IntegrationsPage tenantName={activePersona.tenant} />;
       case '/developer':
         return <DeveloperPage />;
       case '/platform-admin':
@@ -131,10 +195,25 @@ export function App() {
         return <CompanyAdminGuidePage onNavigate={setCurrentPath} />;
       }
       case '/settings':
-        return <SettingsPage />;
+        return (
+          <SettingsPage
+            tenantName={activePersona.tenant}
+            tenantId={session?.tenant?.id}
+            currentUser={
+              session?.user
+                ? {
+                    id: session.user.id,
+                    email: session.user.email,
+                    name: `${session.user.firstName || ''} ${session.user.lastName || ''}`.trim(),
+                    role: activePersona.role,
+                  }
+                : null
+            }
+          />
+        );
       case '/dashboard':
       default:
-        return <DashboardPage onNavigate={setCurrentPath} />;
+        return <DashboardPage onNavigate={setCurrentPath} tenantName={activePersona.tenant} />;
     }
   };
 
@@ -145,7 +224,7 @@ export function App() {
       userRole={activePersona.role}
       currentPath={currentPath}
       onNavigate={setCurrentPath}
-      onLogout={() => window.location.assign('/?signed_out=1')}
+      onLogout={handleLogout}
     >
       <ErrorBoundary>
         <Suspense fallback={<PageLoading />}>{renderCurrentView()}</Suspense>

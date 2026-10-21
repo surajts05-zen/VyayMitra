@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Decimal } from 'decimal.js';
@@ -23,6 +24,7 @@ import {
 } from '@vyay/contracts';
 import { StubOcrProvider } from '@vyay/integrations';
 import { EmployeesService } from '../employees/employees.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface InMemoryReceipt {
   id: string;
@@ -89,12 +91,16 @@ interface InMemoryExpense {
 
 @Injectable()
 export class ExpensesService {
+  private readonly logger = new Logger(ExpensesService.name);
   private expenses = new Map<string, InMemoryExpense>();
   private receipts = new Map<string, InMemoryReceipt>();
   private ocrJobs = new Map<string, InMemoryOcrJob>();
   private ocrProvider = new StubOcrProvider();
 
-  constructor(private readonly employeesService: EmployeesService) {
+  constructor(
+    private readonly employeesService: EmployeesService,
+    private readonly prisma: PrismaService
+  ) {
     this.seedSampleExpenses();
   }
 
@@ -256,6 +262,20 @@ export class ExpensesService {
       createdAt: new Date().toISOString(),
     };
     this.receipts.set(receiptId, receipt);
+
+    if (this.prisma?.isConnected && input.expenseId) {
+      this.prisma.receipt.create({
+        data: {
+          id: receiptId,
+          expenseId: input.expenseId,
+          storageKey: input.storageKey,
+          fileName: input.fileName,
+          mimeType: input.mimeType,
+          fileSize: input.fileSize,
+          fileHash: input.fileHash,
+        },
+      }).catch((err) => this.logger.warn(`Prisma receipt create warning: ${err.message}`));
+    }
 
     // 2. Run Asynchronous OCR Extraction (Stub Provider)
     const mockBuffer = Buffer.from('mock receipt file content');
@@ -431,6 +451,40 @@ export class ExpensesService {
 
     this.expenses.set(id, expense);
 
+    if (this.prisma?.isConnected) {
+      this.prisma.expense.create({
+        data: {
+          id,
+          tenantId,
+          employeeId: employee.id,
+          merchant: input.merchant,
+          invoiceNumber: input.invoiceNumber ?? null,
+          spentAt: new Date(input.spentAt),
+          currency: input.currency.toUpperCase(),
+          amount: totalAmount.toFixed(6),
+          baseAmount,
+          subtotal: subtotalAmount.toFixed(6),
+          taxAmount: taxAmount.toFixed(6),
+          categoryId: input.categoryId,
+          paidBy: input.paidBy,
+          reimbursable: input.reimbursable,
+          billable: input.billable ?? false,
+          businessPurpose: input.businessPurpose,
+          status: ExpenseStatus.DRAFT,
+          lines: {
+            create: expenseLines.map((l) => ({
+              id: l.id,
+              amount: l.amount,
+              description: l.description,
+              costCenterId: l.costCenterId ?? null,
+              projectId: l.projectId ?? null,
+              taxMetadata: l.taxMetadata as any,
+            })),
+          },
+        },
+      }).catch((err) => this.logger.warn(`Prisma expense create warning: ${err.message}`));
+    }
+
     return {
       id: expense.id,
       tenantId: expense.tenantId,
@@ -579,6 +633,23 @@ export class ExpensesService {
     if (input.billable !== undefined) exp.billable = input.billable;
 
     exp.updatedAt = new Date().toISOString();
+    if (this.prisma?.isConnected) {
+      this.prisma.expense.update({
+        where: { id: expenseId },
+        data: {
+          merchant: exp.merchant,
+          invoiceNumber: exp.invoiceNumber,
+          spentAt: new Date(exp.spentAt),
+          currency: exp.currency,
+          amount: exp.amount,
+          baseAmount: exp.baseAmount,
+          subtotal: exp.subtotal,
+          taxAmount: exp.taxAmount,
+          categoryId: exp.categoryId,
+          businessPurpose: exp.businessPurpose,
+        },
+      }).catch((err) => this.logger.warn(`Prisma expense update warning: ${err.message}`));
+    }
     return {
       id: exp.id,
       tenantId: exp.tenantId,
@@ -624,6 +695,12 @@ export class ExpensesService {
     }
 
     exp.deletedAt = new Date().toISOString();
+    if (this.prisma?.isConnected) {
+      this.prisma.expense.update({
+        where: { id: expenseId },
+        data: { status: 'DELETED' },
+      }).catch((err) => this.logger.warn(`Prisma expense delete warning: ${err.message}`));
+    }
     return { success: true, message: 'Expense deleted successfully' };
   }
 
@@ -669,5 +746,23 @@ export class ExpensesService {
         exp.updatedAt = new Date().toISOString();
       }
     }
+  }
+
+  async purgeTenantExpenses(tenantId: string): Promise<number> {
+    let count = 0;
+    for (const [id, exp] of this.expenses.entries()) {
+      if (exp.tenantId === tenantId) {
+        this.expenses.delete(id);
+        count++;
+      }
+    }
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.expense.deleteMany({ where: { tenantId } });
+      } catch (err) {
+        this.logger.warn(`Prisma purge expenses warning: ${(err as Error).message}`);
+      }
+    }
+    return count;
   }
 }

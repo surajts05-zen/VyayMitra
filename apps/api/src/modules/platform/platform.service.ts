@@ -79,7 +79,7 @@ export class PlatformService {
         plan: t.plan || 'GROWTH',
         status: t.status || 'ACTIVE',
         userCount: tenantMembers.length,
-        expenseCount: 14, // seed estimate
+        expenseCount: t.id === '11111111-1111-1111-1111-111111111111' ? 14 : 0,
         createdAt: t.createdAt || '2026-04-01T00:00:00.000Z',
         updatedAt: t.updatedAt || '2026-10-18T12:00:00.000Z',
       };
@@ -103,7 +103,7 @@ export class PlatformService {
       plan: tenant.plan || 'GROWTH',
       status: tenant.status || 'ACTIVE',
       userCount: members.length,
-      expenseCount: 14,
+      expenseCount: tenant.id === '11111111-1111-1111-1111-111111111111' ? 14 : 0,
       createdAt: tenant.createdAt || '2026-04-01T00:00:00.000Z',
       updatedAt: tenant.updatedAt || '2026-10-18T12:00:00.000Z',
     };

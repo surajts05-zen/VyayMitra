@@ -23,6 +23,10 @@ import {
   AcceptInviteInput,
   Role,
   AuthTokenPayload,
+  GoogleSsoRequestSchema,
+  GoogleSsoRequest,
+  ZohoSsoRequestSchema,
+  ZohoSsoRequest,
 } from '@vyay/contracts';
 import { AuthService } from './auth.service.js';
 import { AuthGuard } from '../../common/guards/auth.guard.js';
@@ -52,6 +56,24 @@ export class AuthController {
   async login(@Body() body: LoginRequest) {
     const validated = LoginRequestSchema.parse(body);
     return this.authService.login(validated);
+  }
+
+  @Post('sso/google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Authenticate or provision user via Google SSO' })
+  @ApiResponse({ status: 200, description: 'Google SSO authentication successful with tokens' })
+  async loginGoogle(@Body() body: GoogleSsoRequest) {
+    const validated = GoogleSsoRequestSchema.parse(body);
+    return this.authService.loginGoogle(validated);
+  }
+
+  @Post('sso/zoho')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Authenticate or provision user via Zoho SSO' })
+  @ApiResponse({ status: 200, description: 'Zoho SSO authentication successful with tokens' })
+  async loginZoho(@Body() body: ZohoSsoRequest) {
+    const validated = ZohoSsoRequestSchema.parse(body);
+    return this.authService.loginZoho(validated);
   }
 
   @Post('refresh')
@@ -121,5 +143,14 @@ export class AuthController {
         slug: tenant?.slug || '',
       },
     };
+  }
+
+  @Post('purge-sample-data')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Purge tenant sample expenses and reports to start clean' })
+  @ApiResponse({ status: 200, description: 'Sample data purged' })
+  async purgeSampleData(@CurrentUser() user: AuthTokenPayload) {
+    return this.authService.purgeSampleData(user.tenantId);
   }
 }

@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { TenantDto, UpdateTenantInput, MembershipDto, Role } from '@vyay/contracts';
 import { AuthService } from '../auth/auth.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface TenantRecord {
   id: string;
@@ -17,10 +18,14 @@ interface TenantRecord {
 
 @Injectable()
 export class TenantsService {
+  private readonly logger = new Logger(TenantsService.name);
   private tenantStore = new Map<string, TenantRecord>();
   private membershipsStore = new Map<string, Array<{ id: string; userId: string; role: Role; active: boolean }>>();
 
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService
+  ) {
     this.seedTenants();
   }
 
@@ -67,7 +72,31 @@ export class TenantsService {
   }
 
   async getTenant(tenantId: string): Promise<TenantDto> {
-    const tenant = this.tenantStore.get(tenantId);
+    let tenant = this.tenantStore.get(tenantId);
+    if (!tenant && this.prisma?.isConnected) {
+      try {
+        const dbTenant = await this.prisma.tenant.findUnique({
+          where: { id: tenantId },
+        });
+        if (dbTenant) {
+          tenant = {
+            id: dbTenant.id,
+            name: dbTenant.name,
+            slug: dbTenant.slug,
+            baseCurrency: dbTenant.baseCurrency,
+            country: dbTenant.country,
+            timezone: dbTenant.timezone,
+            fiscalYearStartMonth: dbTenant.fiscalYearStartMonth,
+            logoUrl: dbTenant.logoUrl,
+            createdAt: dbTenant.createdAt.toISOString(),
+            updatedAt: dbTenant.updatedAt.toISOString(),
+          };
+          this.tenantStore.set(tenantId, tenant);
+        }
+      } catch (err) {
+        this.logger.warn(`Prisma tenant query error: ${(err as Error).message}`);
+      }
+    }
     if (!tenant) {
       throw new NotFoundException(`Tenant with id ${tenantId} not found`);
     }
@@ -87,6 +116,23 @@ export class TenantsService {
       updatedAt: new Date().toISOString(),
     };
     this.tenantStore.set(tenantId, updated);
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.tenant.update({
+          where: { id: tenantId },
+          data: {
+            name: updated.name,
+            baseCurrency: updated.baseCurrency,
+            country: updated.country,
+            timezone: updated.timezone,
+            fiscalYearStartMonth: updated.fiscalYearStartMonth,
+            logoUrl: updated.logoUrl,
+          },
+        });
+      } catch (err) {
+        this.logger.warn(`Prisma tenant update error: ${(err as Error).message}`);
+      }
+    }
     return updated;
   }
 

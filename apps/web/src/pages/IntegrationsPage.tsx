@@ -126,7 +126,11 @@ const INITIAL_KM_EMPLOYEES: KaaryaMitraEmployee[] = [
   },
 ];
 
-export const IntegrationsPage: React.FC = () => {
+interface IntegrationsPageProps {
+  tenantName?: string;
+}
+
+export const IntegrationsPage: React.FC<IntegrationsPageProps> = ({ tenantName }) => {
   const [selectedProvider, setSelectedProvider] = useState<ProviderType>('zoho_books');
   const [selectedRegion, setSelectedRegion] = useState<ZohoRegion>(ZohoRegion.IN);
   const [isConnected, setIsConnected] = useState<boolean>(true);
@@ -311,7 +315,7 @@ export const IntegrationsPage: React.FC = () => {
 
   const handleDownloadTallyXml = async () => {
     try {
-      const res = await api.exportTallyXml('REP-2026-001', 'Horizon Scientific India Pvt Ltd', false);
+      const res = await api.exportTallyXml('REP-2026-001', tenantName || 'Your Organization', false);
       setTallyXmlPreview(res.xmlContent);
 
       // Trigger browser file download
@@ -338,7 +342,7 @@ export const IntegrationsPage: React.FC = () => {
   const handleSyncTallyHttp = async () => {
     setSyncing(true);
     try {
-      const res = await api.exportTallyXml('REP-2026-001', 'Horizon Scientific India Pvt Ltd', true);
+      const res = await api.exportTallyXml('REP-2026-001', tenantName || 'Your Organization', true);
       const newJob: SyncJob = {
         id: `job-${Math.floor(1000 + Math.random() * 9000)}`,
         provider: 'tally_prime',
@@ -586,10 +590,10 @@ export const IntegrationsPage: React.FC = () => {
                 {getProviderTitle(selectedProvider)} Connection Profile
               </h2>
               <p className="text-xs text-slate-500">
-                {selectedProvider === 'kaaryamitra' && 'Connected Suite: KaaryaMitra HRM & Workforce Suite (v2.4) · Org ID: HORIZON-SCI-BLR-01'}
-                {selectedProvider === 'zoho_books' && 'Connected Organization: Acme BioTech India Pvt Ltd (books.zoho.in)'}
-                {selectedProvider === 'xero' && 'Connected Tenant: Horizon Scientific Global (UK & Global Ops)'}
-                {selectedProvider === 'tally_prime' && 'Tally Company: Horizon Scientific India Pvt Ltd · HTTP Port 9000'}
+                {selectedProvider === 'kaaryamitra' && `Connected Suite: KaaryaMitra HRM & Workforce Suite (v2.4) · Org ID: ${tenantName ? tenantName.toUpperCase().replace(/[^A-Z0-9]/g, '-').slice(0, 15) : 'ORG-01'}`}
+                {selectedProvider === 'zoho_books' && `Connected Organization: ${tenantName || 'Your Organization'} (books.zoho.in)`}
+                {selectedProvider === 'xero' && `Connected Tenant: ${tenantName || 'Your Organization'} (Global Ops)`}
+                {selectedProvider === 'tally_prime' && `Tally Company: ${tenantName || 'Your Organization'} · HTTP Port 9000`}
               </p>
             </div>
           </div>

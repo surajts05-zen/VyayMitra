@@ -9,3 +9,5 @@ build
 .DS_Store
 coverage
 *.tsbuildinfo
+test-results
+playwright-report

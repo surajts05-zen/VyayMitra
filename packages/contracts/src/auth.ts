@@ -68,3 +68,21 @@ export const AuthResponseSchema = z.object({
   }),
 });
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+
+export const GoogleSsoRequestSchema = z.object({
+  email: z.string().email(),
+  name: z.string().optional(),
+  idToken: z.string().optional(),
+  tenantId: z.string().uuid().optional(),
+});
+export type GoogleSsoRequest = z.infer<typeof GoogleSsoRequestSchema>;
+
+export const ZohoSsoRequestSchema = z.object({
+  email: z.string().email(),
+  orgName: z.string().optional(),
+  code: z.string().optional(),
+  region: z.string().optional(),
+  tenantId: z.string().uuid().optional(),
+});
+export type ZohoSsoRequest = z.infer<typeof ZohoSsoRequestSchema>;
+

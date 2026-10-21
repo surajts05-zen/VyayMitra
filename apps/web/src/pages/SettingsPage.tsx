@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2,
   Users,
@@ -22,6 +22,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { Role } from '@vyay/contracts';
+import { api, isDemoTenant, isSampleDataPurged } from '../lib/api';
 
 interface EmployeeItem {
   id: string;
@@ -45,7 +46,77 @@ interface CategoryItem {
   maxAmountLimit?: number;
 }
 
-export const SettingsPage: React.FC = () => {
+const DEMO_EMPLOYEES: EmployeeItem[] = [
+  {
+    id: 'emp-1',
+    name: 'Vikram Mehta',
+    email: 'admin@horizonsci.in',
+    role: Role.COMPANY_OWNER,
+    department: 'Executive Office',
+    employeeNumber: 'HS-0001',
+    externalHrmId: 'KM-EXP-001',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-2',
+    name: 'Anita Deshmukh',
+    email: 'manager.anita@horizonsci.in',
+    role: Role.MANAGER,
+    department: 'Research & Development',
+    managerName: 'Vikram Mehta',
+    employeeNumber: 'HS-0012',
+    externalHrmId: 'KM-EXP-012',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-3',
+    name: 'Dr. Rahul Sharma',
+    email: 'rahul.sharma@horizonsci.in',
+    role: Role.EMPLOYEE,
+    department: 'Research & Development',
+    managerName: 'Anita Deshmukh',
+    employeeNumber: 'HS-0045',
+    externalHrmId: null,
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-4',
+    name: 'Sarah Jenkins',
+    email: 'sarah.finance@horizonsci.in',
+    role: Role.FINANCE_OPERATOR,
+    department: 'Finance & Treasury',
+    managerName: 'Vikram Mehta',
+    employeeNumber: 'HS-0008',
+    externalHrmId: 'KM-EXP-008',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'emp-5',
+    name: 'Priya Sundaram',
+    email: 'priya.sundaram@horizonsci.in',
+    role: Role.EMPLOYEE,
+    department: 'Field Operations',
+    managerName: 'Anita Deshmukh',
+    employeeNumber: 'HS-0052',
+    externalHrmId: null,
+    status: 'ACTIVE',
+  },
+];
+
+interface SettingsPageProps {
+  tenantName?: string;
+  tenantId?: string;
+  currentUser?: {
+    id: string;
+    email: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: Role | string;
+  } | null;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ tenantName, tenantId, currentUser }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'directory' | 'hierarchy' | 'org' | 'categories' | 'invites' | 'retention'>('profile');
   const [searchEmployee, setSearchEmployee] = useState('');
   const [selectedDeptFilter, setSelectedDeptFilter] = useState('ALL');
@@ -70,63 +141,55 @@ export const SettingsPage: React.FC = () => {
   const [inviteName, setInviteName] = useState('');
   const [inviteFeedback, setInviteFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Demo Employees
-  const [employees, setEmployees] = useState<EmployeeItem[]>([
-    {
-      id: 'emp-1',
-      name: 'Vikram Mehta',
-      email: 'admin@horizonsci.in',
-      role: Role.COMPANY_OWNER,
-      department: 'Executive Office',
-      employeeNumber: 'HS-0001',
-      externalHrmId: 'KM-EXP-001',
-      status: 'ACTIVE',
-    },
-    {
-      id: 'emp-2',
-      name: 'Anita Deshmukh',
-      email: 'manager.anita@horizonsci.in',
-      role: Role.MANAGER,
-      department: 'Research & Development',
-      managerName: 'Vikram Mehta',
-      employeeNumber: 'HS-0012',
-      externalHrmId: 'KM-EXP-012',
-      status: 'ACTIVE',
-    },
-    {
-      id: 'emp-3',
-      name: 'Dr. Rahul Sharma',
-      email: 'rahul.sharma@horizonsci.in',
-      role: Role.EMPLOYEE,
-      department: 'Research & Development',
-      managerName: 'Anita Deshmukh',
-      employeeNumber: 'HS-0045',
-      externalHrmId: null,
-      status: 'ACTIVE',
-    },
-    {
-      id: 'emp-4',
-      name: 'Sarah Jenkins',
-      email: 'sarah.finance@horizonsci.in',
-      role: Role.FINANCE_OPERATOR,
-      department: 'Finance & Treasury',
-      managerName: 'Vikram Mehta',
-      employeeNumber: 'HS-0008',
-      externalHrmId: 'KM-EXP-008',
-      status: 'ACTIVE',
-    },
-    {
-      id: 'emp-5',
-      name: 'Priya Sundaram',
-      email: 'priya.sundaram@horizonsci.in',
-      role: Role.EMPLOYEE,
-      department: 'Field Operations',
-      managerName: 'Anita Deshmukh',
-      employeeNumber: 'HS-0052',
-      externalHrmId: null,
-      status: 'ACTIVE',
-    },
-  ]);
+  // Employees: demo data only for demo tenant, clean/current user for new tenants
+  const [employees, setEmployees] = useState<EmployeeItem[]>(() => {
+    if (isDemoTenant() && !isSampleDataPurged()) {
+      return DEMO_EMPLOYEES;
+    }
+    if (currentUser) {
+      return [
+        {
+          id: currentUser.id || 'emp-owner',
+          name: (currentUser.name || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`).trim() || currentUser.email,
+          email: currentUser.email,
+          role: (currentUser.role as Role) || Role.COMPANY_OWNER,
+          department: 'Executive Office',
+          employeeNumber: 'EMP-0001',
+          externalHrmId: null,
+          status: 'ACTIVE',
+        },
+      ];
+    }
+    return [];
+  });
+
+  // Dynamic employee loading from API
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .getEmployees()
+      .then((fetched) => {
+        if (!isMounted) return;
+        if (Array.isArray(fetched) && fetched.length > 0) {
+          setEmployees(
+            fetched.map((e, idx) => ({
+              id: e.id,
+              name: `${e.firstName || ''} ${e.lastName || ''}`.trim() || e.email,
+              email: e.email,
+              role: e.role,
+              department: e.department || 'Executive Office',
+              employeeNumber: e.employeeNumber || `EMP-${String(idx + 1).padStart(4, '0')}`,
+              externalHrmId: null,
+              status: 'ACTIVE',
+            }))
+          );
+        }
+      })
+      .catch((err) => console.warn('Could not load employees', err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Demo Categories with GL Mapping
   const [categories] = useState<CategoryItem[]>([
@@ -177,7 +240,7 @@ export const SettingsPage: React.FC = () => {
     },
   ]);
 
-  const handleSendInvite = (e: React.FormEvent) => {
+  const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail) return;
 
@@ -187,6 +250,19 @@ export const SettingsPage: React.FC = () => {
         message: 'Security Violation: Platform Super Admin role cannot be provisioned to tenant accounts.',
       });
       return;
+    }
+
+    try {
+      const nameParts = (inviteName || inviteEmail.split('@')[0]).trim().split(' ');
+      await api.createEmployee({
+        email: inviteEmail,
+        firstName: nameParts[0] || 'Member',
+        lastName: nameParts.slice(1).join(' ') || '',
+        role: inviteRole,
+        department: 'Operations',
+      });
+    } catch (err) {
+      console.warn('Could not save employee to API:', err);
     }
 
     setInviteFeedback({
@@ -199,8 +275,8 @@ export const SettingsPage: React.FC = () => {
       name: inviteName || inviteEmail.split('@')[0],
       email: inviteEmail,
       role: inviteRole,
-      department: 'Research & Development',
-      employeeNumber: `HS-TEMP-${Math.floor(Math.random() * 900 + 100)}`,
+      department: 'Operations',
+      employeeNumber: `EMP-${Math.floor(Math.random() * 900 + 100)}`,
       externalHrmId: null,
       status: 'ACTIVE',
     };
@@ -317,7 +393,7 @@ export const SettingsPage: React.FC = () => {
                 <span>Legal Entity & Tenant Branding</span>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-foreground/80">
-                UUID: tnt-horizon-001
+                UUID: {tenantId || (isDemoTenant() ? 'tnt-horizon-001' : 'tnt-active-001')}
               </span>
             </div>
 
@@ -357,7 +433,7 @@ export const SettingsPage: React.FC = () => {
                 <input
                   type="text"
                   disabled
-                  value="Horizon Scientific India Private Limited"
+                  value={tenantName || (isDemoTenant() ? 'Horizon Scientific India Private Limited' : 'Organization Workspace')}
                   className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground font-medium"
                 />
               </div>
@@ -430,7 +506,7 @@ export const SettingsPage: React.FC = () => {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="https://hrm.horizonsci.in/api/v1/sync/employees"
+                    placeholder={tenantName ? `https://hrm.${tenantName.toLowerCase().replace(/[^a-z0-9]/g, '')}.in/api/v1/sync/employees` : "https://hrm.example.com/api/v1/sync/employees"}
                     className="flex-1 p-2 rounded-lg bg-muted/40 border border-border text-foreground font-mono text-xs"
                   />
                   <button className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1">
@@ -715,7 +791,7 @@ export const SettingsPage: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="name@horizonsci.in"
+                  placeholder={currentUser?.email ? `colleague@${currentUser.email.split('@')[1] || 'company.com'}` : "colleague@company.com"}
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   className="w-full p-2 rounded-lg bg-muted/40 border border-border text-foreground"

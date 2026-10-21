@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
@@ -17,13 +18,18 @@ import {
   Money,
 } from '@vyay/contracts';
 import { ReportsService } from '../reports/reports.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class ReimbursementsService {
+  private readonly logger = new Logger(ReimbursementsService.name);
   private reimbursements: Map<string, ReimbursementDto> = new Map();
   private onPaymentRecorded?: (tenantId: string, reportId: string, status: ReimbursementStatus) => Promise<void>;
 
-  constructor(private readonly reportsService: ReportsService) {
+  constructor(
+    private readonly reportsService: ReportsService,
+    private readonly prisma: PrismaService
+  ) {
     this.seedBaselineReimbursements();
   }
 
@@ -266,6 +272,35 @@ export class ReimbursementsService {
     reimb.remainingAmount = newRemainingAmount;
     reimb.status = newStatus;
     reimb.updatedAt = new Date().toISOString();
+
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.$transaction([
+          this.prisma.reimbursementPayment.create({
+            data: {
+              id: payment.id,
+              reimbursementId: reimb.id,
+              amount: payment.amount,
+              paidAt: new Date(payment.paidAt),
+              method: payment.method,
+              transactionRef: payment.transactionRef,
+              recordedBy: currentUser.userId,
+              notes: payment.notes,
+            },
+          }),
+          this.prisma.reimbursement.update({
+            where: { id: reimb.id },
+            data: {
+              paidAmount: newPaidAmount,
+              remainingAmount: newRemainingAmount,
+              status: newStatus,
+            },
+          }),
+        ]);
+      } catch (err) {
+        this.logger.warn(`Prisma reimbursement payment persistence warning: ${(err as Error).message}`);
+      }
+    }
 
     // 8. Synchronize with Report State
     this.reportsService.updateReimbursementStatus(tenantId, reimb.reportId, newStatus);

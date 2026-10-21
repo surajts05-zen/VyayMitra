@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
-import { ReportStatus, PostingStatus, TaxTreatment } from '@vyay/contracts';
+import { ReportStatus, PostingStatus, TaxTreatment, ReimbursementStatus } from '@vyay/contracts';
+import { api, isDemoTenant, isSampleDataPurged, ReportRecord } from '../lib/api';
 import {
   CheckCheck,
   Send,
@@ -133,10 +134,53 @@ const INITIAL_BUDGETS: BudgetRow[] = [
   },
 ];
 
-export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+export const FinancePage: React.FC<{ onNavigate: (path: string) => void; tenantName?: string }> = ({
+  onNavigate,
+  tenantName,
+}) => {
   const [activeTab, setActiveTab] = useState<'QUEUE' | 'GL_MAPPINGS' | 'BUDGETS' | 'LEDGER'>('QUEUE');
   const [dryRunComplete, setDryRunComplete] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
+
+  // Dynamic reports loading
+  const [reports, setReports] = useState<ReportRecord[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getReports().then((data) => {
+      if (isMounted && Array.isArray(data)) {
+        setReports(data);
+      }
+    }).catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const financeReports = reports.filter(
+    (r) => r.status === ReportStatus.APPROVED || r.status === ReportStatus.FINANCE_REVIEW
+  );
+  const showDemoReport = isDemoTenant() && !isSampleDataPurged() && financeReports.length === 0;
+  const activeReports: ReportRecord[] = showDemoReport
+    ? [
+        {
+          id: 'rep-001',
+          title: 'Bangalore Lab Equipment & Reagents',
+          purpose: 'Procurement of specialized spectrophotometer reagents',
+          employeeName: 'Dr. Rahul Sharma',
+          department: 'Research & Diagnostics',
+          status: ReportStatus.APPROVED,
+          reimbursementStatus: ReimbursementStatus.ELIGIBLE,
+          totalAmount: '8450.00',
+          currency: 'INR',
+          expenseCount: 3,
+        },
+      ]
+    : financeReports;
+
+  const totalPayable = activeReports
+    .reduce((sum, r) => sum + parseFloat(r.totalAmount || '0'), 0)
+    .toFixed(2);
 
   // Verification state for review queue item
   const [docVerified, setDocVerified] = useState(true);
@@ -153,6 +197,9 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
   // GL Mappings State
   const [glMappings, setGlMappings] = useState<GLMappingRow[]>(INITIAL_GL_MAPPINGS);
+  const [budgets, setBudgets] = useState<BudgetRow[]>(() =>
+    isDemoTenant() && !isSampleDataPurged() ? INITIAL_BUDGETS : []
+  );
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editGlCode, setEditGlCode] = useState('');
   const [editTaxTreatment, setEditTaxTreatment] = useState<TaxTreatment>(TaxTreatment.ITC_ELIGIBLE);
@@ -343,7 +390,7 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
             <span className="text-xs font-semibold text-foreground">
               Manager-Approved Reports Awaiting Finance Clearance
             </span>
-            <span className="text-[11px] text-slate-500">Total payable: ₹8,450.00</span>
+            <span className="text-[11px] text-slate-500">Total payable: ₹{totalPayable}</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -355,91 +402,108 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
                   <th className="px-4 py-3 font-medium">Pre-Payment Audit Checklist</th>
                   <th className="px-4 py-3 font-medium">Tax Components</th>
                   <th className="px-4 py-3 font-medium">Approval</th>
-                  <th className="px-4 py-3 font-medium">Zoho Export</th>
+                  <th className="px-4 py-3 font-medium">ERP Export</th>
                   <th className="px-4 py-3 font-medium text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                <tr className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
-                  <td className="px-4 py-3.5">
-                    <div className="font-semibold text-foreground">
-                      Bangalore Lab Equipment & Reagents
-                    </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      REP-2026-0891 &bull; Dr. Rahul Sharma (R&D)
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <AmountDisplay amount="8450.00" currency="INR" className="font-bold" />
-                  </td>
-                  <td className="px-4 py-3.5 space-y-1">
-                    <div className="flex items-center space-x-1.5 text-[11px]">
-                      <input
-                        type="checkbox"
-                        checked={docVerified}
-                        onChange={(e) => setDocVerified(e.target.checked)}
-                        className="rounded text-primary"
-                      />
-                      <span className={docVerified ? 'text-emerald-700 font-medium' : 'text-slate-400'}>
-                        Tax Invoices Verified
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 text-[11px]">
-                      <input
-                        type="checkbox"
-                        checked={taxVerified}
-                        onChange={(e) => setTaxVerified(e.target.checked)}
-                        className="rounded text-primary"
-                      />
-                      <span className={taxVerified ? 'text-emerald-700 font-medium' : 'text-slate-400'}>
-                        GST ITC Classified
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 text-[11px]">
-                      <input
-                        type="checkbox"
-                        checked={glVerified}
-                        onChange={(e) => setGlVerified(e.target.checked)}
-                        className="rounded text-primary"
-                      />
-                      <span className={glVerified ? 'text-emerald-700 font-medium' : 'text-slate-400'}>
-                        GL 5010 & 6030 Mapped
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5 text-[11px] font-mono space-y-0.5">
-                    <div>CGST 9%: ₹396.61 (ITC Eligible)</div>
-                    <div>SGST 9%: ₹396.61 (ITC Eligible)</div>
-                    <div className="text-slate-400 text-[10px]">Meal Tax: Blocked u/s 17(5)</div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <StatusBadge status={ReportStatus.APPROVED} />
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <StatusBadge status={postingStatus} />
-                    {remoteRef && (
-                      <div className="font-mono text-[10px] text-emerald-600 font-bold mt-1">
-                        Ref: {remoteRef}
+                {activeReports.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-16 text-center text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60">
+                          <ShieldCheck className="w-5 h-5" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">No reports pending finance clearance</p>
+                        <p className="text-xs text-muted-foreground max-w-sm">
+                          Once department managers approve expense reports, they will queue here for General Ledger audit and ERP export.
+                        </p>
                       </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3.5 text-right space-x-2">
-                    <button
-                      onClick={() => setShowExportModal(true)}
-                      className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition-all"
-                    >
-                      <Zap className="w-3 h-3 text-km-lime" />
-                      <span>Export to ERP</span>
-                    </button>
-                    <button
-                      onClick={() => onNavigate('/reimbursements')}
-                      className="inline-flex items-center space-x-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      <span>Disburse Payout</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                ) : (
+                  activeReports.map((report) => (
+                    <tr key={report.id} className="hover:bg-slate-50/50 dark:hover:bg-[#1A2530]">
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold text-foreground">
+                          {report.title}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          {report.id.startsWith('rep-') ? report.id.toUpperCase() : 'CLAIM'} &bull; {report.employeeName || 'Staff'} ({report.department || 'Operations'})
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <AmountDisplay amount={report.totalAmount} currency={report.currency || 'INR'} className="font-bold" />
+                      </td>
+                      <td className="px-4 py-3.5 space-y-1">
+                        <div className="flex items-center space-x-1.5 text-[11px]">
+                          <input
+                            type="checkbox"
+                            checked={docVerified}
+                            onChange={(e) => setDocVerified(e.target.checked)}
+                            className="rounded text-primary"
+                          />
+                          <span className={docVerified ? 'text-emerald-700 dark:text-emerald-400 font-medium' : 'text-slate-400'}>
+                            Tax Invoices Verified
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1.5 text-[11px]">
+                          <input
+                            type="checkbox"
+                            checked={taxVerified}
+                            onChange={(e) => setTaxVerified(e.target.checked)}
+                            className="rounded text-primary"
+                          />
+                          <span className={taxVerified ? 'text-emerald-700 dark:text-emerald-400 font-medium' : 'text-slate-400'}>
+                            GST ITC Classified
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1.5 text-[11px]">
+                          <input
+                            type="checkbox"
+                            checked={glVerified}
+                            onChange={(e) => setGlVerified(e.target.checked)}
+                            className="rounded text-primary"
+                          />
+                          <span className={glVerified ? 'text-emerald-700 dark:text-emerald-400 font-medium' : 'text-slate-400'}>
+                            GL Accounts Mapped
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-[11px] font-mono space-y-0.5">
+                        <div>Tax: ITC Eligible</div>
+                        <div className="text-slate-400 text-[10px]">Audit Checked</div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <StatusBadge status={report.status} />
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <StatusBadge status={postingStatus} />
+                        {remoteRef && (
+                          <div className="font-mono text-[10px] text-emerald-600 font-bold mt-1">
+                            Ref: {remoteRef}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-right space-x-2">
+                        <button
+                          onClick={() => setShowExportModal(true)}
+                          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition-all"
+                        >
+                          <Zap className="w-3 h-3 text-km-lime" />
+                          <span>Export to ERP</span>
+                        </button>
+                        <button
+                          onClick={() => onNavigate('/reimbursements')}
+                          className="inline-flex items-center space-x-1 text-xs font-semibold text-primary hover:underline"
+                        >
+                          <span>Disburse</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -570,8 +634,21 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
 
       {/* TAB 3: Budget Ceilings */}
       {activeTab === 'BUDGETS' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {INITIAL_BUDGETS.map((b) => {
+        budgets.length === 0 ? (
+          <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3 shadow-card">
+            <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60 mx-auto">
+              <Layers className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">
+              No Departmental Budget Ceilings Configured
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Set departmental or categorical budget limits to prevent overspending and track live policy utilization.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {budgets.map((b) => {
             const isHighUtilization = b.utilizationPercent > 80;
 
             return (
@@ -623,25 +700,39 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
             );
           })}
         </div>
+        )
       )}
 
       {/* TAB 4: Double-Entry Ledger Simulator */}
       {activeTab === 'LEDGER' && (
-        <div className="p-6 rounded-2xl bg-card border border-border space-y-5 shadow-card text-xs">
-          <div className="flex items-center justify-between border-b border-border pb-4">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Double-Entry Accounting Verification
-              </span>
-              <h3 className="text-sm font-bold text-foreground mt-0.5">
-                Balanced Ledger Posting Simulation (Report: REP-2026-0891)
-              </h3>
+        activeReports.length === 0 ? (
+          <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3 shadow-card">
+            <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60 mx-auto">
+              <Eye className="w-5 h-5" />
             </div>
-            <div className="flex items-center space-x-1.5 text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
-              <Check className="w-4 h-4" />
-              <span>Balanced (Debits = Credits: ₹8,450.00)</span>
-            </div>
+            <h3 className="text-base font-bold text-foreground">
+              No Approved Expense Reports to Simulate
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Submit and approve an expense claim to inspect the balanced General Ledger debit and credit double-entry postings.
+            </p>
           </div>
+        ) : (
+          <div className="p-6 rounded-2xl bg-card border border-border space-y-5 shadow-card text-xs">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Double-Entry Accounting Verification
+                </span>
+                <h3 className="text-sm font-bold text-foreground mt-0.5">
+                  Balanced Ledger Posting Simulation (Report: {activeReports[0]?.title})
+                </h3>
+              </div>
+              <div className="flex items-center space-x-1.5 text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                <Check className="w-4 h-4" />
+                <span>Balanced (Debits = Credits: ₹{totalPayable})</span>
+              </div>
+            </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Debit Side */}
@@ -707,7 +798,8 @@ export const FinancePage: React.FC<{ onNavigate: (path: string) => void }> = ({ 
             </div>
           </div>
         </div>
-      )}
+      )
+    )}
       {/* ERP Sync & Accounting Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">

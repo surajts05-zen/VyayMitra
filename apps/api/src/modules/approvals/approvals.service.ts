@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
@@ -15,6 +16,7 @@ import {
 } from '@vyay/contracts';
 import { PolicyEvaluationResult } from './policy.service.js';
 import { EmployeesService } from '../employees/employees.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 export interface InMemoryApprovalStep {
   id: string;
@@ -63,6 +65,7 @@ export interface ImmutableApprovalAction {
 
 @Injectable()
 export class ApprovalsService {
+  private readonly logger = new Logger(ApprovalsService.name);
   private steps = new Map<string, InMemoryApprovalStep>();
   private delegations = new Map<string, InMemoryDelegation>();
   private auditLog: ImmutableApprovalAction[] = [];
@@ -84,7 +87,10 @@ export class ApprovalsService {
     this.onStepDecided = handler;
   }
 
-  constructor(private readonly employeesService: EmployeesService) {
+  constructor(
+    private readonly employeesService: EmployeesService,
+    private readonly prisma: PrismaService
+  ) {
     this.seedBaselineSteps();
   }
 
@@ -368,6 +374,42 @@ export class ApprovalsService {
     // 7. Invoke Report Decision Handler to sync report and expense state
     if (this.onStepDecided) {
       await this.onStepDecided(tenantId, step.reportId, input.decision, isFullyApproved);
+    }
+
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.approvalStep.update({
+          where: { id: step.id },
+          data: {
+            status: step.status,
+            decidedAt: step.decidedAt ? new Date(step.decidedAt) : null,
+            comment: step.comment,
+          },
+        });
+        await this.prisma.approvalAction.create({
+          data: {
+            id: action.id,
+            stepId: step.id,
+            actorId: currentUser.userId,
+            decision: input.decision,
+            reason: input.comment ?? null,
+            delegateId: isDelegate ? step.approverId : null,
+          },
+        });
+        await this.prisma.auditEvent.create({
+          data: {
+            id: randomUUID(),
+            tenantId,
+            actorId: currentUser.userId,
+            action: `REPORT_APPROVAL_${input.decision}`,
+            resourceType: 'EXPENSE_REPORT',
+            resourceId: step.reportId,
+            reason: input.comment ?? null,
+          },
+        });
+      } catch (err) {
+        this.logger.warn(`Prisma approval decision persistence warning: ${(err as Error).message}`);
+      }
     }
 
     return {

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
   DepartmentDto,
@@ -10,6 +10,7 @@ import {
   CategoryDto,
   CreateCategoryInput,
 } from '@vyay/contracts';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface BaseOrgEntity {
   id: string;
@@ -27,12 +28,13 @@ interface CategoryEntity extends BaseOrgEntity {
 
 @Injectable()
 export class OrgService {
+  private readonly logger = new Logger(OrgService.name);
   private departments = new Map<string, BaseOrgEntity>();
   private costCenters = new Map<string, BaseOrgEntity>();
   private projects = new Map<string, BaseOrgEntity>();
   private categories = new Map<string, CategoryEntity>();
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     this.seedOrgData();
   }
 
@@ -130,6 +132,17 @@ export class OrgService {
       updatedAt: new Date().toISOString(),
     };
     this.departments.set(id, entity);
+    if (this.prisma?.isConnected) {
+      this.prisma.department.create({
+        data: {
+          id,
+          tenantId,
+          code: entity.code,
+          name: entity.name,
+          active: true,
+        },
+      }).catch((err) => this.logger.warn(`Prisma department create warning: ${err.message}`));
+    }
     return entity;
   }
 
@@ -157,6 +170,17 @@ export class OrgService {
       updatedAt: new Date().toISOString(),
     };
     this.costCenters.set(id, entity);
+    if (this.prisma?.isConnected) {
+      this.prisma.costCenter.create({
+        data: {
+          id,
+          tenantId,
+          code: entity.code,
+          name: entity.name,
+          active: true,
+        },
+      }).catch((err) => this.logger.warn(`Prisma cost center create warning: ${err.message}`));
+    }
     return entity;
   }
 
@@ -184,6 +208,17 @@ export class OrgService {
       updatedAt: new Date().toISOString(),
     };
     this.projects.set(id, entity);
+    if (this.prisma?.isConnected) {
+      this.prisma.project.create({
+        data: {
+          id,
+          tenantId,
+          code: entity.code,
+          name: entity.name,
+          active: true,
+        },
+      }).catch((err) => this.logger.warn(`Prisma project create warning: ${err.message}`));
+    }
     return entity;
   }
 
@@ -212,6 +247,18 @@ export class OrgService {
       updatedAt: new Date().toISOString(),
     };
     this.categories.set(id, entity);
+    if (this.prisma?.isConnected) {
+      this.prisma.category.create({
+        data: {
+          id,
+          tenantId,
+          code: entity.code,
+          name: entity.name,
+          accountMapping: entity.accountMapping,
+          active: true,
+        },
+      }).catch((err) => this.logger.warn(`Prisma category create warning: ${err.message}`));
+    }
     return entity;
   }
 }

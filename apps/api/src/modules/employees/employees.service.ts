@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
@@ -11,6 +12,7 @@ import {
   EmployeeDto,
   OrgHierarchyNode,
 } from '@vyay/contracts';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface EmployeeRecord {
   id: string;
@@ -31,9 +33,10 @@ interface EmployeeRecord {
 
 @Injectable()
 export class EmployeesService {
+  private readonly logger = new Logger(EmployeesService.name);
   private employees = new Map<string, EmployeeRecord>();
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     this.seedBaselineEmployees();
   }
 
@@ -205,6 +208,29 @@ export class EmployeesService {
     };
 
     this.employees.set(id, newEmp);
+
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.employee.create({
+          data: {
+            id,
+            tenantId,
+            employeeNumber: input.employeeNumber,
+            displayName: input.displayName,
+            email: input.email,
+            departmentId: input.departmentId ?? null,
+            managerId: input.managerId ?? null,
+            grade: input.grade ?? null,
+            branch: input.branch ?? null,
+            active: true,
+            externalHrmId: input.externalHrmId ?? null,
+          },
+        });
+      } catch (err) {
+        this.logger.warn(`Prisma employee create warning: ${(err as Error).message}`);
+      }
+    }
+
     return this.findById(tenantId, id);
   }
 
@@ -244,6 +270,26 @@ export class EmployeesService {
     };
 
     this.employees.set(id, updated);
+
+    if (this.prisma?.isConnected) {
+      try {
+        await this.prisma.employee.update({
+          where: { id },
+          data: {
+            displayName: updated.displayName,
+            departmentId: updated.departmentId,
+            managerId: updated.managerId,
+            grade: updated.grade,
+            branch: updated.branch,
+            active: updated.active,
+            externalHrmId: updated.externalHrmId,
+          },
+        });
+      } catch (err) {
+        this.logger.warn(`Prisma employee update warning: ${(err as Error).message}`);
+      }
+    }
+
     return this.findById(tenantId, id);
   }
 

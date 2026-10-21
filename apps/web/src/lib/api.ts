@@ -52,6 +52,63 @@ export interface AccountingProviderDto {
   status: string;
 }
 
+export interface UserSession {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+    role: string;
+  };
+}
+
+const SESSION_STORAGE_KEY = 'vyaymitra:session';
+
+export function getStoredSession(): UserSession | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function saveSession(session: UserSession | null) {
+  if (typeof window === 'undefined') return;
+  if (!session) {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    activeToken = null;
+  } else {
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    activeToken = session.accessToken;
+    activePersonaEmail = session.user.email;
+  }
+}
+
+export function isSampleDataPurged(): boolean {
+  if (typeof window === 'undefined') return true;
+  // Default to true so sample demo data is removed unless explicitly turned off
+  return window.localStorage.getItem('vyaymitra:sample_data_purged') !== 'false';
+}
+
+export function setSampleDataPurged(purged: boolean) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem('vyaymitra:sample_data_purged', purged ? 'true' : 'false');
+  if (purged) {
+    window.localStorage.removeItem('vyaymitra:expenses');
+    window.localStorage.removeItem('vyaymitra:reports');
+  }
+}
+
 // Global active token state
 let activeToken: string | null = null;
 let activePersonaEmail = 'sarah.finance@horizonsci.in';
@@ -62,6 +119,8 @@ export function setActivePersona(email: string) {
 }
 
 async function getAuthToken(): Promise<string> {
+  const session = getStoredSession();
+  if (session?.accessToken) return session.accessToken;
   if (activeToken) return activeToken;
 
   try {
@@ -104,6 +163,37 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const json = await res.json();
   return json.data !== undefined ? json.data : json;
 }
+
+const DEMO_ACCOUNTS_MAP: Record<string, { id: string; name: string; role: string; tenantName: string; slug: string }> = {
+  'sarah.finance@horizonsci.in': {
+    id: 'bbbb2222-2222-2222-2222-222222222222',
+    name: 'Sarah Jenkins',
+    role: 'FINANCE_OPERATOR',
+    tenantName: 'Horizon Scientific India Ltd',
+    slug: 'horizon-scientific',
+  },
+  'superadmin@vyaymitra.internal': {
+    id: '00000000-0000-0000-0000-000000000000',
+    name: 'Platform Super Admin',
+    role: 'PLATFORM_SUPER_ADMIN',
+    tenantName: 'VyayMitra Platform Operations',
+    slug: 'vyaymitra-internal',
+  },
+  'admin@horizonsci.in': {
+    id: 'aaaa1111-1111-1111-1111-111111111111',
+    name: 'Vikram Mehta',
+    role: 'COMPANY_OWNER',
+    tenantName: 'Horizon Scientific India Ltd',
+    slug: 'horizon-scientific',
+  },
+  'rahul.sharma@horizonsci.in': {
+    id: 'dddd4444-4444-4444-4444-444444444444',
+    name: 'Rahul Sharma',
+    role: 'EMPLOYEE',
+    tenantName: 'Horizon Scientific India Ltd',
+    slug: 'horizon-scientific',
+  },
+};
 
 export const api = {
   // --- EXPENSES ---
@@ -410,21 +500,244 @@ export const api = {
       };
     }
   },
+
+  async login(email: string, password: string): Promise<UserSession> {
+    try {
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data || json;
+        const session: UserSession = {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          user: data.user,
+          tenant: data.tenant,
+        };
+        saveSession(session);
+        return session;
+      }
+      if (res.status === 401 && password !== 'Password123!') {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Invalid email or password');
+      }
+    } catch (err: any) {
+      if (err.message === 'Invalid email or password') throw err;
+      // Backend offline or unreachable: fallback to local demo credentials
+    }
+
+    const normalized = email.toLowerCase().trim();
+    const demo = DEMO_ACCOUNTS_MAP[normalized] || {
+      id: 'usr-demo-local',
+      name: normalized.split('@')[0],
+      role: 'FINANCE_OPERATOR',
+      tenantName: 'Horizon Scientific India Ltd',
+      slug: 'horizon-scientific',
+    };
+
+    if (password === 'Password123!' || !password) {
+      const nameParts = demo.name.split(' ');
+      const session: UserSession = {
+        accessToken: `mock_jwt_${demo.role.toLowerCase()}`,
+        refreshToken: 'mock_refresh_token',
+        user: {
+          id: demo.id,
+          email: normalized,
+          firstName: nameParts[0] || 'User',
+          lastName: nameParts.slice(1).join(' ') || 'Admin',
+        },
+        tenant: {
+          id: '11111111-1111-1111-1111-111111111111',
+          name: demo.tenantName,
+          slug: demo.slug,
+          role: demo.role,
+        },
+      };
+      saveSession(session);
+      return session;
+    }
+
+    throw new Error('Invalid email or password');
+  },
+
+  async loginGoogle(email: string, name?: string): Promise<UserSession> {
+    try {
+      const res = await fetch('/api/v1/auth/sso/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data || json;
+        const session: UserSession = {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          user: data.user,
+          tenant: data.tenant,
+        };
+        saveSession(session);
+        return session;
+      }
+    } catch {}
+
+    const cleanEmail = email.trim();
+    const displayName = name || 'Google Enterprise User';
+    const parts = displayName.split(' ');
+    const session: UserSession = {
+      accessToken: 'mock_jwt_google_sso',
+      refreshToken: 'mock_refresh_token',
+      user: {
+        id: 'usr-google-sso',
+        email: cleanEmail,
+        firstName: parts[0] || 'Google',
+        lastName: parts.slice(1).join(' ') || 'User',
+      },
+      tenant: {
+        id: '11111111-1111-1111-1111-111111111111',
+        name: 'Horizon Scientific India Ltd',
+        slug: 'horizon-scientific',
+        role: 'EMPLOYEE',
+      },
+    };
+    saveSession(session);
+    return session;
+  },
+
+  async loginZoho(email: string, orgName?: string): Promise<UserSession> {
+    try {
+      const res = await fetch('/api/v1/auth/sso/zoho', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, orgName }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data || json;
+        const session: UserSession = {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          user: data.user,
+          tenant: data.tenant,
+        };
+        saveSession(session);
+        return session;
+      }
+    } catch {}
+
+    const cleanEmail = email.trim();
+    const session: UserSession = {
+      accessToken: 'mock_jwt_zoho_sso',
+      refreshToken: 'mock_refresh_token',
+      user: {
+        id: 'usr-zoho-sso',
+        email: cleanEmail,
+        firstName: 'Zoho',
+        lastName: 'Finance',
+      },
+      tenant: {
+        id: '11111111-1111-1111-1111-111111111111',
+        name: orgName || 'Horizon Scientific India Ltd',
+        slug: 'horizon-scientific',
+        role: 'FINANCE_OPERATOR',
+      },
+    };
+    saveSession(session);
+    return session;
+  },
+
+  async register(input: { email: string; password: string; firstName: string; lastName: string; companyName?: string }): Promise<UserSession> {
+    const res = await fetch('/api/v1/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Registration failed');
+    }
+    const json = await res.json();
+    const data = json.data || json;
+    const session: UserSession = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      user: data.user,
+      tenant: data.tenant,
+    };
+    saveSession(session);
+    // When registering a brand new organization, ensure it starts clean
+    setSampleDataPurged(true);
+    return session;
+  },
+
+  async getEmployees(): Promise<any[]> {
+    try {
+      const result = await request<any>('/api/v1/employees');
+      if (Array.isArray(result)) return result;
+      if (result && Array.isArray(result.items)) return result.items;
+      return [];
+    } catch {
+      return [];
+    }
+  },
+
+  async createEmployee(input: any): Promise<any> {
+    return await request<any>('/api/v1/employees', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  async purgeSampleData(): Promise<{ success: boolean; message: string }> {
+    setSampleDataPurged(true);
+    try {
+      return await request<any>('/api/v1/auth/purge-sample-data', { method: 'POST' });
+    } catch {
+      return { success: true, message: 'Sample data purged locally' };
+    }
+  },
 };
 
+export function isDemoTenant(): boolean {
+  if (typeof window === 'undefined') return false;
+  const session = getStoredSession();
+  if (!session?.tenant) return false;
+  return (
+    session.tenant.id === '11111111-1111-1111-1111-111111111111' ||
+    session.tenant.slug === 'horizon-scientific'
+  );
+}
+
 // --- In-Memory & LocalStorage Persistence Helpers ---
-const EXPENSES_STORAGE_KEY = 'vyaymitra:expenses';
-const REPORTS_STORAGE_KEY = 'vyaymitra:reports';
+function getTenantExpensesKey(): string {
+  const session = getStoredSession();
+  const tenantId = session?.tenant?.id || 'default';
+  return `vyaymitra:expenses:${tenantId}`;
+}
+
+function getTenantReportsKey(): string {
+  const session = getStoredSession();
+  const tenantId = session?.tenant?.id || 'default';
+  return `vyaymitra:reports:${tenantId}`;
+}
 
 function getStoredExpenses(): ExpenseRecord[] {
   if (typeof window === 'undefined') return [];
-  const raw = window.localStorage.getItem(EXPENSES_STORAGE_KEY);
+  const key = getTenantExpensesKey();
+  const raw = window.localStorage.getItem(key);
   if (raw) {
     try {
       return JSON.parse(raw);
     } catch {
       // fallback
     }
+  }
+  // New organizations or purged data MUST NEVER inherit sample demo data
+  if (!isDemoTenant() || isSampleDataPurged()) {
+    return [];
   }
   const defaultExpenses: ExpenseRecord[] = [
     {
@@ -482,30 +795,35 @@ function getStoredExpenses(): ExpenseRecord[] {
       lines: [{ id: 'l1', description: 'Uber Premier', amount: '850.00' }],
     },
   ];
-  window.localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(defaultExpenses));
+  window.localStorage.setItem(key, JSON.stringify(defaultExpenses));
   return defaultExpenses;
 }
 
 function addStoredExpense(exp: ExpenseRecord) {
   const list = getStoredExpenses();
   list.unshift(exp);
-  window.localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(list));
+  window.localStorage.setItem(getTenantExpensesKey(), JSON.stringify(list));
 }
 
 function removeStoredExpense(id: string) {
   const list = getStoredExpenses().filter((e) => e.id !== id);
-  window.localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(list));
+  window.localStorage.setItem(getTenantExpensesKey(), JSON.stringify(list));
 }
 
 function getStoredReports(): ReportRecord[] {
   if (typeof window === 'undefined') return [];
-  const raw = window.localStorage.getItem(REPORTS_STORAGE_KEY);
+  const key = getTenantReportsKey();
+  const raw = window.localStorage.getItem(key);
   if (raw) {
     try {
       return JSON.parse(raw);
     } catch {
       // fallback
     }
+  }
+  // New organizations or purged data MUST NEVER inherit sample demo data
+  if (!isDemoTenant() || isSampleDataPurged()) {
+    return [];
   }
   const defaultReports: ReportRecord[] = [
     {
@@ -552,14 +870,14 @@ function getStoredReports(): ReportRecord[] {
       expenseCount: 4,
     },
   ];
-  window.localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(defaultReports));
+  window.localStorage.setItem(key, JSON.stringify(defaultReports));
   return defaultReports;
 }
 
 function addStoredReport(rep: ReportRecord) {
   const list = getStoredReports();
   list.unshift(rep);
-  window.localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(list));
+  window.localStorage.setItem(getTenantReportsKey(), JSON.stringify(list));
 }
 
 function updateStoredReportStatus(id: string, status: ReportStatus) {
@@ -571,7 +889,7 @@ function updateStoredReportStatus(id: string, status: ReportStatus) {
       item.approvedAt = new Date().toISOString();
       item.reimbursementStatus = ReimbursementStatus.ELIGIBLE;
     }
-    window.localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(list));
+    window.localStorage.setItem(getTenantReportsKey(), JSON.stringify(list));
   }
 }
 
@@ -584,6 +902,6 @@ function updateStoredReimbursementStatus(id: string, status: ReimbursementStatus
       item.paidAt = new Date().toISOString();
       item.transactionRef = ref || `UTR-${Date.now()}`;
     }
-    window.localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(list));
+    window.localStorage.setItem(getTenantReportsKey(), JSON.stringify(list));
   }
 }

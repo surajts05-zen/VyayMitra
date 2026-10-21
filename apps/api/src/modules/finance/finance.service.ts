@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
   GLAccountMapping,
@@ -10,6 +10,7 @@ import {
   Money,
   ReportStatus,
 } from '@vyay/contracts';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 interface ReportReviewItem {
   reportId: string;
@@ -31,6 +32,7 @@ interface ReportReviewItem {
 
 @Injectable()
 export class FinanceService {
+  private readonly logger = new Logger(FinanceService.name);
   // In-memory GL Account & Tax Mappings
   private glMappings: Map<string, GLAccountMapping[]> = new Map();
 
@@ -40,7 +42,7 @@ export class FinanceService {
   // Pre-payment verification records
   private verificationRecords: Map<string, ReportReviewItem> = new Map();
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     this.seedDefaultMappings();
     this.seedDefaultBudgets();
   }
@@ -173,11 +175,11 @@ export class FinanceService {
   // --- Finance Review Queue & Validation ---
 
   getReviewQueue(tenantId: string): ReportReviewItem[] {
-    // Seed default review queue item if empty
-    if (this.verificationRecords.size === 0) {
+    // Seed default review queue item only for demo tenant if empty
+    if (this.verificationRecords.size === 0 && tenantId === '11111111-1111-1111-1111-111111111111') {
       const defaultItem: ReportReviewItem = {
         reportId: 'rep-001',
-        tenantId,
+        tenantId: '11111111-1111-1111-1111-111111111111',
         reportNumber: 'REP-2026-0891',
         title: 'Bangalore Lab Equipment & Reagents',
         employeeName: 'Dr. Rahul Sharma',
@@ -310,6 +312,24 @@ export class FinanceService {
 
     list.push(newBudget);
     this.budgets.set(tenantId, list);
+
+    if (this.prisma?.isConnected) {
+      this.prisma.budget.create({
+        data: {
+          id: newBudget.id,
+          tenantId,
+          name: newBudget.name,
+          period: newBudget.period,
+          currency: newBudget.currency,
+          limitAmount: newBudget.limitAmount,
+          targetType: newBudget.targetType,
+          targetId: newBudget.targetId,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+      }).catch((err) => this.logger.warn(`Prisma budget create warning: ${err.message}`));
+    }
+
     return newBudget;
   }
 }

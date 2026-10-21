@@ -432,8 +432,10 @@ export const AppShell: React.FC<AppShellProps> = ({
         <button
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent"
-          aria-label="Open menu"
+          className="min-h-11 min-w-11 p-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent flex items-center justify-center"
+          aria-label={`${mobileMenuOpen ? 'Close' : 'Open'} menu`}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -458,7 +460,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 onNavigate(item.href);
                 setMobileMenuOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-sidebar-foreground/90 hover:bg-sidebar-accent"
+              className="min-h-11 w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-sidebar-foreground/90 hover:bg-sidebar-accent"
             >
               <div className="flex items-center space-x-3">
                 {item.icon}

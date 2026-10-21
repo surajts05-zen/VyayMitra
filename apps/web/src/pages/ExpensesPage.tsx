@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StatusBadge, AmountDisplay } from '@vyay/ui';
 import { ExpenseStatus } from '@vyay/contracts';
-import { api } from '../lib/api';
+import { api, isDemoTenant, isSampleDataPurged } from '../lib/api';
 import {
   Upload,
   Camera,
@@ -84,8 +84,10 @@ export const ExpensesPage: React.FC = () => {
     { id: '2', description: 'Secondary item', amount: '' },
   ]);
 
-  // Demo Expenses Dataset
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([
+  // Expenses Dataset (Only pre-loaded for demo tenant if sample data is not purged)
+  const [expenses, setExpenses] = useState<ExpenseItem[]>(() => {
+    if (isDemoTenant() && !isSampleDataPurged()) {
+      return [
     {
       id: 'exp-101',
       merchant: 'ITC Gardenia Bengaluru',
@@ -166,7 +168,10 @@ export const ExpensesPage: React.FC = () => {
         { id: 'l7', description: 'Assay calibration vial (USD $250.00 = INR ₹20,875.00)', amount: '250.00' },
       ],
     },
-  ]);
+  ];
+}
+return [];
+});
 
   // Live Duplicate Detection (Evaluated in real-time as the user types in the form)
   const liveDuplicateMatch = expenses.find((exp) => {
@@ -497,7 +502,7 @@ export const ExpensesPage: React.FC = () => {
 
   useEffect(() => {
     api.getExpenses().then((data) => {
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         setExpenses(data);
       }
     }).catch(() => {});
@@ -596,11 +601,24 @@ export const ExpensesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredExpenses.map((exp) => (
-                <tr
-                  key={exp.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
+              {filteredExpenses.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-16 text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground mb-3">
+                      <Receipt className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground">No expenses recorded yet</h3>
+                    <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
+                      Your workspace is completely clean. Click &quot;+ Create Expense&quot; above to add your first expense or upload a receipt.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredExpenses.map((exp) => (
+                  <tr
+                    key={exp.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
                   <td className="px-4 py-3 text-muted-foreground font-mono whitespace-nowrap text-xs">
                     {exp.spentAt}
                   </td>
@@ -670,8 +688,9 @@ export const ExpensesPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              ))
+            )}
+          </tbody>
           </table>
         </div>
       </div>

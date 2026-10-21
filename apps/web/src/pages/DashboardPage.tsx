@@ -16,7 +16,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+export const DashboardPage: React.FC<{ onNavigate: (path: string) => void; tenantName?: string }> = ({
+  onNavigate,
+  tenantName,
+}) => {
   const [reports, setReports] = useState<ReportRecord[]>([]);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
     const loadDashboardData = async () => {
       try {
         const fetched = await api.getReports();
-        if (isMounted && fetched && fetched.length > 0) {
+        if (isMounted && Array.isArray(fetched)) {
           setReports(fetched);
         }
       } catch (err) {
@@ -76,7 +79,7 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Horizon Scientific India Ltd &bull; R&D Operations & Finance Desk
+            {tenantName || 'Organization Workspace'} &bull; Operations & Finance Desk
           </p>
         </div>
 
@@ -109,13 +112,15 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             </div>
           </div>
           <div className="mt-2 text-2xl font-bold font-mono tracking-tight text-foreground">
-            <AmountDisplay amount={pendingAmount !== '0.00' ? pendingAmount : '14850.00'} currency="INR" />
+            <AmountDisplay amount={pendingAmount} currency="INR" />
           </div>
           <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
             <span className="text-muted-foreground">
-              {pendingReports.length || 2} claims awaiting review
+              {pendingReports.length} {pendingReports.length === 1 ? 'claim' : 'claims'} awaiting review
             </span>
-            <span className="text-amber-600 dark:text-amber-400 font-medium">Needs Action</span>
+            <span className={pendingReports.length > 0 ? "text-amber-600 dark:text-amber-400 font-medium" : "text-emerald-600 dark:text-emerald-400 font-medium"}>
+              {pendingReports.length > 0 ? "Needs Action" : "Up to date"}
+            </span>
           </div>
         </div>
 
@@ -128,10 +133,12 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             </div>
           </div>
           <div className="mt-2 text-2xl font-bold font-mono tracking-tight text-foreground">
-            <AmountDisplay amount={approvedAmount !== '0.00' ? approvedAmount : '6200.00'} currency="INR" />
+            <AmountDisplay amount={approvedAmount} currency="INR" />
           </div>
           <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
-            <span className="text-muted-foreground">Finance batch queue</span>
+            <span className="text-muted-foreground">
+              {approvedReports.length} finance queue items
+            </span>
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">Verified</span>
           </div>
         </div>
@@ -145,10 +152,12 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
             </div>
           </div>
           <div className="mt-2 text-2xl font-bold font-mono tracking-tight text-foreground">
-            <AmountDisplay amount={reimbursedAmount !== '0.00' ? reimbursedAmount : '31500.00'} currency="INR" />
+            <AmountDisplay amount={reimbursedAmount} currency="INR" />
           </div>
           <div className="mt-2 flex items-center justify-between text-[11px] pt-2 border-t border-border/60">
-            <span className="text-muted-foreground">Processed bank payouts</span>
+            <span className="text-muted-foreground">
+              {reimbursedReports.length} processed bank payouts
+            </span>
             <span className="text-blue-600 dark:text-blue-400 font-medium">Settled</span>
           </div>
         </div>
@@ -198,7 +207,7 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
               Recent Expense Claims & Submissions
             </h2>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground font-mono">
-              {reports.length || 2} entries
+              {reports.length} entries
             </span>
           </div>
           <button
@@ -258,50 +267,26 @@ export const DashboardPage: React.FC<{ onNavigate: (path: string) => void }> = (
                   </tr>
                 ))
               ) : (
-                <>
-                  <tr className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <span>Bangalore Lab Equipment & Reagents</span>
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center space-y-2.5">
+                      <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground/60">
+                        <FileText className="w-5 h-5" />
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">18 Oct 2026</td>
-                    <td className="px-4 py-3 text-right font-mono font-medium">
-                      <AmountDisplay amount="8450.00" currency="INR" />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={ReportStatus.FINANCE_REVIEW} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={ReimbursementStatus.ELIGIBLE} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={PostingStatus.QUEUED} />
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <span>Delhi Client Field Audit Travel</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">16 Oct 2026</td>
-                    <td className="px-4 py-3 text-right font-mono font-medium">
-                      <AmountDisplay amount="6400.00" currency="INR" />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={ReportStatus.FINALIZED} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={ReimbursementStatus.PAID} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={PostingStatus.SYNCED} />
-                    </td>
-                  </tr>
-                </>
+                      <p className="text-sm font-semibold text-foreground">No expense claims or reports found</p>
+                      <p className="text-xs text-muted-foreground max-w-sm">
+                        This organization currently has no submitted reports. Submit your first expense report to view real-time tracking here.
+                      </p>
+                      <button
+                        onClick={() => onNavigate('/expenses')}
+                        className="mt-2 inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-smooth shadow-sm"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-km-lime" />
+                        <span>Create First Expense</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

@@ -5,12 +5,15 @@ import { loadRuntimeConfig } from '../../common/config/runtime-config.js';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
+  public isConnected = false;
 
   async onModuleInit() {
     try {
       await this.$connect();
+      this.isConnected = true;
       this.logger.log('Prisma successfully connected to PostgreSQL database');
     } catch (err) {
+      this.isConnected = false;
       const config = loadRuntimeConfig();
       if (!config.allowOfflineDatabase) {
         this.logger.error('PostgreSQL connection failed and offline database mode is disabled');
@@ -22,5 +25,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleDestroy() {
     await this.$disconnect();
+    this.isConnected = false;
   }
 }

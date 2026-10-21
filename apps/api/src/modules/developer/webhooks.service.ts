@@ -2,8 +2,10 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/prisma.service.js';
 import {
   WebhookSubscriptionDto,
   WebhookDeliveryLogDto,
@@ -44,6 +46,8 @@ export class WebhooksService {
   private subscriptions = new Map<string, InternalSubscription[]>();
   private deliveryLogs = new Map<string, InternalDeliveryLog[]>();
 
+  constructor(@Optional() private readonly prisma?: PrismaService) {}
+
   createSubscription(
     tenantId: string,
     input: CreateWebhookSubscriptionInput
@@ -69,6 +73,19 @@ export class WebhooksService {
     }
     this.subscriptions.get(tenantId)!.push(sub);
 
+    if (this.prisma?.isConnected) {
+      this.prisma.webhookSubscription.create({
+        data: {
+          id: sub.id,
+          tenantId,
+          targetUrl: sub.url,
+          events: sub.events as any,
+          secret: signingKey,
+          active: sub.active,
+        },
+      }).catch(() => {});
+    }
+
     return { ...this.toDto(sub), signingKey };
   }
 
@@ -90,6 +107,17 @@ export class WebhooksService {
     if (updates.events) sub.events = updates.events;
     if (updates.active !== undefined) sub.active = updates.active;
     if (updates.description !== undefined) sub.description = updates.description;
+
+    if (this.prisma?.isConnected) {
+      this.prisma.webhookSubscription.update({
+        where: { id },
+        data: {
+          ...(updates.events ? { events: updates.events as any } : {}),
+          ...(updates.active !== undefined ? { active: updates.active } : {}),
+        },
+      }).catch(() => {});
+    }
+
     return this.toDto(sub);
   }
 
@@ -98,12 +126,26 @@ export class WebhooksService {
     const idx = list.findIndex((s) => s.id === id);
     if (idx < 0) throw new NotFoundException(`Webhook subscription ${id} not found`);
     list.splice(idx, 1);
+
+    if (this.prisma?.isConnected) {
+      this.prisma.webhookSubscription.delete({
+        where: { id },
+      }).catch(() => {});
+    }
   }
 
   rotateSigningKey(tenantId: string, id: string): { newSigningKey: string } & WebhookSubscriptionDto {
     const sub = this.findOrFail(tenantId, id);
     const newKey = randomBytes(32).toString('hex');
     sub.signingKey = newKey;
+
+    if (this.prisma?.isConnected) {
+      this.prisma.webhookSubscription.update({
+        where: { id },
+        data: { secret: newKey },
+      }).catch(() => {});
+    }
+
     return { ...this.toDto(sub), newSigningKey: newKey };
   }
 

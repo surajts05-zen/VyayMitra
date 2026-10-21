@@ -18,6 +18,41 @@ export class AnalyticsService {
     const fromDate = filters.fromDate ?? '2026-04-01';
     const toDate = filters.toDate ?? '2026-10-31';
 
+    if (tenantId !== '11111111-1111-1111-1111-111111111111') {
+      return {
+        tenantId,
+        currency,
+        period: { from: fromDate, to: toDate },
+        totalSpend: '0.00',
+        totalReports: 0,
+        totalExpenses: 0,
+        pendingReports: 0,
+        pendingAmount: '0.00',
+        reimbursedAmount: '0.00',
+        reimbursementPendingAmount: '0.00',
+        spendByCategory: [],
+        spendByDepartment: [],
+        spendByMonth: [],
+        policyViolations: {
+          totalViolations: 0,
+          warnViolations: 0,
+          blockViolations: 0,
+          escalateViolations: 0,
+          topViolatedCategory: 'None',
+          violationRate: 0,
+        },
+        reimbursementCycle: {
+          averageDaysSubmitToApproval: 0,
+          averageDaysApprovalToFinance: 0,
+          averageDaysFinanceToDisbursement: 0,
+          averageTotalCycleDays: 0,
+          fastestCycleDays: 0,
+          slowestCycleDays: 0,
+        },
+        topSpenders: [],
+      };
+    }
+
     const spendByCategory: SpendDataPoint[] = [
       { label: 'Air Travel & Flights', amount: '42500.00', count: 14, currency },
       { label: 'Lab Reagents & Supplies', amount: '38200.00', count: 9, currency },
